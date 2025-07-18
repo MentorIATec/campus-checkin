@@ -1,55 +1,143 @@
+// app.js
 let estudiantesData = [];
 let estudianteActual = null;
 
-// Carga el JSON de estudiantes al iniciar
-window.onload = async function() {
-    const res = await fetch('estudiantes.json');
-    estudiantesData = await res.json();
+const comunidadesCss = {
+  'energio': 'comunidad-energio',
+  'spirita': 'comunidad-spirita',
+  'talenta': 'comunidad-talenta',
+  'revo': 'comunidad-revo',
+  'pasio': 'comunidad-pasio',
+  'krei': 'comunidad-krei',
+  'reflekto': 'comunidad-reflekto',
+  'forta': 'comunidad-forta',
+  'ekvilibro': 'comunidad-ekvilibro',
+  'kresko': 'comunidad-kresko',
 };
 
+async function cargarDatos() {
+  try {
+    const res = await fetch('estudiantes.json');
+    estudiantesData = await res.json();
+    estudiantesData.forEach(e => {
+      e.matricula = (e.matricula || e["matrícula"]).trim().toUpperCase();
+      e.comunidad = e.comunidad.trim();
+      e.nameEstudiante = e.nameEstudiante?.trim() || '';
+      e.fullnameEstudiante = e.fullnameEstudiante?.trim() || '';
+      e.mentorFullname = e.mentorFullname?.trim() || '';
+      e.mentorNickname = e.mentorNickname?.trim() || '';
+      e.fotoMentor = e.fotoMentor?.trim() || '';
+      e.campusOrigen = e.campusOrigen?.trim() || '';
+    });
+  } catch {
+    mostrarError('No se pudo cargar la base de estudiantes. Actualiza la página.');
+  }
+}
+
+// UI helpers
+function mostrarError(msg) {
+  document.getElementById('errorMsg').innerText = msg;
+}
+function limpiarError() {
+  document.getElementById('errorMsg').innerText = '';
+}
+function mostrarTarjeta() {
+  document.getElementById('tarjetaEstudiante').classList.remove('hidden');
+  document.getElementById('checkin-section').style.display = 'none';
+}
+function ocultarTarjeta() {
+  document.getElementById('tarjetaEstudiante').classList.add('hidden');
+  document.getElementById('checkin-section').style.display = 'block';
+}
+
+// Búsqueda de estudiante
 function buscarEstudiante() {
-    const input = document.getElementById('matriculaInput');
-    const matricula = input.value.trim().toUpperCase();
-    const errorMsg = document.getElementById('errorMsg');
-    errorMsg.textContent = '';
-    estudianteActual = estudiantesData.find(e =>
-        (e.matricula || e["matrícula"] || "").trim().toUpperCase() === matricula
-    );
-    if (!estudianteActual) {
-        errorMsg.textContent = 'Matrícula no encontrada. Intenta de nuevo.';
-        return;
-    }
-    mostrarTarjetaEstudiante();
+  limpiarError();
+  const input = document.getElementById('matriculaInput').value.trim().toUpperCase();
+  if (!input) {
+    mostrarError('Ingresa una matrícula');
+    return;
+  }
+  const e = estudiantesData.find(x => x.matricula === input);
+  if (!e) {
+    mostrarError('Matrícula no encontrada');
+    return;
+  }
+  estudianteActual = e;
+  mostrarDatosEstudiante(e);
 }
 
-function mostrarTarjetaEstudiante() {
-    document.getElementById('checkin-section').classList.add('hidden');
-    document.getElementById('tarjetaEstudiante').classList.remove('hidden');
+function mostrarDatosEstudiante(e) {
+  // Set comunidad y color
+  const comunidadKey = e.comunidad.trim().toLowerCase();
+  const card = document.getElementById('comunidadCard');
+  card.className = 'card-comunidad ' + (comunidadesCss[comunidadKey] || '');
 
-    // Nombre estudiante (nombre corto o completo)
-    document.getElementById('nombreEstudiante').textContent = estudianteActual.nameEstudiante || estudianteActual.fullnameEstudiante;
+  // Badge
+  document.getElementById('comunidadBadge').textContent = e.comunidad;
 
-    // Comunidad (colores)
-    const comunidadKey = (estudianteActual.comunidad || "").toLowerCase();
-    const card = document.getElementById('comunidadCard');
-    card.className = 'card-comunidad comunidad-' + comunidadKey;
+  // Datos estudiante
+  document.getElementById('nombreEstudiante').textContent = e.nameEstudiante;
+  document.getElementById('matriculaEstudiante').textContent = e.matricula;
+  document.getElementById('campusEstudiante').textContent = e.campusOrigen;
 
-    document.getElementById('comunidadBadge').textContent = estudianteActual.comunidad;
+  // Mentor
+  document.getElementById('nombreMentor').textContent = e.mentorFullname;
 
-    // Mentor/a
-    document.getElementById('nombreMentor').textContent = estudianteActual.mentorFullname + (estudianteActual.mentorNickname ? ` (${estudianteActual.mentorNickname})` : '');
+  // Foto mentor o placeholder
+  const foto = document.getElementById('fotoMentor');
+  const placeholder = document.getElementById('fotoPlaceholder');
+  if (e.fotoMentor) {
+    foto.src = e.fotoMentor;
+    foto.alt = e.mentorNickname;
+    foto.style.display = '';
+    placeholder.style.display = 'none';
+    foto.onerror = () => { foto.style.display = 'none'; placeholder.style.display = ''; }
+  } else {
+    foto.style.display = 'none';
+    placeholder.style.display = '';
+  }
 
-    // Foto mentor/a
-    document.getElementById('fotoMentor').src = estudianteActual.fotoMentor || 'default-mentor.png';
-    document.getElementById('fotoMentor').alt = estudianteActual.mentorFullname;
+  // Botón asistencia: ya registrado?
+  const btn = document.getElementById('asistenciaBtn');
+  const registrado = localStorage.getItem(`checkin_${e.matricula}`) === '1';
+  btn.disabled = registrado;
+  btn.textContent = registrado ? '✓ Ya registrado' : '¡Ya llegué!';
+
+  // Mensaje éxito fuera
+  document.getElementById('mensajeExito').classList.add('hidden');
+
+  mostrarTarjeta();
 }
 
+// Confirmar asistencia
+function registrarAsistencia() {
+  if (!estudianteActual) return;
+  // Marcar localStorage
+  localStorage.setItem(`checkin_${estudianteActual.matricula}`, '1');
+  // Mostrar mensaje éxito animado
+  document.getElementById('mensajeExito').classList.remove('hidden');
+  document.getElementById('kitComunidad').textContent = estudianteActual.comunidad;
+  // Botón disable
+  const btn = document.getElementById('asistenciaBtn');
+  btn.disabled = true;
+  btn.textContent = '✓ Ya registrado';
+}
+
+// Volver a buscar
 function resetCheckin() {
-    document.getElementById('tarjetaEstudiante').classList.add('hidden');
-    document.getElementById('checkin-section').classList.remove('hidden');
-    document.getElementById('matriculaInput').value = '';
-    document.getElementById('errorMsg').textContent = '';
-    estudianteActual = null;
+  estudianteActual = null;
+  ocultarTarjeta();
+  document.getElementById('matriculaInput').value = '';
+  limpiarError();
+  setTimeout(() => { document.getElementById('matriculaInput').focus(); }, 300);
 }
 
-// Puedes agregar aquí la función registrarAsistencia() cuando quieras registrar asistencia en Sheets, Airtable, etc.
+// Enter = buscar
+document.addEventListener('DOMContentLoaded', async () => {
+  await cargarDatos();
+  document.getElementById('matriculaInput').addEventListener('keypress', function(event) {
+    if (event.key === 'Enter') buscarEstudiante();
+  });
+  resetCheckin();
+});
