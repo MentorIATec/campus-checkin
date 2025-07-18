@@ -1,46 +1,129 @@
+:root {
+  --tec-blue: #003b5c;
+  --tec-blue-light: #005b8a;
+  --tec-blue-bright: #0062cc;
+  --com-talenta: #EC008C;
+  --com-revo: #C4829A;
+  --com-kresko: #0DCCCC;
+  --com-pasio: #CC0202;
+  --com-energio: #FD8204;
+  --com-krei: #79858B;
+  --com-reflekto: #FFDE17;
+  --com-forta: #870074;
+  --com-spirita: #5B0F8B;
+  --com-ekvilibro: #6FD34A;
+}
 body {
   font-family: 'Segoe UI', Arial, sans-serif;
-  background: linear-gradient(135deg, #003b5c 0%, #005b8a 100%);
-  min-height: 100vh;
+  background: #f5f7fa;
   color: #003b5c;
   margin: 0;
   padding: 0;
 }
+.header-stats {
+  background: var(--tec-blue);
+  color: #fff;
+  padding: 14px 0 0 0;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  box-shadow: 0 3px 16px rgba(0,0,0,0.03);
+}
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.25em;
+  font-weight: 600;
+  padding: 0 28px;
+}
+.header-title .icon {
+  font-size: 1.3em;
+}
+.header-main {
+  letter-spacing: 0.5px;
+}
+.header-sub {
+  font-size: 1em;
+  font-weight: 400;
+  opacity: 0.90;
+  padding: 2px 28px 14px 56px;
+}
+.stats-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #fff;
+  color: var(--tec-blue);
+  gap: 56px;
+  padding: 18px 10px 20px 10px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+  border-radius: 22px;
+  width: 88%;
+  max-width: 780px;
+  margin: -18px auto 24px auto;
+  position: relative;
+  z-index: 10;
+}
+.stat {
+  text-align: center;
+}
+.stat-value {
+  font-size: 2em;
+  font-weight: 700;
+  color: var(--tec-blue);
+  letter-spacing: 1.5px;
+}
+.stat-label {
+  font-size: 1em;
+  color: #666;
+  margin-top: 2px;
+}
 
+/* Oculta la barra de stats en móviles */
+@media (max-width: 700px) {
+  .header-stats {
+    box-shadow: none;
+    padding: 0;
+  }
+  .stats-bar, .header-sub, .header-title {
+    display: none !important;
+  }
+}
+
+/* Main content */
+main {
+  min-height: 82vh;
+}
 .checkin-container {
-  max-width: 460px;
+  max-width: 440px;
   margin: 48px auto 0 auto;
   background: #fff;
   border-radius: 24px;
-  box-shadow: 0 8px 38px rgba(0,0,0,0.09);
-  padding: 36px 28px 36px 28px;
+  box-shadow: 0 8px 38px rgba(0,0,0,0.07);
+  padding: 38px 26px 32px 26px;
   position: relative;
 }
-
 .header-checkin {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: 28px;
 }
-
 .header-checkin h1 {
-  font-size: 2.1em;
-  color: #003b5c;
+  font-size: 2.0em;
+  color: var(--tec-blue);
   margin-bottom: 8px;
   font-weight: 700;
+}
+.subtitle-checkin {
+  color: var(--tec-blue-bright);
+  font-size: 1.1em;
+  margin-bottom: 12px;
   letter-spacing: 0.2px;
 }
-
-.subtitle-checkin {
-  color: #0062cc;
-  font-size: 1.13em;
-  margin-bottom: 12px;
-  letter-spacing: 0.1px;
-}
-
 .input-checkin {
   display: block;
   width: 100%;
-  font-size: 1.18em;
+  font-size: 1.13em;
   padding: 13px;
   margin: 16px 0 10px 0;
   border-radius: 13px;
@@ -49,151 +132,188 @@ body {
   transition: border-color 0.2s;
   font-weight: 500;
 }
-
 .input-checkin:focus {
   outline: none;
-  border-color: #0062cc;
-  background: #f1f8fd;
+  border-color: var(--tec-blue-bright);
+  background: #f0f6fa;
 }
-
 .btn-checkin {
   width: 100%;
-  background: #0062cc;
+  background: var(--tec-blue-bright);
   color: #fff;
   font-weight: 600;
   padding: 14px 0;
-  font-size: 1.16em;
+  font-size: 1.08em;
   border-radius: 13px;
   border: none;
   margin: 12px 0 0 0;
   cursor: pointer;
-  transition: background 0.18s;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  transition: background 0.19s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
-
-.btn-checkin:hover {
-  background: #003b5c;
+.btn-checkin:hover:not(:disabled) {
+  background: var(--tec-blue);
 }
-
+.btn-checkin:disabled {
+  background: #a3b6c7;
+  cursor: not-allowed;
+}
 .btn-back {
   background: #f7f7f7;
-  color: #003b5c;
-  border: 1px solid #0062cc;
-  margin-top: 20px;
+  color: var(--tec-blue);
+  border: 1px solid var(--tec-blue-bright);
+  margin-top: 18px;
+  font-weight: 500;
 }
-
 .error-checkin {
   color: #c92e2e;
-  margin: 10px 0;
+  margin: 10px 0 0 0;
   text-align: center;
-  font-size: 1.08em;
+  font-size: 1.05em;
 }
-
 .tarjeta-checkin {
-  margin-top: 28px;
+  margin-top: 24px;
 }
-
-.card-comunidad {
-  border-radius: 21px;
-  background: #f2f2f2;
-  padding: 26px 12px;
-  box-shadow: 0 3px 28px rgba(0,0,0,0.13);
+.mentor-label {
   text-align: center;
-  position: relative;
-  margin-bottom: 20px;
+  font-size: 1.06em;
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: var(--tec-blue-light);
+  opacity: 0.94;
 }
-
 .mentor-foto-wrap {
   display: flex;
   justify-content: center;
-  margin-bottom: 12px;
+  margin-bottom: 13px;
 }
-
-.mentor-foto {
-  width: 98px;
-  height: 98px;
+.mentor-foto, .placeholder-foto {
+  width: 88px;
+  height: 88px;
   object-fit: cover;
   border-radius: 50%;
   border: 3px solid #fff;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.09);
-  background: #e0e0e0;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  background: #e9e9e9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.4em;
+  color: #888;
 }
-
+.datos-alumno {
+  text-align: center;
+  margin-bottom: 10px;
+}
+.student-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin-bottom: 7px;
+}
 .nombre-estudiante {
-  font-size: 1.5em;
+  font-size: 1.2em;
   font-weight: 700;
-  margin: 14px 0 4px 0;
-  color: #003b5c;
+  color: var(--tec-blue);
 }
-
 .comunidad-badge {
   display: inline-block;
-  margin-bottom: 18px;
-  font-size: 1.13em;
+  border-radius: 16px;
+  padding: 4px 15px;
+  font-size: 1.05em;
   font-weight: 700;
-  border-radius: 15px;
-  padding: 5px 18px;
-  color: #fff;
-  background: #0062cc;
+  border: 2px solid;
+  margin-left: 3px;
+  background: none;
 }
-
-.mentor-nombre {
-  font-size: 1.12em;
-  color: #fff;
-  margin-bottom: 8px;
-  padding: 6px 0;
-  font-weight: 500;
-  letter-spacing: 0.2px;
+.comunidad-badge[data-comunidad="Talenta"] {
+  color: var(--com-talenta); border-color: var(--com-talenta); background: rgba(236,0,140,0.08);
 }
-
-.card-comunidad h3, .card-comunidad p {
-  color: #fff;
+.comunidad-badge[data-comunidad="Revo"] {
+  color: var(--com-revo); border-color: var(--com-revo); background: rgba(196,130,154,0.13);
 }
-.card-comunidad.comunidad-reflekto h3,
-.card-comunidad.comunidad-reflekto p {
+.comunidad-badge[data-comunidad="Kresko"] {
+  color: var(--com-kresko); border-color: var(--com-kresko); background: rgba(13,204,204,0.13);
+}
+.comunidad-badge[data-comunidad="Pasio"] {
+  color: var(--com-pasio); border-color: var(--com-pasio); background: rgba(204,2,2,0.11);
+}
+.comunidad-badge[data-comunidad="Energio"] {
+  color: var(--com-energio); border-color: var(--com-energio); background: rgba(253,130,4,0.11);
+}
+.comunidad-badge[data-comunidad="Krei"] {
+  color: var(--com-krei); border-color: var(--com-krei); background: rgba(121,133,139,0.10);
+}
+.comunidad-badge[data-comunidad="Reflekto"] {
+  color: #a09312; border-color: var(--com-reflekto); background: rgba(255,222,23,0.13);
+}
+.comunidad-badge[data-comunidad="Forta"] {
+  color: var(--com-forta); border-color: var(--com-forta); background: rgba(135,0,116,0.10);
+}
+.comunidad-badge[data-comunidad="Spirita"] {
+  color: var(--com-spirita); border-color: var(--com-spirita); background: rgba(91,15,139,0.11);
+}
+.comunidad-badge[data-comunidad="Ekvilibro"] {
+  color: var(--com-ekvilibro); border-color: var(--com-ekvilibro); background: rgba(111,211,74,0.13);
+}
+.dato-matricula, .dato-campus {
+  font-size: 1em;
+  color: #3770b6;
+  opacity: 0.93;
+}
+.mentor-info {
+  margin: 9px 0 4px 0;
   color: #333;
+  font-size: 1.07em;
+  font-weight: 500;
 }
-
-/* Colores para las comunidades */
-.card-comunidad.comunidad-energio   { background: linear-gradient(135deg, #FD8204, #e37404); }
-.card-comunidad.comunidad-spirita   { background: linear-gradient(135deg, #5B0F8B, #4f0c7a); }
-.card-comunidad.comunidad-talenta   { background: linear-gradient(135deg, #EC008C, #d10078); }
-.card-comunidad.comunidad-revo      { background: linear-gradient(135deg, #C4829A, #b07189); }
-.card-comunidad.comunidad-pasio     { background: linear-gradient(135deg, #CC0202, #b80202); }
-.card-comunidad.comunidad-krei      { background: linear-gradient(135deg, #79858B, #6a757a); }
-.card-comunidad.comunidad-reflekto  { background: linear-gradient(135deg, #FFDE17, #e6c815); color: #333 !important; }
-.card-comunidad.comunidad-forta     { background: linear-gradient(135deg, #870074, #750063); }
-.card-comunidad.comunidad-ekvilibro { background: linear-gradient(135deg, #6FD34A, #5fc33d); }
-.card-comunidad.comunidad-kresko    { background: linear-gradient(135deg, #0DCCCC, #0bb8b8); }
-
+.mentor-nombre {
+  color: var(--tec-blue);
+}
 #mensajeExito {
   background: #e7ffd9;
-  color: #2c633d;
+  color: #257033;
   border-radius: 16px;
-  margin: 12px 0;
-  padding: 12px 10px;
-  font-size: 1.17em;
+  margin: 14px 0 0 0;
+  padding: 14px 10px;
+  font-size: 1.09em;
+  text-align: center;
 }
-
-.hidden {
-  display: none;
+#mensajeExito .small-note {
+  color: #445;
+  font-size: 0.99em;
+  opacity: 0.86;
 }
-
-@media (max-width: 600px) {
+.hidden { display: none; }
+@media (max-width: 700px) {
   .checkin-container {
-    padding: 12px 3px;
+    box-shadow: 0 2px 14px rgba(0,0,0,0.08);
+    padding: 14px 5px 24px 5px;
+    margin: 17px 2vw 0 2vw;
+    border-radius: 17px;
   }
-  .card-comunidad {
-    padding: 12px 2px;
-  }
-  .mentor-foto {
-    width: 65px;
-    height: 65px;
-  }
-  .nombre-estudiante {
-    font-size: 1.12em;
-  }
-  .btn-checkin {
-    font-size: 1em;
-  }
+  .mentor-foto, .placeholder-foto { width: 60px; height: 60px; font-size: 1.3em; }
+  .header-checkin h1 { font-size: 1.15em; }
+  .input-checkin { font-size: 1em; }
+  .btn-checkin { font-size: 0.99em; }
+  .comunidad-badge { font-size: 0.97em; padding: 2px 9px; }
+}
+.app-footer {
+  text-align: center;
+  font-size: 0.97em;
+  color: #445;
+  opacity: 0.72;
+  margin: 42px 0 14px 0;
+  padding: 10px 10px 0 10px;
+  border-top: 1px solid #e8eaed;
+  background: none;
+  line-height: 1.55em;
+}
+.app-footer .footer-purpose {
+  font-size: 0.95em;
+  opacity: 0.84;
+  display: block;
+  margin-top: 4px;
+  color: #335a8a;
 }
