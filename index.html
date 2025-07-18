@@ -8,25 +8,33 @@
 </head>
 <body>
   <div id="app">
-    <div class="container">
-      <h1>Check-in de Bienvenida</h1>
-      <div id="ingresoMatricula">
-        <label for="matriculaInput">Ingresa tu matrícula</label>
-        <input id="matriculaInput" maxlength="12" autocomplete="off" />
-        <button onclick="buscarMentor()">Buscar</button>
-        <p id="errorMsg" class="error"></p>
+    <div class="checkin-container">
+      <div class="header-checkin">
+        <h1>Bienvenida de Transferencias</h1>
+        <p class="subtitle-checkin">Escanea tu QR o ingresa tu matrícula</p>
       </div>
-      <div id="tarjetaMentor" class="hidden">
-        <div class="tarjeta-comunidad" id="comunidadBox">
-          <img id="fotoMentor" class="foto-mentor" src="" alt="Foto Mentor" />
-          <h2 id="nombreMentor"></h2>
-          <h3 id="comunidadMentor"></h3>
-          <button id="asistenciaBtn" onclick="registrarAsistencia()">¡Ya llegué!</button>
+      <div id="checkin-section">
+        <input id="matriculaInput" class="input-checkin" maxlength="12" autocomplete="off" placeholder="Ej: A01234567" />
+        <button class="btn-checkin" onclick="buscarEstudiante()">Buscar</button>
+        <p id="errorMsg" class="error-checkin"></p>
+      </div>
+      <div id="tarjetaEstudiante" class="tarjeta-checkin hidden">
+        <div class="card-comunidad" id="comunidadCard">
+          <div class="mentor-foto-wrap">
+            <img id="fotoMentor" class="mentor-foto" src="" alt="Foto mentor/a" />
+          </div>
+          <div class="datos-alumno">
+            <h2 id="nombreEstudiante" class="nombre-estudiante"></h2>
+            <div class="comunidad-badge" id="comunidadBadge"></div>
+            <h3>Mentor/a:</h3>
+            <p id="nombreMentor" class="mentor-nombre"></p>
+          </div>
+          <button class="btn-checkin" id="asistenciaBtn" onclick="registrarAsistencia()">¡Ya llegué!</button>
         </div>
         <div id="mensajeExito" class="hidden">
           <p>✅ Registro de asistencia realizado<br>¡Muestra esta pantalla al staff!</p>
         </div>
-        <button onclick="resetForm()" class="btn-cerrar">Cerrar</button>
+        <button class="btn-checkin btn-back" onclick="resetCheckin()">Buscar otra matrícula</button>
       </div>
     </div>
   </div>
