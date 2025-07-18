@@ -1,5 +1,5 @@
 // app.js - Código mejorado para el cliente
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz0_8hWuFGaZ9LjA1tK1iUlpu8aDFqA71-J9bz2wfG8joKtapNrABpvmQ3IbhOAH3mx2g/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbydX8ajE2teZi91ecypEjG6A3F6dLhcee7QP1Lr3kLNDZSg54c_nyd2RoDNc2EeohVqZg/exec";
 let estudiantesData = [];
 let estudianteActual = null;
 
