@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Check-in Evento - NodoX</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app">
+    <div class="container">
+      <h1>Check-in de Bienvenida</h1>
+      <div id="ingresoMatricula">
+        <label for="matriculaInput">Ingresa tu matrícula</label>
+        <input id="matriculaInput" maxlength="12" autocomplete="off" />
+        <button onclick="buscarMentor()">Buscar</button>
+        <p id="errorMsg" class="error"></p>
+      </div>
+      <div id="tarjetaMentor" class="hidden">
+        <div class="tarjeta-comunidad" id="comunidadBox">
+          <img id="fotoMentor" class="foto-mentor" src="" alt="Foto Mentor" />
+          <h2 id="nombreMentor"></h2>
+          <h3 id="comunidadMentor"></h3>
+          <button id="asistenciaBtn" onclick="registrarAsistencia()">¡Ya llegué!</button>
+        </div>
+        <div id="mensajeExito" class="hidden">
+          <p>✅ Registro de asistencia realizado<br>¡Muestra esta pantalla al staff!</p>
+        </div>
+        <button onclick="resetForm()" class="btn-cerrar">Cerrar</button>
+      </div>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
