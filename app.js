@@ -1,5 +1,5 @@
 // app.js - Código mejorado para el cliente
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbychVfr3mDDgGqZEFkZbGM94YDxP6OiC9GPfcVEUD4Gi-02eA08C41do4qkfwpWROmyUA/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz0_8hWuFGaZ9LjA1tK1iUlpu8aDFqA71-J9bz2wfG8joKtapNrABpvmQ3IbhOAH3mx2g/exec";
 let estudiantesData = [];
 let estudianteActual = null;
 
@@ -129,7 +129,7 @@ function buscarEstudiante() {
   mostrarDatosEstudiante(estudiante);
 }
 
-function mostrarDatosEstudiante(e) {
+async function mostrarDatosEstudiante(e) {
   // Actualizar mentor
   document.getElementById('mentorFullname').textContent = e.mentorFullname;
 
@@ -168,20 +168,21 @@ function mostrarDatosEstudiante(e) {
   document.getElementById('campusEstudiante').textContent = e.campusOrigen;
   document.getElementById('carreraEstudiante').textContent = e.carrera;
 
-  // Resetear botón y verificar estado
+  // Resetear botón y verificar estado - MÁS RÁPIDO
   const btn = document.getElementById('asistenciaBtn');
   btn.disabled = true;
   btn.textContent = 'Verificando...';
 
-  // Verificar si ya hizo check-in
-  checkMatriculaRegistrada(e.matricula).then(yaRegistrado => {
+  // Verificar si ya hizo check-in - con timeout reducido
+  try {
+    const yaRegistrado = await checkMatriculaRegistrada(e.matricula);
     btn.disabled = yaRegistrado;
     btn.textContent = yaRegistrado ? '✓ Ya registrado' : '¡Ya llegué!';
-  }).catch(() => {
+  } catch (error) {
     // Si falla la verificación, permitir el registro
     btn.disabled = false;
     btn.textContent = '¡Ya llegué!';
-  });
+  }
 
   document.getElementById('mensajeExito').classList.add('hidden');
   mostrarTarjeta();
@@ -191,7 +192,7 @@ async function checkMatriculaRegistrada(matricula) {
   try {
     const res = await fetchWithTimeout(`${GOOGLE_SCRIPT_URL}?matricula=${encodeURIComponent(matricula)}`, {
       method: 'GET',
-      timeout: 10000
+      timeout: 5000 // Reducido de 10000 a 5000
     });
     
     if (!res.ok) throw new Error('Error en respuesta');
@@ -209,44 +210,65 @@ async function registrarAsistencia() {
   
   if (!estudianteActual) return;
   
-  const data = {
-    matricula: estudianteActual.matricula,
-    fullnameEstudiante: estudianteActual.fullnameEstudiante,
-    comunidad: estudianteActual.comunidad,
-    mentorFullname: estudianteActual.mentorFullname,
-    campusOrigen: estudianteActual.campusOrigen,
-    carrera: estudianteActual.carrera
-  };
-  
   const btn = document.getElementById('asistenciaBtn');
+  const mensajeExito = document.getElementById('mensajeExito');
+  
+  // Prevenir doble clic
+  if (btn.disabled) return;
+  
   btn.disabled = true;
   btn.textContent = 'Registrando...';
 
   try {
+    // Primero verificar si ya está registrado
+    const yaRegistrado = await checkMatriculaRegistrada(estudianteActual.matricula);
+    if (yaRegistrado) {
+      btn.textContent = '✓ Ya registrado';
+      mostrarError('Este estudiante ya hizo check-in anteriormente.');
+      return;
+    }
+    
+    // Preparar datos
+    const data = {
+      matricula: estudianteActual.matricula,
+      fullnameEstudiante: estudianteActual.fullnameEstudiante,
+      comunidad: estudianteActual.comunidad,
+      mentorFullname: estudianteActual.mentorFullname,
+      campusOrigen: estudianteActual.campusOrigen,
+      carrera: estudianteActual.carrera
+    };
+    
+    // Enviar registro
     const res = await fetchWithTimeout(GOOGLE_SCRIPT_URL, {
       method: 'POST',
-      mode: 'no-cors', // Importante para Google Apps Script
+      mode: 'no-cors',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(data),
-      timeout: 15000
+      timeout: 8000 // Reducido
     });
     
-    // Con mode: 'no-cors', no podemos leer la respuesta
-    // Asumimos éxito y verificamos después
-    console.log("✅ Petición enviada (modo no-cors)");
+    console.log("✅ Petición enviada");
     
-    // Esperar un momento y verificar si se registró
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Esperar un momento breve y verificar
+    await new Promise(resolve => setTimeout(resolve, 500)); // Reducido de 1000
     
-    const yaRegistrado = await checkMatriculaRegistrada(estudianteActual.matricula);
+    // Verificar si se registró
+    const registradoAhora = await checkMatriculaRegistrada(estudianteActual.matricula);
     
-    if (yaRegistrado) {
-      // Éxito confirmado
-      document.getElementById('mensajeExito').classList.remove('hidden');
-      document.getElementById('kitComunidad').textContent = estudianteActual.comunidad;
+    if (registradoAhora) {
+      // Éxito confirmado - MOSTRAR MENSAJE
+      mensajeExito.classList.remove('hidden');
+      mensajeExito.innerHTML = `
+        <p>✅ Registro de asistencia realizado<br>
+          <b>¡Entrega el kit de ${estudianteActual.comunidad}!</b><br>
+          <span class="small-note">Muestra esta pantalla al staff</span>
+        </p>
+      `;
+      
       btn.textContent = '✓ Ya registrado';
+      btn.disabled = true;
       
       // Actualizar último check-in
       const horaActual = new Date().toLocaleTimeString('es-MX', {
@@ -257,31 +279,33 @@ async function registrarAsistencia() {
       document.getElementById('lastCheckin').textContent = horaActual;
       
       // Actualizar estadísticas
-      actualizarStatsBar();
+      setTimeout(actualizarStatsBar, 1000);
+      
     } else {
-      throw new Error("No se pudo confirmar el registro");
+      // Si no se confirmó el registro, intentar una vez más
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      const segundoIntento = await checkMatriculaRegistrada(estudianteActual.matricula);
+      
+      if (segundoIntento) {
+        // Éxito en segundo intento
+        mensajeExito.classList.remove('hidden');
+        mensajeExito.innerHTML = `
+          <p>✅ Registro de asistencia realizado<br>
+            <b>¡Entrega el kit de ${estudianteActual.comunidad}!</b><br>
+            <span class="small-note">Muestra esta pantalla al staff</span>
+          </p>
+        `;
+        btn.textContent = '✓ Ya registrado';
+        btn.disabled = true;
+        setTimeout(actualizarStatsBar, 1000);
+      } else {
+        throw new Error("No se pudo confirmar el registro");
+      }
     }
     
   } catch (error) {
     console.error("❌ Error en registrarAsistencia:", error);
-    
-    // Intentar verificar si se registró a pesar del error
-    try {
-      const yaRegistrado = await checkMatriculaRegistrada(estudianteActual.matricula);
-      if (yaRegistrado) {
-        // Se registró a pesar del error
-        document.getElementById('mensajeExito').classList.remove('hidden');
-        document.getElementById('kitComunidad').textContent = estudianteActual.comunidad;
-        btn.textContent = '✓ Ya registrado';
-        actualizarStatsBar();
-        return;
-      }
-    } catch (e) {
-      console.error("Error verificando registro:", e);
-    }
-    
-    // Si llegamos aquí, hubo un error real
-    mostrarError("Error al registrar. Intenta de nuevo.");
+    mostrarError("Error al registrar. Por favor intenta de nuevo.");
     btn.disabled = false;
     btn.textContent = '¡Ya llegué!';
   }
