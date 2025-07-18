@@ -1,3 +1,4 @@
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw09kEVQI6NguUeH1-0AM4_NMsq75afPvNjrcD7HqRFZcc41sUVp3rvXOdc3ulG9eY_jw/exec";
 let estudiantesData = [];
 let estudianteActual = null;
 
@@ -21,7 +22,6 @@ async function cargarDatos() {
   }
 }
 
-// UI helpers
 function mostrarError(msg) {
   document.getElementById('errorMsg').innerText = msg;
 }
@@ -39,16 +39,14 @@ function ocultarTarjeta() {
   document.getElementById('leyendaMatricula').style.display = '';
 }
 
-// Stats bar
-function actualizarStatsBar() {
-  let total = 0, lastCheckin = '--:--';
-  estudiantesData.forEach(e => {
-    if (localStorage.getItem(`checkin_${e.matricula}`) === '1') total++;
-  });
-  document.getElementById('totalCheckins').textContent = total;
-  const hora = localStorage.getItem('lastCheckinTime');
-  if (hora) lastCheckin = hora;
-  document.getElementById('lastCheckin').textContent = lastCheckin;
+async function actualizarStatsBar() {
+  try {
+    const res = await fetch(GOOGLE_SCRIPT_URL);
+    const info = await res.json();
+    document.getElementById('totalCheckins').textContent = info.checkins || 0;
+  } catch {
+    document.getElementById('totalCheckins').textContent = "—";
+  }
 }
 function actualizarHoraActual() {
   const ahora = new Date();
@@ -57,7 +55,6 @@ function actualizarHoraActual() {
   document.getElementById('currentTime').textContent = `${h}:${m}`;
 }
 
-// Búsqueda de estudiante
 function buscarEstudiante() {
   limpiarError();
   const input = document.getElementById('matriculaInput').value.trim().toUpperCase();
@@ -75,10 +72,8 @@ function buscarEstudiante() {
 }
 
 function mostrarDatosEstudiante(e) {
-  // Mentor info
   document.getElementById('mentorFullname').textContent = e.mentorFullname;
 
-  // Foto mentor
   const foto = document.getElementById('fotoMentor');
   const placeholder = document.getElementById('fotoPlaceholder');
   if (e.fotoMentor) {
@@ -92,12 +87,10 @@ function mostrarDatosEstudiante(e) {
     placeholder.style.display = '';
   }
 
-  // Student card fondo según comunidad
   const studentCard = document.getElementById('studentCardBg');
   const comunidadKey = e.comunidad.replace(/ /g, '');
   studentCard.className = 'student-card bg-' + comunidadKey;
 
-  // Datos alumno
   document.getElementById('fullnameEstudiante').textContent = e.fullnameEstudiante;
   const comunidadBadge = document.getElementById('comunidadBadge');
   comunidadBadge.textContent = e.comunidad;
@@ -107,38 +100,75 @@ function mostrarDatosEstudiante(e) {
   document.getElementById('campusEstudiante').textContent = e.campusOrigen;
   document.getElementById('carreraEstudiante').textContent = e.carrera;
 
-  // Botón asistencia: ya registrado?
   const btn = document.getElementById('asistenciaBtn');
-  const registrado = localStorage.getItem(`checkin_${e.matricula}`) === '1';
-  btn.disabled = registrado;
-  btn.textContent = registrado ? '✓ Ya registrado' : '¡Ya llegué!';
+  btn.disabled = true;
+  btn.textContent = 'Verificando...';
 
-  // Mensaje éxito fuera
+  // Checar si ya hizo check-in antes de permitirlo
+  checkMatriculaRegistrada(e.matricula).then(yaRegistrado => {
+    btn.disabled = yaRegistrado;
+    btn.textContent = yaRegistrado ? '✓ Ya registrado' : '¡Ya llegué!';
+  });
+
   document.getElementById('mensajeExito').classList.add('hidden');
-
   mostrarTarjeta();
 }
 
-// Confirmar asistencia
-function registrarAsistencia() {
-  if (!estudianteActual) return;
-  localStorage.setItem(`checkin_${estudianteActual.matricula}`, '1');
-  // Hora último checkin
-  const ahora = new Date();
-  const h = ahora.getHours().toString().padStart(2,'0');
-  const m = ahora.getMinutes().toString().padStart(2,'0');
-  localStorage.setItem('lastCheckinTime', `${h}:${m}`);
-  // Mensaje éxito
-  document.getElementById('mensajeExito').classList.remove('hidden');
-  document.getElementById('kitComunidad').textContent = estudianteActual.comunidad;
-  // Botón disable
-  const btn = document.getElementById('asistenciaBtn');
-  btn.disabled = true;
-  btn.textContent = '✓ Ya registrado';
-  actualizarStatsBar();
+// Consulta el endpoint para ver si ya existe matrícula
+async function checkMatriculaRegistrada(matricula) {
+  try {
+    const res = await fetch(`${GOOGLE_SCRIPT_URL}?matricula=${encodeURIComponent(matricula)}`);
+    const info = await res.json();
+    return !!info.registered;
+  } catch {
+    return false;
+  }
 }
 
-// Volver a buscar
+async function registrarAsistencia() {
+  if (!estudianteActual) return;
+  const data = {
+    matricula: estudianteActual.matricula,
+    fullnameEstudiante: estudianteActual.fullnameEstudiante,
+    comunidad: estudianteActual.comunidad,
+    mentorFullname: estudianteActual.mentorFullname,
+    campusOrigen: estudianteActual.campusOrigen,
+    carrera: estudianteActual.carrera,
+  };
+
+  const btn = document.getElementById('asistenciaBtn');
+  btn.disabled = true;
+  btn.textContent = 'Registrando...';
+
+  try {
+    const res = await fetch(GOOGLE_SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify(data),
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+    const result = await res.json();
+    if (result.result === "duplicate") {
+      btn.disabled = true;
+      btn.textContent = '✓ Ya registrado';
+      mostrarError('Este estudiante ya hizo check-in.');
+    } else if (result.result === "success") {
+      document.getElementById('mensajeExito').classList.remove('hidden');
+      document.getElementById('kitComunidad').textContent = estudianteActual.comunidad;
+      btn.disabled = true;
+      btn.textContent = '✓ Ya registrado';
+      actualizarStatsBar();
+    } else {
+      throw new Error("Error desconocido");
+    }
+  } catch (e) {
+    mostrarError("Error al registrar. Intenta de nuevo.");
+    btn.disabled = false;
+    btn.textContent = '¡Ya llegué!';
+  }
+}
+
 function resetCheckin() {
   estudianteActual = null;
   ocultarTarjeta();
@@ -147,7 +177,6 @@ function resetCheckin() {
   setTimeout(() => { document.getElementById('matriculaInput').focus(); }, 250);
 }
 
-// Enter = buscar
 document.addEventListener('DOMContentLoaded', async () => {
   await cargarDatos();
   document.getElementById('matriculaInput').addEventListener('keypress', function(event) {
