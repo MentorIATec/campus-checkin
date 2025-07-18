@@ -126,6 +126,7 @@ async function checkMatriculaRegistrada(matricula) {
 }
 
 async function registrarAsistencia() {
+  console.log("🌐 registrarAsistencia: iniciada");
   if (!estudianteActual) return;
   const data = {
     matricula: estudianteActual.matricula,
@@ -135,35 +136,35 @@ async function registrarAsistencia() {
     campusOrigen: estudianteActual.campusOrigen,
     carrera: estudianteActual.carrera,
   };
-
   const btn = document.getElementById('asistenciaBtn');
   btn.disabled = true;
   btn.textContent = 'Registrando...';
 
   try {
-    const res = await fetch(GOOGLE_SCRIPT_URL, {
+    const res = await fetchWithTimeout(GOOGLE_SCRIPT_URL, {
       method: "POST",
       body: JSON.stringify(data),
-      headers: {
-        "Content-Type": "application/json"
-      }
+      headers: { "Content-Type": "application/json" },
+      timeout: 15000
     });
+    console.log("fetch status:", res.status);
     const result = await res.json();
+    console.log("resultado JSON:", result);
+
     if (result.result === "duplicate") {
-      btn.disabled = true;
       btn.textContent = '✓ Ya registrado';
       mostrarError('Este estudiante ya hizo check-in.');
     } else if (result.result === "success") {
       document.getElementById('mensajeExito').classList.remove('hidden');
       document.getElementById('kitComunidad').textContent = estudianteActual.comunidad;
-      btn.disabled = true;
       btn.textContent = '✓ Ya registrado';
       actualizarStatsBar();
     } else {
-      throw new Error("Error desconocido");
+      throw new Error("Respuesta inesperada del servidor");
     }
   } catch (e) {
-    mostrarError("Error al registrar. Intenta de nuevo.");
+    console.error("Error en registrarAsistencia:", e);
+    mostrarError("Error al registrar. Revisa conexión y actualiza la página.");
     btn.disabled = false;
     btn.textContent = '¡Ya llegué!';
   }
