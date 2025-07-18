@@ -1,0 +1,58 @@
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: #093050;
+  color: #fff;
+  margin: 0; padding: 0;
+  min-height: 100vh;
+}
+.container {
+  max-width: 390px;
+  margin: 40px auto;
+  background: #fff;
+  color: #222;
+  border-radius: 22px;
+  box-shadow: 0 2px 24px rgba(0,0,0,0.13);
+  padding: 36px 22px 24px 22px;
+}
+#ingresoMatricula label {
+  display:block; margin-bottom:10px;
+}
+#matriculaInput {
+  width:100%; font-size: 1.2em; padding:12px;
+  border-radius:8px; border: 2px solid #eee;
+  margin-bottom:10px;
+  text-align: center;
+}
+button {
+  background:#0062cc; color:#fff; border:none; padding:14px 24px;
+  border-radius: 18px; font-size:1em; font-weight:600; cursor:pointer; margin-top:8px;
+}
+button:active {background: #00498a;}
+.error {color: #c92e2e; font-size: 1em;}
+.tarjeta-comunidad {
+  background: var(--color-comunidad, #eee);
+  color: #fff;
+  border-radius: 18px;
+  text-align: center;
+  margin: 24px 0 14px 0;
+  padding: 24px 16px 20px 16px;
+  position: relative;
+}
+.foto-mentor {
+  width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #fff; margin-bottom: 10px;
+}
+#mensajeExito {
+  background: #e7ffd9;
+  color: #2c633d;
+  border-radius: 16px;
+  margin: 12px 0;
+  padding: 12px 10px;
+  font-size: 1.15em;
+}
+.hidden { display:none; }
+.btn-cerrar { background: #ff8a33; color: #fff; margin-top:18px;}
+/* Ejemplo de comunidad */
+.comunidad-energio { background: linear-gradient(135deg,#FD8204,#e37404); }
+.comunidad-spirita { background: linear-gradient(135deg,#5B0F8B,#4f0c7a); }
+.comunidad-revo    { background: linear-gradient(135deg,#C4829A,#b07189); }
+/* agrega una regla por cada comunidad */
