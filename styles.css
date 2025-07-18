@@ -319,3 +319,52 @@ main {
   margin-top: 4px;
   color: #335a8a;
 }
+/* Agrega este CSS adicional a tu archivo styles.css */
+
+#mensajeExito {
+  background: #e7ffd9;
+  color: #257033;
+  border-radius: 16px;
+  margin: 14px 0 0 0;
+  padding: 14px 10px;
+  font-size: 1.09em;
+  text-align: center;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+#mensajeExito b {
+  font-size: 1.1em;
+  display: block;
+  margin: 4px 0;
+}
+
+#mensajeExito .small-note {
+  color: #445;
+  font-size: 0.95em;
+  opacity: 0.86;
+  display: block;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+/* Mejorar visibilidad del botón deshabilitado */
+.btn-checkin:disabled {
+  background: #28a745 !important;
+  cursor: not-allowed;
+  opacity: 0.9;
+}
+
+.btn-checkin:disabled:hover {
+  background: #28a745 !important;
+}
