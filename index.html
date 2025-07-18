@@ -3,44 +3,78 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>Bienvenida de Transferencias - Check-in</title>
+  <title>Check-in Transferencias NodoX</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="checkin-container">
-    <div class="header-checkin">
-      <h1>Bienvenida de Transferencias</h1>
-      <p class="subtitle-checkin">Escanea tu QR o ingresa tu matrícula</p>
+  <!-- Barra stats: solo visible en escritorio -->
+  <header class="header-stats">
+    <div class="header-title">
+      <span class="icon">📋</span>
+      <span class="header-main">Check-in Transferencias</span>
     </div>
-    <div id="checkin-section">
-      <input id="matriculaInput" class="input-checkin" maxlength="12" autocomplete="off" placeholder="Ej: A01234567" />
-      <button class="btn-checkin" onclick="buscarEstudiante()">Buscar</button>
-      <p id="errorMsg" class="error-checkin"></p>
+    <div class="header-sub">Registro de asistentes - Verano 2025</div>
+    <div class="stats-bar">
+      <div class="stat">
+        <div class="stat-value" id="totalCheckins">0</div>
+        <div class="stat-label">Registrados</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="currentTime">--:--</div>
+        <div class="stat-label">Hora actual</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="lastCheckin">--:--</div>
+        <div class="stat-label">Último check-in</div>
+      </div>
     </div>
-    <div id="tarjetaEstudiante" class="tarjeta-checkin hidden">
-      <div class="card-comunidad" id="comunidadCard">
+  </header>
+  <main>
+    <div class="checkin-container">
+      <div class="header-checkin">
+        <h1>Bienvenida de Transferencias</h1>
+        <p class="subtitle-checkin">Escanea tu QR o ingresa tu matrícula</p>
+      </div>
+      <div id="checkin-section">
+        <input id="matriculaInput" class="input-checkin" maxlength="12" autocomplete="off" placeholder="Ej: A01234567" />
+        <button class="btn-checkin" onclick="buscarEstudiante()">Buscar</button>
+        <p id="errorMsg" class="error-checkin"></p>
+      </div>
+      <div id="tarjetaEstudiante" class="tarjeta-checkin hidden">
+        <div class="mentor-label">Mentor/a</div>
         <div class="mentor-foto-wrap">
           <img id="fotoMentor" class="mentor-foto" src="" alt="Foto mentor/a" style="display:none;" />
-          <div id="fotoPlaceholder" class="mentor-foto" style="display:none;align-items:center;justify-content:center;font-size:2em;">👤</div>
+          <div id="fotoPlaceholder" class="mentor-foto placeholder-foto">👤</div>
         </div>
         <div class="datos-alumno">
-          <h2 id="nombreEstudiante" class="nombre-estudiante"></h2>
-          <div class="comunidad-badge" id="comunidadBadge"></div>
-          <div style="margin:10px 0;">
-            <span id="matriculaEstudiante" style="font-size:1em;color:#004a99;"></span> •
-            <span id="campusEstudiante" style="font-size:1em;color:#666;"></span>
+          <div class="student-row">
+            <span id="nombreEstudiante" class="nombre-estudiante"></span>
+            <span id="comunidadBadge" class="comunidad-badge"></span>
           </div>
-          <h3>Mentor/a:</h3>
-          <p id="nombreMentor" class="mentor-nombre"></p>
+          <div class="sub-row">
+            <span id="matriculaEstudiante" class="dato-matricula"></span> •
+            <span id="campusEstudiante" class="dato-campus"></span>
+          </div>
+          <div class="mentor-info">
+            <span id="nombreMentor" class="mentor-nombre"></span>
+          </div>
         </div>
         <button class="btn-checkin" id="asistenciaBtn" onclick="registrarAsistencia()">¡Ya llegué!</button>
+        <div id="mensajeExito" class="hidden">
+          <p>✅ Registro de asistencia realizado<br>
+            <b>¡Entrega el kit de <span id="kitComunidad"></span>!</b><br>
+            <span class="small-note">Muestra esta pantalla al staff</span>
+          </p>
+        </div>
+        <button class="btn-checkin btn-back" onclick="resetCheckin()">Buscar otra matrícula</button>
       </div>
-      <div id="mensajeExito" class="hidden">
-        <p>✅ Registro de asistencia realizado<br><b>¡Entrega el kit de <span id="kitComunidad"></span>!</b><br> <span style="font-size:0.96em;color:#336;">Muestra esta pantalla al staff</span></p>
-      </div>
-      <button class="btn-checkin btn-back" onclick="resetCheckin()">Buscar otra matrícula</button>
     </div>
-  </div>
+  </main>
+  <footer class="app-footer">
+    Mentoría y Bienestar Estudiantil · Tecnológico de Monterrey · Campus Monterrey<br>
+    NodoX Transferencias · Desarrollado con fines educativos por Karen Ariadna Guzmán Vega<br>
+    <span class="footer-purpose">Apoyando la transición e integración estudiantil</span>
+  </footer>
   <script src="app.js"></script>
 </body>
 </html>
