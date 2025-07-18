@@ -1,275 +1,277 @@
-/* =========================
-   CONFIGURACIÓN
-========================= */
+/************************************
+ * CONFIG
+ ************************************/
+const GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbyhoxSaOweOvZXy133krD6AN1lZDhhjYGFC3jNyocLxx5R5m9KeTiyL-XTMPCPnluo8Cw/exec'; 
+const JSON_PATH = '/estudiantes.json';
 
-// URL del WebApp de Google Apps Script (termina en /exec)
-const ENDPOINT = 'https://script.google.com/macros/s/AKfycbyhoxSaOweOvZXy133krD6AN1lZDhhjYGFC3jNyocLxx5R5m9KeTiyL-XTMPCPnluo8Cw/exec'; 
-
-// Archivo JSON con la data de estudiantes (en la raíz del deploy)
-const JSON_URL = '/estudiantes.json';
-
-
-/* =========================
-   ESTADO
-========================= */
 let estudiantesData = [];
 let estudianteActual = null;
 
+/************************************
+ * HELPERS
+ ************************************/
 
-/* =========================
-   REFERENCIAS DOM
-========================= */
-const $ = sel => document.querySelector(sel);
+function normalizeMatricula(m) {
+  return (m || "")
+    .toString()
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, "");
+}
 
-const errorMsgEl       = $('#errorMsg');
-const tarjetaEl        = $('#tarjetaEstudiante');
-const btnReset         = $('#resetBtn');
-const btnAsistencia    = $('#asistenciaBtn');
-const mensajeExitoEl   = $('#mensajeExito');
-const kitComunidadEl   = $('#kitComunidad');
-const totalCheckinsEl  = $('#totalCheckins');
-const lastCheckinEl    = $('#lastCheckinTime');
-const matriculaInputEl = $('#matriculaInput');
+function byId(id) {
+  return document.getElementById(id);
+}
 
+function show(el) { el && el.classList.remove('hidden'); }
+function hide(el) { el && el.classList.add('hidden'); }
 
-/* =========================
-   EVENTOS INICIALES
-========================= */
-document.addEventListener('DOMContentLoaded', () => {
-    cargarDatos();
-    cargarEstadisticas();
-});
+function setText(id, txt) {
+  const el = byId(id);
+  if (el) el.textContent = txt == null ? "" : txt;
+}
 
-matriculaInputEl.addEventListener('keypress', e => {
-    if (e.key === 'Enter') buscarEstudiante();
-});
+function limpiarMensajes() {
+  hide(byId('errorGeneral'));
+  setText('errorGeneral', '');
+}
 
+function mostrarError(msg) {
+  const el = byId('errorGeneral');
+  if (!el) return;
+  setText('errorGeneral', msg);
+  show(el);
+}
 
-/* =========================
-   CARGA DE ESTUDIANTES
-========================= */
+/************************************
+ * CARGA DE ESTUDIANTES
+ ************************************/
 async function cargarDatos() {
-    try {
-        const resp = await fetch(JSON_URL);
-        if (!resp.ok) throw new Error('HTTP ' + resp.status);
-        const data = await resp.json();
+  try {
+    const resp = await fetch(`${JSON_PATH}?cache=${Date.now()}`);
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const raw = await resp.json();
 
-        estudiantesData = [];
-        Object.keys(data).forEach(periodo => {
-            if (Array.isArray(data[periodo])) {
-                data[periodo].forEach(est => {
-                    if (est && est.Matricula) {
-                        estudiantesData.push({
-                            matricula: (est.Matricula || '').trim().toUpperCase(),
-                            nombre: (est['Nombre del alumno'] || '').trim(),
-                            mentor: (est['Mentor Asignado Verano 25'] || est['Mentor'] || '').trim(),
-                            whatsapp: (est.Whatsapp || '').trim(),
-                            comunidad: (est.Comunidad || '').trim(),
-                            email: (est['Email del alumno'] || '').trim(),
-                            campusOrigen: (est['Campus origen'] || '').trim(),
-                            carrera: (est['Carrera de egreso'] || est['Carrera'] || '').trim()
-                        });
-                    }
-                });
-            }
-        });
-
-        console.log('✅ Estudiantes cargados:', estudiantesData.length);
-    } catch (e) {
-        console.error('Error cargando JSON:', e);
-        mostrarError('No se pudieron cargar los datos.');
+    if (!Array.isArray(raw)) {
+      throw new Error('El JSON no es un array (estructura esperada cambió).');
     }
+
+    estudiantesData = raw
+      .map(est => {
+        const mat = est.matrícula || est.matricula || est.Matricula;
+        if (!mat) return null;
+        return {
+          matricula: normalizeMatricula(mat),
+            // Ajústalo a los nombres reales de tu JSON actual:
+          nombreCompleto: (est.fullnameEstudiante || est.nombre || '').trim(),
+          nombreCorto: (est.nameEstudiante || '').trim(),
+          mentorNombre: (est.mentorFullname || est.mentor || '').trim(),
+          comunidad: (est.comunidad || '').trim(),
+          whatsappMentor: (est.whatsappMentor || est.whatsapp || '').trim(),
+          campusOrigen: (est.campusOrigen || '').trim(),
+          carrera: (est.carrera || '').trim(),
+          entrada: (est.entrada || '').trim(),
+          email: (est.email || (normalizeMatricula(mat) + '@tec.mx')).trim()
+        };
+      })
+      .filter(Boolean);
+
+    console.log('✅ Estudiantes cargados:', estudiantesData.length);
+  } catch (err) {
+    console.error('❌ Error cargando JSON:', err);
+    mostrarError('No se pudieron cargar los datos de estudiantes.');
+  } finally {
+    const overlay = byId('loadingOverlay');
+    if (overlay) overlay.classList.add('hidden');
+  }
 }
 
-
-/* =========================
-   ESTADÍSTICAS (GET al Apps Script)
-========================= */
-async function cargarEstadisticas() {
-    if (!ENDPOINT || ENDPOINT.startsWith('TU_URL_WEBAPP')) {
-        console.warn('ENDPOINT no configurado para estadísticas.');
-        return;
-    }
-    try {
-        const url = ENDPOINT + '?_=' + Date.now(); // cache buster
-        const resp = await fetch(url);
-        if (!resp.ok) throw new Error('HTTP ' + resp.status);
-        const data = await resp.json();
-        if (typeof data.checkins !== 'undefined') {
-            totalCheckinsEl.textContent = data.checkins;
-            lastCheckinEl.textContent   = data.lastCheckinTime || '--:--';
-        }
-    } catch (e) {
-        console.warn('No se pudieron cargar estadísticas', e);
-    }
-}
-window.cargarEstadisticas = cargarEstadisticas; // por si lo llamas con botón
-
-
-/* =========================
-   BÚSQUEDA
-========================= */
+/************************************
+ * BÚSQUEDA
+ ************************************/
 function buscarEstudiante() {
-    limpiarError();
-    const val = (matriculaInputEl.value || '').trim().toUpperCase();
-    if (!val) {
-        mostrarError('Ingresa una matrícula.');
-        return;
-    }
+  limpiarMensajes();
+  hide(byId('studentInfo'));
+  hide(byId('confirmationYes'));
+  hide(byId('confirmationDuplicate'));
 
-    const encontrado = estudiantesData.find(e => e.matricula === val);
-    if (!encontrado) {
-        mostrarError('Matrícula no encontrada.');
-        tarjetaEl.classList.add('hidden');
-        estudianteActual = null;
-        return;
-    }
+  const input = byId('matricula');
+  const val = normalizeMatricula(input.value);
 
-    estudianteActual = encontrado;
-    poblarTarjeta(encontrado);
-    btnReset.disabled = false;
+  if (!val) {
+    mostrarError('Ingresa una matrícula.');
+    return;
+  }
+
+  const est = estudiantesData.find(e => e.matricula === val);
+  if (!est) {
+    mostrarError('Matrícula no encontrada.');
+    return;
+  }
+
+  estudianteActual = est;
+  poblarFicha(est);
 }
 
-
-/* =========================
-   RENDER DE TARJETA
-========================= */
-function poblarTarjeta(est) {
-    $('#fullnameEstudiante').textContent = est.nombre || '—';
-    $('#matriculaEstudiante').textContent = est.matricula || '—';
-    $('#mentorFullname').textContent = est.mentor || '—';
-    $('#campusEstudiante').textContent = est.campusOrigen || '—';
-    $('#carreraEstudiante').textContent = est.carrera || '—';
-
-    const badge = $('#comunidadBadge');
-    badge.textContent = est.comunidad || 'Sin comunidad';
-    badge.className = 'badge ' + (est.comunidad || '');
-
-    // Reset de mensaje y botón
-    mensajeExitoEl.classList.add('hidden');
-    kitComunidadEl.textContent = '';
-    btnAsistencia.disabled = false;
-    btnAsistencia.textContent = '¡Ya llegué!';
-    btnAsistencia.classList.remove('btn-registrado');
-    btnAsistencia.dataset.loading = '0';
-    const notaDup = document.getElementById('notaDuplicado');
-    if (notaDup) notaDup.remove();
-
-    tarjetaEl.classList.remove('hidden');
+function poblarFicha(est) {
+  const nombreMostrar = est.nombreCorto || est.nombreCompleto || est.matricula;
+  setText('welcomeMessage', `¡Hola ${nombreMostrar}! 👋`);
+  setText('mentorLine', `Mentor(a): ${est.mentorNombre || '—'}`);
+  setText('comunidadLine', `Comunidad: ${est.comunidad || '—'}`);
+  show(byId('studentInfo'));
+  const btnRegistrar = byId('btnRegistrar');
+  if (btnRegistrar) {
+    btnRegistrar.disabled = false;
+    btnRegistrar.textContent = 'Registrar llegada';
+  }
 }
 
+/************************************
+ * REGISTRO (POST Apps Script)
+ ************************************/
+async function registrarCheckin() {
+  if (!estudianteActual) {
+    mostrarError('Primero busca una matrícula.');
+    return;
+  }
 
-/* =========================
-   REGISTRO (POST)
-========================= */
-async function registrarAsistencia() {
-    if (!estudianteActual) {
-        mostrarError('Busca primero una matrícula válida.');
-        return;
-    }
-    if (!ENDPOINT || ENDPOINT.startsWith('TU_URL_WEBAPP')) {
-        mostrarError('Configura el ENDPOINT del Apps Script.');
-        return;
-    }
-    if (btnAsistencia.dataset.loading === '1') return;
+  const btn = byId('btnRegistrar');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Registrando...';
+  }
 
-    limpiarError();
-    btnAsistencia.dataset.loading = '1';
-    const originalText = btnAsistencia.textContent;
-    btnAsistencia.disabled = true;
-    btnAsistencia.innerHTML = '<span class="loader-inline"></span> Enviando...';
-
+  try {
     const payload = {
-        matricula: estudianteActual.matricula,
-        fullnameEstudiante: estudianteActual.nombre,
-        comunidad: estudianteActual.comunidad,
-        mentorFullname: estudianteActual.mentor,
-        campusOrigen: estudianteActual.campusOrigen,
-        carrera: estudianteActual.carrera
+      matricula: estudianteActual.matricula,
+      fullnameEstudiante: estudianteActual.nombreCompleto,
+      comunidad: estudianteActual.comunidad,
+      mentorFullname: estudianteActual.mentorNombre,
+      campusOrigen: estudianteActual.campusOrigen,
+      carrera: estudianteActual.carrera
     };
 
+    const resp = await fetch(GAS_ENDPOINT, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    });
+
+    let data;
     try {
-        const resp = await fetch(ENDPOINT, {
-            method: 'POST',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify(payload)
-        });
-        if (!resp.ok) throw new Error('HTTP ' + resp.status);
-
-        const data = await resp.json();
-        console.log('Respuesta servidor:', data);
-
-        if (data.result === 'success') {
-            mostrarMensajeExito('success', data);
-            cargarEstadisticas(); // refresca contador
-        } else if (data.result === 'duplicate') {
-            mostrarMensajeExito('duplicate', data);
-            cargarEstadisticas();
-        } else if (data.result === 'error') {
-            throw new Error(data.message || 'Error servidor');
-        } else {
-            throw new Error('Respuesta inesperada');
-        }
-
-    } catch (err) {
-        console.error(err);
-        mostrarError('No se pudo registrar. Intenta nuevamente.');
-        btnAsistencia.disabled = false;
-        btnAsistencia.textContent = originalText;
-        btnAsistencia.dataset.loading = '0';
+      data = await resp.json();
+    } catch {
+      throw new Error('Respuesta no es JSON válido');
     }
-}
 
-function mostrarMensajeExito(tipo, data) {
-    if (estudianteActual?.comunidad) {
-        kitComunidadEl.textContent = estudianteActual.comunidad;
+    if (data.result === 'duplicate') {
+      mostrarMensajeDuplicado(data);
+    } else if (data.result === 'success') {
+      mostrarMensajeExito(data);
+    } else if (data.registered === true) {
+      // Si tu endpoint GET devolviera esto… (fallback)
+      mostrarMensajeDuplicado(data);
+    } else {
+      mostrarError(data.message || 'Error inesperado.');
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Registrar llegada';
+      }
+      return;
     }
-    btnAsistencia.textContent = (tipo === 'duplicate') ? 'Ya registrado ✓' : 'Registrado ✓';
-    btnAsistencia.classList.add('btn-registrado');
-    btnAsistencia.disabled = true;
-    btnAsistencia.dataset.loading = '0';
 
-    mensajeExitoEl.classList.remove('hidden');
+    // Actualiza stats al final
+    actualizarStats();
 
-    if (tipo === 'duplicate' && !document.getElementById('notaDuplicado')) {
-        const nota = document.createElement('div');
-        nota.id = 'notaDuplicado';
-        nota.textContent = 'Esta matrícula ya estaba registrada.'
-            + (data.firstCheckinTime ? ' (Hora original: ' + data.firstCheckinTime + ')' : '');
-        mensajeExitoEl.appendChild(nota);
+  } catch (err) {
+    console.error(err);
+    mostrarError('No se pudo registrar. Intenta de nuevo.');
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Registrar llegada';
     }
+  }
 }
 
-
-/* =========================
-   UTILIDADES
-========================= */
-function mostrarError(msg) {
-    errorMsgEl.textContent = msg;
-}
-function limpiarError() {
-    errorMsgEl.textContent = '';
-}
-
-function resetFormulario() {
-    limpiarError();
-    matriculaInputEl.value = '';
-    estudianteActual = null;
-    tarjetaEl.classList.add('hidden');
-    btnReset.disabled = true;
-    mensajeExitoEl.classList.add('hidden');
-    btnAsistencia.textContent = '¡Ya llegué!';
-    btnAsistencia.disabled = false;
-    btnAsistencia.classList.remove('btn-registrado');
-    const notaDup = document.getElementById('notaDuplicado');
-    if (notaDup) notaDup.remove();
-    matriculaInputEl.focus();
+function mostrarMensajeExito(data) {
+  hide(byId('studentInfo'));
+  const hora = data.lastCheckinTime || '--:--';
+  setText('horaRegistroExito', hora);
+  if (estudianteActual) {
+    setText('mentorExito', estudianteActual.mentorNombre || '—');
+    setText('comunidadExito', estudianteActual.comunidad || '—');
+  }
+  show(byId('confirmationYes'));
 }
 
+function mostrarMensajeDuplicado(data) {
+  hide(byId('studentInfo'));
+  const hora = data.lastCheckinTime || '--:--';
+  setText('horaRegistroDuplicado', hora);
+  show(byId('confirmationDuplicate'));
+}
 
-/* =========================
-   EXPONER FUNCIONES (si usas onclick)
-========================= */
-window.buscarEstudiante   = buscarEstudiante;
-window.registrarAsistencia = registrarAsistencia;
-window.resetFormulario     = resetFormulario;
+/************************************
+ * STATS (GET Apps Script)
+ ************************************/
+async function actualizarStats() {
+  try {
+    const resp = await fetch(GAS_ENDPOINT);
+    if (!resp.ok) return;
+    const data = await resp.json();
+    if (typeof data.checkins !== 'undefined') {
+      setText('statTotal', data.checkins);
+    }
+    if (data.lastCheckinTime) {
+      setText('statUltimo', data.lastCheckinTime);
+    }
+  } catch (err) {
+    console.warn('No se pudieron actualizar stats', err);
+  }
+}
+
+/************************************
+ * REINICIAR
+ ************************************/
+function reiniciar() {
+  estudianteActual = null;
+  limpiarMensajes();
+  hide(byId('studentInfo'));
+  hide(byId('confirmationYes'));
+  hide(byId('confirmationDuplicate'));
+  const input = byId('matricula');
+  if (input) {
+    input.value = '';
+    input.focus();
+  }
+  show(byId('searchSection'));
+}
+
+/************************************
+ * EVENTOS INICIALES
+ ************************************/
+document.addEventListener('DOMContentLoaded', () => {
+  cargarDatos().then(() => {
+    actualizarStats();
+  });
+
+  const input = byId('matricula');
+  if (input) {
+    input.addEventListener('keypress', e => {
+      if (e.key === 'Enter') buscarEstudiante();
+    });
+  }
+
+  byId('btnRefrescarStats')?.addEventListener('click', actualizarStats);
+  byId('btnRegistrar')?.addEventListener('click', registrarCheckin);
+  byId('btnReiniciarDesdeFicha')?.addEventListener('click', reiniciar);
+  byId('btnOtroRegistro1')?.addEventListener('click', reiniciar);
+  byId('btnOtroRegistro2')?.addEventListener('click', reiniciar);
+
+  // Botón buscar (si lo tienes)
+  const btnBuscar = document.querySelector('button.btn.btn-primary');
+  if (btnBuscar && !btnBuscar.dataset.handler) {
+    btnBuscar.dataset.handler = '1';
+    btnBuscar.addEventListener('click', buscarEstudiante);
+  }
+});
