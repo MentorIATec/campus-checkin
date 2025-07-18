@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <!-- Barra stats: solo visible en escritorio -->
+  <!-- Barra de estadísticas solo escritorio -->
   <header class="header-stats">
     <div class="header-title">
       <span class="icon">📋</span>
@@ -33,31 +33,34 @@
     <div class="checkin-container">
       <div class="header-checkin">
         <h1>Bienvenida de Transferencias</h1>
-        <p class="subtitle-checkin">Escanea tu QR o ingresa tu matrícula</p>
+        <p class="subtitle-checkin">Ingresa tu matrícula</p>
       </div>
       <div id="checkin-section">
-        <input id="matriculaInput" class="input-checkin" maxlength="12" autocomplete="off" placeholder="Ej: A01234567" />
+        <div class="input-wrap">
+          <input id="matriculaInput" class="input-checkin" maxlength="12" autocomplete="off" placeholder="Ej: A01234567" />
+        </div>
         <button class="btn-checkin" onclick="buscarEstudiante()">Buscar</button>
         <p id="errorMsg" class="error-checkin"></p>
       </div>
       <div id="tarjetaEstudiante" class="tarjeta-checkin hidden">
-        <div class="mentor-label">Mentor/a</div>
-        <div class="mentor-foto-wrap">
-          <img id="fotoMentor" class="mentor-foto" src="" alt="Foto mentor/a" style="display:none;" />
-          <div id="fotoPlaceholder" class="mentor-foto placeholder-foto">👤</div>
+        <div class="mentor-info-box">
+          <div class="mentor-label">Mentor/a</div>
+          <div id="mentorFullname" class="mentor-fullname"></div>
+          <div class="mentor-foto-wrap">
+            <img id="fotoMentor" class="mentor-foto" src="" alt="Foto mentor/a" style="display:none;" />
+            <div id="fotoPlaceholder" class="mentor-foto placeholder-foto">👤</div>
+          </div>
         </div>
-        <div class="datos-alumno">
-          <div class="student-row">
-            <span id="nombreEstudiante" class="nombre-estudiante"></span>
+        <div class="student-card" id="studentCardBg">
+          <div class="student-info">
+            <span id="fullnameEstudiante" class="alumno-nombre"></span>
             <span id="comunidadBadge" class="comunidad-badge"></span>
           </div>
-          <div class="sub-row">
-            <span id="matriculaEstudiante" class="dato-matricula"></span> •
+          <div class="alumno-detalle">
+            <span id="matriculaEstudiante" class="dato-matricula"></span> • 
             <span id="campusEstudiante" class="dato-campus"></span>
           </div>
-          <div class="mentor-info">
-            <span id="nombreMentor" class="mentor-nombre"></span>
-          </div>
+          <div id="carreraEstudiante" class="dato-carrera"></div>
         </div>
         <button class="btn-checkin" id="asistenciaBtn" onclick="registrarAsistencia()">¡Ya llegué!</button>
         <div id="mensajeExito" class="hidden">
