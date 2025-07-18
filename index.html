@@ -33,7 +33,7 @@
     <div class="checkin-container">
       <div class="header-checkin">
         <h1>Bienvenida de Transferencias</h1>
-        <p class="subtitle-checkin">Ingresa tu matrícula</p>
+        <p class="subtitle-checkin" id="leyendaMatricula">Ingresa tu matrícula</p>
       </div>
       <div id="checkin-section">
         <div class="input-wrap">
@@ -43,33 +43,31 @@
         <p id="errorMsg" class="error-checkin"></p>
       </div>
       <div id="tarjetaEstudiante" class="tarjeta-checkin hidden">
-        <div class="mentor-info-box">
-          <div class="mentor-label">Mentor/a</div>
+        <div id="studentCardBg" class="student-card">
+          <div class="mentor-title">Tu mentor/a es:</div>
           <div id="mentorFullname" class="mentor-fullname"></div>
+          <div id="comunidadBadge" class="comunidad-badge"></div>
           <div class="mentor-foto-wrap">
             <img id="fotoMentor" class="mentor-foto" src="" alt="Foto mentor/a" style="display:none;" />
             <div id="fotoPlaceholder" class="mentor-foto placeholder-foto">👤</div>
           </div>
-        </div>
-        <div class="student-card" id="studentCardBg">
-          <div class="student-info">
-            <span id="fullnameEstudiante" class="alumno-nombre"></span>
-            <span id="comunidadBadge" class="comunidad-badge"></span>
+          <div class="datos-alumno-bloque">
+            <div id="fullnameEstudiante" class="alumno-nombre"></div>
+            <div class="alumno-detalle">
+              <span id="matriculaEstudiante" class="dato-matricula"></span> • 
+              <span id="campusEstudiante" class="dato-campus"></span>
+            </div>
+            <div id="carreraEstudiante" class="dato-carrera"></div>
           </div>
-          <div class="alumno-detalle">
-            <span id="matriculaEstudiante" class="dato-matricula"></span> • 
-            <span id="campusEstudiante" class="dato-campus"></span>
+          <button class="btn-checkin" id="asistenciaBtn" onclick="registrarAsistencia()">¡Ya llegué!</button>
+          <div id="mensajeExito" class="hidden">
+            <p>✅ Registro de asistencia realizado<br>
+              <b>¡Entrega el kit de <span id="kitComunidad"></span>!</b><br>
+              <span class="small-note">Muestra esta pantalla al staff</span>
+            </p>
           </div>
-          <div id="carreraEstudiante" class="dato-carrera"></div>
+          <button class="btn-checkin btn-back" onclick="resetCheckin()">Buscar otra matrícula</button>
         </div>
-        <button class="btn-checkin" id="asistenciaBtn" onclick="registrarAsistencia()">¡Ya llegué!</button>
-        <div id="mensajeExito" class="hidden">
-          <p>✅ Registro de asistencia realizado<br>
-            <b>¡Entrega el kit de <span id="kitComunidad"></span>!</b><br>
-            <span class="small-note">Muestra esta pantalla al staff</span>
-          </p>
-        </div>
-        <button class="btn-checkin btn-back" onclick="resetCheckin()">Buscar otra matrícula</button>
       </div>
     </div>
   </main>
