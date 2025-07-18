@@ -3,39 +3,42 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>Check-in Evento - NodoX</title>
+  <title>Bienvenida de Transferencias - Check-in</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div id="app">
-    <div class="checkin-container">
-      <div class="header-checkin">
-        <h1>Bienvenida de Transferencias</h1>
-        <p class="subtitle-checkin">Escanea tu QR o ingresa tu matrícula</p>
-      </div>
-      <div id="checkin-section">
-        <input id="matriculaInput" class="input-checkin" maxlength="12" autocomplete="off" placeholder="Ej: A01234567" />
-        <button class="btn-checkin" onclick="buscarEstudiante()">Buscar</button>
-        <p id="errorMsg" class="error-checkin"></p>
-      </div>
-      <div id="tarjetaEstudiante" class="tarjeta-checkin hidden">
-        <div class="card-comunidad" id="comunidadCard">
-          <div class="mentor-foto-wrap">
-            <img id="fotoMentor" class="mentor-foto" src="" alt="Foto mentor/a" />
-          </div>
-          <div class="datos-alumno">
-            <h2 id="nombreEstudiante" class="nombre-estudiante"></h2>
-            <div class="comunidad-badge" id="comunidadBadge"></div>
-            <h3>Mentor/a:</h3>
-            <p id="nombreMentor" class="mentor-nombre"></p>
-          </div>
-          <button class="btn-checkin" id="asistenciaBtn" onclick="registrarAsistencia()">¡Ya llegué!</button>
+  <div class="checkin-container">
+    <div class="header-checkin">
+      <h1>Bienvenida de Transferencias</h1>
+      <p class="subtitle-checkin">Escanea tu QR o ingresa tu matrícula</p>
+    </div>
+    <div id="checkin-section">
+      <input id="matriculaInput" class="input-checkin" maxlength="12" autocomplete="off" placeholder="Ej: A01234567" />
+      <button class="btn-checkin" onclick="buscarEstudiante()">Buscar</button>
+      <p id="errorMsg" class="error-checkin"></p>
+    </div>
+    <div id="tarjetaEstudiante" class="tarjeta-checkin hidden">
+      <div class="card-comunidad" id="comunidadCard">
+        <div class="mentor-foto-wrap">
+          <img id="fotoMentor" class="mentor-foto" src="" alt="Foto mentor/a" style="display:none;" />
+          <div id="fotoPlaceholder" class="mentor-foto" style="display:none;align-items:center;justify-content:center;font-size:2em;">👤</div>
         </div>
-        <div id="mensajeExito" class="hidden">
-          <p>✅ Registro de asistencia realizado<br>¡Muestra esta pantalla al staff!</p>
+        <div class="datos-alumno">
+          <h2 id="nombreEstudiante" class="nombre-estudiante"></h2>
+          <div class="comunidad-badge" id="comunidadBadge"></div>
+          <div style="margin:10px 0;">
+            <span id="matriculaEstudiante" style="font-size:1em;color:#004a99;"></span> •
+            <span id="campusEstudiante" style="font-size:1em;color:#666;"></span>
+          </div>
+          <h3>Mentor/a:</h3>
+          <p id="nombreMentor" class="mentor-nombre"></p>
         </div>
-        <button class="btn-checkin btn-back" onclick="resetCheckin()">Buscar otra matrícula</button>
+        <button class="btn-checkin" id="asistenciaBtn" onclick="registrarAsistencia()">¡Ya llegué!</button>
       </div>
+      <div id="mensajeExito" class="hidden">
+        <p>✅ Registro de asistencia realizado<br><b>¡Entrega el kit de <span id="kitComunidad"></span>!</b><br> <span style="font-size:0.96em;color:#336;">Muestra esta pantalla al staff</span></p>
+      </div>
+      <button class="btn-checkin btn-back" onclick="resetCheckin()">Buscar otra matrícula</button>
     </div>
   </div>
   <script src="app.js"></script>
