@@ -8,47 +8,52 @@ body {
 }
 
 .checkin-container {
-  max-width: 420px;
-  margin: 40px auto 0 auto;
+  max-width: 460px;
+  margin: 48px auto 0 auto;
   background: #fff;
-  border-radius: 22px;
-  box-shadow: 0 8px 38px rgba(0,0,0,0.11);
-  padding: 32px 22px 32px 22px;
+  border-radius: 24px;
+  box-shadow: 0 8px 38px rgba(0,0,0,0.09);
+  padding: 36px 28px 36px 28px;
   position: relative;
 }
 
 .header-checkin {
   text-align: center;
-  margin-bottom: 26px;
+  margin-bottom: 32px;
 }
 
 .header-checkin h1 {
   font-size: 2.1em;
   color: #003b5c;
   margin-bottom: 8px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
 }
 
 .subtitle-checkin {
   color: #0062cc;
   font-size: 1.13em;
   margin-bottom: 12px;
+  letter-spacing: 0.1px;
 }
 
 .input-checkin {
   display: block;
   width: 100%;
-  font-size: 1.17em;
-  padding: 12px;
-  margin: 14px 0 10px 0;
-  border-radius: 11px;
+  font-size: 1.18em;
+  padding: 13px;
+  margin: 16px 0 10px 0;
+  border-radius: 13px;
   border: 2px solid #e3e3e3;
   text-align: center;
   transition: border-color 0.2s;
+  font-weight: 500;
 }
 
 .input-checkin:focus {
   outline: none;
   border-color: #0062cc;
+  background: #f1f8fd;
 }
 
 .btn-checkin {
@@ -56,13 +61,13 @@ body {
   background: #0062cc;
   color: #fff;
   font-weight: 600;
-  padding: 13px 0;
-  font-size: 1.14em;
+  padding: 14px 0;
+  font-size: 1.16em;
   border-radius: 13px;
   border: none;
-  margin: 10px 0 0 0;
+  margin: 12px 0 0 0;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.18s;
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
@@ -85,7 +90,7 @@ body {
 }
 
 .tarjeta-checkin {
-  margin-top: 24px;
+  margin-top: 28px;
 }
 
 .card-comunidad {
@@ -105,8 +110,8 @@ body {
 }
 
 .mentor-foto {
-  width: 94px;
-  height: 94px;
+  width: 98px;
+  height: 98px;
   object-fit: cover;
   border-radius: 50%;
   border: 3px solid #fff;
@@ -115,7 +120,7 @@ body {
 }
 
 .nombre-estudiante {
-  font-size: 1.48em;
+  font-size: 1.5em;
   font-weight: 700;
   margin: 14px 0 4px 0;
   color: #003b5c;
@@ -141,19 +146,6 @@ body {
   letter-spacing: 0.2px;
 }
 
-/* Colores para las comunidades */
-.card-comunidad.comunidad-energio   { background: linear-gradient(135deg, #FD8204, #e37404); }
-.card-comunidad.comunidad-spirita   { background: linear-gradient(135deg, #5B0F8B, #4f0c7a); }
-.card-comunidad.comunidad-talenta   { background: linear-gradient(135deg, #EC008C, #d10078); }
-.card-comunidad.comunidad-revo      { background: linear-gradient(135deg, #C4829A, #b07189); }
-.card-comunidad.comunidad-pasio     { background: linear-gradient(135deg, #CC0202, #b80202); }
-.card-comunidad.comunidad-energio   { background: linear-gradient(135deg, #FD8204, #e37404); }
-.card-comunidad.comunidad-krei      { background: linear-gradient(135deg, #79858B, #6a757a); }
-.card-comunidad.comunidad-reflekto  { background: linear-gradient(135deg, #FFDE17, #e6c815); color: #333 !important; }
-.card-comunidad.comunidad-forta     { background: linear-gradient(135deg, #870074, #750063); }
-.card-comunidad.comunidad-ekvilibro { background: linear-gradient(135deg, #6FD34A, #5fc33d); }
-.card-comunidad.comunidad-kresko    { background: linear-gradient(135deg, #0DCCCC, #0bb8b8); }
-
 .card-comunidad h3, .card-comunidad p {
   color: #fff;
 }
@@ -162,20 +154,31 @@ body {
   color: #333;
 }
 
+/* Colores para las comunidades */
+.card-comunidad.comunidad-energio   { background: linear-gradient(135deg, #FD8204, #e37404); }
+.card-comunidad.comunidad-spirita   { background: linear-gradient(135deg, #5B0F8B, #4f0c7a); }
+.card-comunidad.comunidad-talenta   { background: linear-gradient(135deg, #EC008C, #d10078); }
+.card-comunidad.comunidad-revo      { background: linear-gradient(135deg, #C4829A, #b07189); }
+.card-comunidad.comunidad-pasio     { background: linear-gradient(135deg, #CC0202, #b80202); }
+.card-comunidad.comunidad-krei      { background: linear-gradient(135deg, #79858B, #6a757a); }
+.card-comunidad.comunidad-reflekto  { background: linear-gradient(135deg, #FFDE17, #e6c815); color: #333 !important; }
+.card-comunidad.comunidad-forta     { background: linear-gradient(135deg, #870074, #750063); }
+.card-comunidad.comunidad-ekvilibro { background: linear-gradient(135deg, #6FD34A, #5fc33d); }
+.card-comunidad.comunidad-kresko    { background: linear-gradient(135deg, #0DCCCC, #0bb8b8); }
+
 #mensajeExito {
   background: #e7ffd9;
   color: #2c633d;
   border-radius: 16px;
   margin: 12px 0;
   padding: 12px 10px;
-  font-size: 1.15em;
+  font-size: 1.17em;
 }
 
 .hidden {
   display: none;
 }
 
-/* Responsive */
 @media (max-width: 600px) {
   .checkin-container {
     padding: 12px 3px;
@@ -188,10 +191,9 @@ body {
     height: 65px;
   }
   .nombre-estudiante {
-    font-size: 1.1em;
+    font-size: 1.12em;
   }
   .btn-checkin {
     font-size: 1em;
   }
 }
-
