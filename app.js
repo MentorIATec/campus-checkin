@@ -31,10 +31,12 @@ function limpiarError() {
 function mostrarTarjeta() {
   document.getElementById('tarjetaEstudiante').classList.remove('hidden');
   document.getElementById('checkin-section').style.display = 'none';
+  document.getElementById('leyendaMatricula').style.display = 'none';
 }
 function ocultarTarjeta() {
   document.getElementById('tarjetaEstudiante').classList.add('hidden');
   document.getElementById('checkin-section').style.display = 'block';
+  document.getElementById('leyendaMatricula').style.display = '';
 }
 
 // Stats bar
