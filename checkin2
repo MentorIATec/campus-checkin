@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Check-in Transferencias Verano 2025</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            /* Colores del Tec */
+            --tec-blue: #003b5c;
+            --tec-blue-light: #005b8a;
+            --tec-blue-bright: #0062cc;
+            
+            /* Colores de comunidades */
+            --talenta: #EC008C;
+            --revo: #C4829A;
+            --kresko: #0DCCCC;
+            --pasio: #CC0202;
+            --energio: #FD8204;
+            --krei: #79858B;
+            --reflekto: #FFDE17;
+            --forta: #870074;
+            --spirita: #5B0F8B;
+            --ekvilibro: #6FD34A;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: var(--tec-blue);
+            color: white;
+            padding: 15px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .header .subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+        
+        .container {
+            flex: 1;
+            padding: 20px;
+            max-width: 500px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        
+        /* Sección de búsqueda */
+        .search-section {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        
+        .search-section h2 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        input {
+            flex: 1;
+            padding: 14px 18px;
+            border: 2px solid #e0e4e8;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: var(--tec-blue-bright);
+            box-shadow: 0 0 0 3px rgba(0,98,204,0.1);
+        }
+        
+        .btn {
+            padding: 14px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+        
+        .btn:active {
+            transform: scale(0.98);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .btn-primary {
+            background: var(--tec-blue-bright);
+            color: white;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            background: #004a99;
+        }
+        
+        /* Resultado de búsqueda */
+        .result-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 30px rgba(0,0,0,0.08);
+            animation: slideUp 0.4s ease;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .community-header {
+            padding: 30px 20px;
+            text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .community-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+        
+        @keyframes rotate {
+            to { transform: rotate(360deg); }
+        }
+        
+        .community-name {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .community-subtitle {
+            font-size: 16px;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .student-info {
+            padding: 25px 20px;
+            text-align: center;
+            border-bottom: 1px solid #f0f2f5;
+        }
+        
+        .student-name {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+        
+        .student-details {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .mentor-section {
+            padding: 25px 20px;
+            text-align: center;
+        }
+        
+        .mentor-photo {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 15px;
+            border: 4px solid #f0f2f5;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .mentor-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .mentor-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+        
+        .checkin-section {
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .btn-checkin {
+            width: 100%;
+            padding: 18px;
+            font-size: 18px;
+            background: #28a745;
+            color: white;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-checkin:hover:not(:disabled) {
+            background: #218838;
+        }
+        
+        .btn-checkin.checked {
+            background: #6c757d;
+        }
+        
+        .btn-new {
+            width: 100%;
+            padding: 16px;
+            margin-top: 10px;
+            background: var(--tec-blue);
+            color: white;
+            justify-content: center;
+        }
+        
+        .btn-new:hover {
+            background: var(--tec-blue-light);
+        }
+        
+        /* Colores dinámicos de comunidades */
+        .comunidad-talenta { background: linear-gradient(135deg, var(--talenta), #d10078) !important; }
+        .comunidad-revo { background: linear-gradient(135deg, var(--revo), #b07189) !important; }
+        .comunidad-kresko { background: linear-gradient(135deg, var(--kresko), #0bb8b8) !important; }
+        .comunidad-pasio { background: linear-gradient(135deg, var(--pasio), #b80202) !important; }
+        .comunidad-energio { background: linear-gradient(135deg, var(--energio), #e37404) !important; }
+        .comunidad-krei { background: linear-gradient(135deg, var(--krei), #6a757a) !important; }
+        .comunidad-reflekto { 
+            background: linear-gradient(135deg, var(--reflekto), #e6c815) !important; 
+            color: #333 !important;
+        }
+        .comunidad-reflekto .community-subtitle { color: #333 !important; }
+        .comunidad-forta { background: linear-gradient(135deg, var(--forta), #750063) !important; }
+        .comunidad-spirita { background: linear-gradient(135deg, var(--spirita), #4f0c7a) !important; }
+        .comunidad-ekvilibro { background: linear-gradient(135deg, var(--ekvilibro), #5fc33d) !important; }
+        
+        .error-message {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .success-animation {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.2);
+            text-align: center;
+            z-index: 1000;
+            animation: successPop 0.5s ease;
+        }
+        
+        @keyframes successPop {
+            0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+            50% { transform: translate(-50%, -50%) scale(1.05); }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+        
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: #28a745;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 40px;
+            color: white;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--tec-blue-bright);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .stats {
+            background: white;
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--tec-blue);
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 2px;
+        }
+        
+        .placeholder-photo {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: #e0e4e8;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: #999;
+            border: 4px solid #f0f2f5;
+        }
+        
+        @media (max-width: 380px) {
+            .container { padding: 15px; }
+            .community-name { font-size: 28px; }
+            .student-name { font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📋 Check-in Transferencias</h1>
+        <div class="subtitle">Registro de asistentes - Verano 2025</div>
+    </div>
+    
+    <div class="container">
+        <!-- Estadísticas -->
+        <div class="stats" id="stats">
+            <div class="stat-item">
+                <div class="stat-value" id="totalCheckins">0</div>
+                <div class="stat-label">Registrados</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="currentTime">--:--</div>
+                <div class="stat-label">Hora actual</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="lastCheckin">--:--</div>
+                <div class="stat-label">Último check-in</div>
+            </div>
+        </div>
+        
+        <!-- Búsqueda -->
+        <div class="search-section" id="searchSection">
+            <h2>Ingresa la matrícula del estudiante:</h2>
+            <div class="input-group">
+                <input 
+                    type="text" 
+                    id="matricula" 
+                    placeholder="A01234567"
+                    maxlength="9"
+                    autocomplete="off"
+                    autofocus
+                >
+                <button class="btn btn-primary" onclick="buscarEstudiante()">
+                    <span>🔍</span> Buscar
+                </button>
+            </div>
+            <div id="errorMessage" class="error-message" style="display: none;"></div>
+        </div>
+        
+        <!-- Resultado -->
+        <div id="resultSection" style="display: none;">
+            <div class="result-card">
+                <div class="community-header" id="communityHeader">
+                    <div class="community-name" id="communityName"></div>
+                    <div class="community-subtitle">Comunidad</div>
+                </div>
+                
+                <div class="student-info">
+                    <div class="student-name" id="studentName"></div>
+                    <div class="student-details">
+                        <span id="studentMatricula"></span> • <span id="studentCampus"></span>
+                    </div>
+                </div>
+                
+                <div class="mentor-section">
+                    <div id="mentorPhoto" class="placeholder-photo">👤</div>
+                    <div class="mentor-label">Mentor/a asignado</div>
+                    <div class="mentor-name" id="mentorName"></div>
+                </div>
+                
+                <div class="checkin-section">
+                    <button class="btn btn-checkin" id="btnCheckin" onclick="realizarCheckin()">
+                        ✓ Confirmar Check-in
+                    </button>
+                    <button class="btn btn-new" onclick="nuevaBusqueda()">
+                        🔍 Nueva búsqueda
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Animación de éxito -->
+    <div id="successAnimation" style="display: none;" class="success-animation">
+        <div class="success-icon">✓</div>
+        <h2 style="color: #28a745; margin-bottom: 10px;">¡Check-in exitoso!</h2>
+        <p style="color: #666;">Entrega el kit de <strong id="kitCommunity"></strong></p>
+    </div>
+    
+    <script>
+        let estudiantesData = [];
+        let estudianteActual = null;
+        let totalCheckins = 0;
+        
+        // Configuración Google Forms para Check-in
+        const CONFIG = {
+            GOOGLE_FORM_URL: 'https://docs.google.com/forms/d/e/1FAIpQLSdwjNT8kPqQRzHVWw7yKp5vQ5RQFoSmRaXGipvJgX6VD4Qr6g/formResponse',
+            FORM_FIELDS: {
+                matricula: 'entry.1000000',
+                nombre: 'entry.1000001',
+                mentor: 'entry.1000002',
+                comunidad: 'entry.1000003',
+                campus: 'entry.1000004',
+                horaCheckin: 'entry.1000005',
+                fecha: 'entry.1000006'
+            }
+        };
+        
+        // Actualizar hora
+        function actualizarHora() {
+            const ahora = new Date();
+            const hora = ahora.toLocaleTimeString('es-MX', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: false 
+            });
+            document.getElementById('currentTime').textContent = hora;
+        }
+        
+        // Cargar datos al iniciar
+        document.addEventListener('DOMContentLoaded', async () => {
+            await cargarDatosEstudiantes();
+            actualizarHora();
+            setInterval(actualizarHora, 1000);
+            
+            // Cargar estadísticas guardadas
+            totalCheckins = parseInt(localStorage.getItem('totalCheckins') || '0');
+            document.getElementById('totalCheckins').textContent = totalCheckins;
+            
+            const lastCheckin = localStorage.getItem('lastCheckinTime');
+            if (lastCheckin) {
+                document.getElementById('lastCheckin').textContent = lastCheckin;
+            }
+        });
+        
+        async function cargarDatosEstudiantes() {
+            try {
+                const response = await fetch('/estudiantes.json');
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                
+                estudiantesData = data.map(estudiante => ({
+                    matricula: (estudiante.matricula || estudiante["matrícula"])?.trim().toUpperCase(),
+                    nameEstudiante: estudiante.nameEstudiante?.trim(),
+                    fullnameEstudiante: estudiante.fullnameEstudiante?.trim(),
+                    mentorFullname: estudiante.mentorFullname?.trim(),
+                    mentorNickname: estudiante.mentorNickname?.trim(),
+                    fotoMentor: estudiante.fotoMentor?.trim(),
+                    whatsappMentor: estudiante.whatsappMentor?.trim(),
+                    comunidad: estudiante.comunidad?.trim(),
+                    campusOrigen: estudiante.campusOrigen?.trim(),
+                })).filter(e => e.matricula);
+                
+                console.log('✅ Datos cargados:', estudiantesData.length, 'estudiantes');
+            } catch (error) {
+                console.error('❌ Error cargando datos:', error);
+                mostrarError('Error al cargar los datos. Por favor recarga la página.');
+            }
+        }
+        
+        function buscarEstudiante() {
+            const matricula = document.getElementById('matricula').value.trim().toUpperCase();
+            
+            if (!matricula) {
+                mostrarError('⚠️ Por favor ingresa una matrícula');
+                return;
+            }
+            
+            const estudiante = estudiantesData.find(e => e.matricula === matricula);
+            
+            if (estudiante) {
+                estudianteActual = estudiante;
+                mostrarResultado(estudiante);
+                document.getElementById('errorMessage').style.display = 'none';
+            } else {
+                mostrarError('❌ Matrícula no encontrada');
+            }
+        }
+        
+        function mostrarError(mensaje) {
+            const errorElement = document.getElementById('errorMessage');
+            errorElement.textContent = mensaje;
+            errorElement.style.display = 'flex';
+        }
+        
+        function mostrarResultado(estudiante) {
+            // Ocultar búsqueda
+            document.getElementById('searchSection').style.display = 'none';
+            
+            // Configurar comunidad
+            const comunidadKey = estudiante.comunidad.toLowerCase();
+            const communityHeader = document.getElementById('communityHeader');
+            communityHeader.className = `community-header comunidad-${comunidadKey}`;
+            document.getElementById('communityName').textContent = estudiante.comunidad;
+            
+            // Información del estudiante
+            document.getElementById('studentName').textContent = estudiante.nameEstudiante || 'Estudiante';
+            document.getElementById('studentMatricula').textContent = estudiante.matricula;
+            document.getElementById('studentCampus').textContent = estudiante.campusOrigen;
+            
+            // Información del mentor
+            document.getElementById('mentorName').textContent = estudiante.mentorFullname;
+            
+            // Foto del mentor
+            const photoContainer = document.getElementById('mentorPhoto');
+            if (estudiante.fotoMentor) {
+                photoContainer.innerHTML = `<img src="${estudiante.fotoMentor}" alt="${estudiante.mentorNickname}" class="mentor-photo" onerror="this.parentElement.innerHTML='👤'; this.parentElement.className='placeholder-photo';">`;
+                photoContainer.className = '';
+            } else {
+                photoContainer.innerHTML = '👤';
+                photoContainer.className = 'placeholder-photo';
+            }
+            
+            // Verificar si ya hizo check-in
+            const yaRegistrado = localStorage.getItem(`checkin_${estudiante.matricula}`) === '1';
+            const btnCheckin = document.getElementById('btnCheckin');
+            
+            if (yaRegistrado) {
+                btnCheckin.textContent = '✓ Ya registrado';
+                btnCheckin.className = 'btn btn-checkin checked';
+                btnCheckin.disabled = true;
+            } else {
+                btnCheckin.textContent = '✓ Confirmar Check-in';
+                btnCheckin.className = 'btn btn-checkin';
+                btnCheckin.disabled = false;
+            }
+            
+            // Mostrar resultado
+            document.getElementById('resultSection').style.display = 'block';
+            
+            // Scroll suave
+            document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        async function realizarCheckin() {
+            if (!estudianteActual) return;
+            
+            const btnCheckin = document.getElementById('btnCheckin');
+            btnCheckin.disabled = true;
+            btnCheckin.innerHTML = '<span class="loading"></span> Registrando...';
+            
+            try {
+                // Enviar a Google Forms
+                await enviarCheckinAGoogleForms();
+                
+                // Marcar como registrado
+                localStorage.setItem(`checkin_${estudianteActual.matricula}`, '1');
+                
+                // Actualizar estadísticas
+                totalCheckins++;
+                localStorage.setItem('totalCheckins', totalCheckins);
+                document.getElementById('totalCheckins').textContent = totalCheckins;
+                
+                const horaActual = new Date().toLocaleTimeString('es-MX', { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    hour12: false 
+                });
+                localStorage.setItem('lastCheckinTime', horaActual);
+                document.getElementById('lastCheckin').textContent = horaActual;
+                
+                // Actualizar botón
+                btnCheckin.textContent = '✓ Ya registrado';
+                btnCheckin.className = 'btn btn-checkin checked';
+                
+                // Mostrar animación de éxito
+                mostrarExito();
+                
+            } catch (error) {
+                console.error('Error en check-in:', error);
+                btnCheckin.disabled = false;
+                btnCheckin.textContent = '✓ Confirmar Check-in';
+                mostrarError('❌ Error al registrar. Intenta de nuevo.');
+            }
+        }
+        
+        async function enviarCheckinAGoogleForms() {
+            const formData = new FormData();
+            
+            formData.append(CONFIG.FORM_FIELDS.matricula, estudianteActual.matricula);
+            formData.append(CONFIG.FORM_FIELDS.nombre, estudianteActual.fullnameEstudiante);
+            formData.append(CONFIG.FORM_FIELDS.mentor, estudianteActual.mentorFullname);
+            formData.append(CONFIG.FORM_FIELDS.comunidad, estudianteActual.comunidad);
+            formData.append(CONFIG.FORM_FIELDS.campus, estudianteActual.campusOrigen);
+            
+            const ahora = new Date();
+            const hora = ahora.toLocaleTimeString('es-MX', { hour12: false });
+            const fecha = ahora.toLocaleDateString('es-MX');
+            
+            formData.append(CONFIG.FORM_FIELDS.horaCheckin, hora);
+            formData.append(CONFIG.FORM_FIELDS.fecha, fecha);
+            
+            await fetch(CONFIG.GOOGLE_FORM_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: formData
+            });
+        }
+        
+        function mostrarExito() {
+            const successAnimation = document.getElementById('successAnimation');
+            document.getElementById('kitCommunity').textContent = estudianteActual.comunidad;
+            
+            successAnimation.style.display = 'block';
+            
+            setTimeout(() => {
+                successAnimation.style.display = 'none';
+            }, 3000);
+        }
+        
+        function nuevaBusqueda() {
+            // Limpiar
+            document.getElementById('matricula').value = '';
+            document.getElementById('errorMessage').style.display = 'none';
+            estudianteActual = null;
+            
+            // Mostrar búsqueda, ocultar resultado
+            document.getElementById('searchSection').style.display = 'block';
+            document.getElementById('resultSection').style.display = 'none';
+            
+            // Focus en input
+            document.getElementById('matricula').focus();
+        }
+        
+        // Enter para buscar
+        document.getElementById('matricula').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                buscarEstudiante();
+            }
+        });
+    </script>
+</body>
+</html>
