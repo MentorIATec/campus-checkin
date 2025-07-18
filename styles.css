@@ -1,46 +1,167 @@
 body {
   font-family: 'Segoe UI', Arial, sans-serif;
-  background: #093050;
-  color: #fff;
-  margin: 0; padding: 0;
+  background: linear-gradient(135deg, #003b5c 0%, #005b8a 100%);
   min-height: 100vh;
+  color: #003b5c;
+  margin: 0;
+  padding: 0;
 }
-.container {
-  max-width: 390px;
-  margin: 40px auto;
+
+.checkin-container {
+  max-width: 420px;
+  margin: 40px auto 0 auto;
   background: #fff;
-  color: #222;
   border-radius: 22px;
-  box-shadow: 0 2px 24px rgba(0,0,0,0.13);
-  padding: 36px 22px 24px 22px;
-}
-#ingresoMatricula label {
-  display:block; margin-bottom:10px;
-}
-#matriculaInput {
-  width:100%; font-size: 1.2em; padding:12px;
-  border-radius:8px; border: 2px solid #eee;
-  margin-bottom:10px;
-  text-align: center;
-}
-button {
-  background:#0062cc; color:#fff; border:none; padding:14px 24px;
-  border-radius: 18px; font-size:1em; font-weight:600; cursor:pointer; margin-top:8px;
-}
-button:active {background: #00498a;}
-.error {color: #c92e2e; font-size: 1em;}
-.tarjeta-comunidad {
-  background: var(--color-comunidad, #eee);
-  color: #fff;
-  border-radius: 18px;
-  text-align: center;
-  margin: 24px 0 14px 0;
-  padding: 24px 16px 20px 16px;
+  box-shadow: 0 8px 38px rgba(0,0,0,0.11);
+  padding: 32px 22px 32px 22px;
   position: relative;
 }
-.foto-mentor {
-  width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #fff; margin-bottom: 10px;
+
+.header-checkin {
+  text-align: center;
+  margin-bottom: 26px;
 }
+
+.header-checkin h1 {
+  font-size: 2.1em;
+  color: #003b5c;
+  margin-bottom: 8px;
+}
+
+.subtitle-checkin {
+  color: #0062cc;
+  font-size: 1.13em;
+  margin-bottom: 12px;
+}
+
+.input-checkin {
+  display: block;
+  width: 100%;
+  font-size: 1.17em;
+  padding: 12px;
+  margin: 14px 0 10px 0;
+  border-radius: 11px;
+  border: 2px solid #e3e3e3;
+  text-align: center;
+  transition: border-color 0.2s;
+}
+
+.input-checkin:focus {
+  outline: none;
+  border-color: #0062cc;
+}
+
+.btn-checkin {
+  width: 100%;
+  background: #0062cc;
+  color: #fff;
+  font-weight: 600;
+  padding: 13px 0;
+  font-size: 1.14em;
+  border-radius: 13px;
+  border: none;
+  margin: 10px 0 0 0;
+  cursor: pointer;
+  transition: background 0.2s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.btn-checkin:hover {
+  background: #003b5c;
+}
+
+.btn-back {
+  background: #f7f7f7;
+  color: #003b5c;
+  border: 1px solid #0062cc;
+  margin-top: 20px;
+}
+
+.error-checkin {
+  color: #c92e2e;
+  margin: 10px 0;
+  text-align: center;
+  font-size: 1.08em;
+}
+
+.tarjeta-checkin {
+  margin-top: 24px;
+}
+
+.card-comunidad {
+  border-radius: 21px;
+  background: #f2f2f2;
+  padding: 26px 12px;
+  box-shadow: 0 3px 28px rgba(0,0,0,0.13);
+  text-align: center;
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.mentor-foto-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.mentor-foto {
+  width: 94px;
+  height: 94px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.09);
+  background: #e0e0e0;
+}
+
+.nombre-estudiante {
+  font-size: 1.48em;
+  font-weight: 700;
+  margin: 14px 0 4px 0;
+  color: #003b5c;
+}
+
+.comunidad-badge {
+  display: inline-block;
+  margin-bottom: 18px;
+  font-size: 1.13em;
+  font-weight: 700;
+  border-radius: 15px;
+  padding: 5px 18px;
+  color: #fff;
+  background: #0062cc;
+}
+
+.mentor-nombre {
+  font-size: 1.12em;
+  color: #fff;
+  margin-bottom: 8px;
+  padding: 6px 0;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
+/* Colores para las comunidades */
+.card-comunidad.comunidad-energio   { background: linear-gradient(135deg, #FD8204, #e37404); }
+.card-comunidad.comunidad-spirita   { background: linear-gradient(135deg, #5B0F8B, #4f0c7a); }
+.card-comunidad.comunidad-talenta   { background: linear-gradient(135deg, #EC008C, #d10078); }
+.card-comunidad.comunidad-revo      { background: linear-gradient(135deg, #C4829A, #b07189); }
+.card-comunidad.comunidad-pasio     { background: linear-gradient(135deg, #CC0202, #b80202); }
+.card-comunidad.comunidad-energio   { background: linear-gradient(135deg, #FD8204, #e37404); }
+.card-comunidad.comunidad-krei      { background: linear-gradient(135deg, #79858B, #6a757a); }
+.card-comunidad.comunidad-reflekto  { background: linear-gradient(135deg, #FFDE17, #e6c815); color: #333 !important; }
+.card-comunidad.comunidad-forta     { background: linear-gradient(135deg, #870074, #750063); }
+.card-comunidad.comunidad-ekvilibro { background: linear-gradient(135deg, #6FD34A, #5fc33d); }
+.card-comunidad.comunidad-kresko    { background: linear-gradient(135deg, #0DCCCC, #0bb8b8); }
+
+.card-comunidad h3, .card-comunidad p {
+  color: #fff;
+}
+.card-comunidad.comunidad-reflekto h3,
+.card-comunidad.comunidad-reflekto p {
+  color: #333;
+}
+
 #mensajeExito {
   background: #e7ffd9;
   color: #2c633d;
@@ -49,10 +170,28 @@ button:active {background: #00498a;}
   padding: 12px 10px;
   font-size: 1.15em;
 }
-.hidden { display:none; }
-.btn-cerrar { background: #ff8a33; color: #fff; margin-top:18px;}
-/* Ejemplo de comunidad */
-.comunidad-energio { background: linear-gradient(135deg,#FD8204,#e37404); }
-.comunidad-spirita { background: linear-gradient(135deg,#5B0F8B,#4f0c7a); }
-.comunidad-revo    { background: linear-gradient(135deg,#C4829A,#b07189); }
-/* agrega una regla por cada comunidad */
+
+.hidden {
+  display: none;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .checkin-container {
+    padding: 12px 3px;
+  }
+  .card-comunidad {
+    padding: 12px 2px;
+  }
+  .mentor-foto {
+    width: 65px;
+    height: 65px;
+  }
+  .nombre-estudiante {
+    font-size: 1.1em;
+  }
+  .btn-checkin {
+    font-size: 1em;
+  }
+}
+
