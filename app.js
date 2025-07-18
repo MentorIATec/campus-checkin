@@ -14,6 +14,7 @@ async function cargarDatos() {
       e.mentorNickname = e.mentorNickname?.trim() || '';
       e.fotoMentor = e.fotoMentor?.trim() || '';
       e.campusOrigen = e.campusOrigen?.trim() || '';
+      e.carrera = e.carrera?.trim() || '';
     });
   } catch {
     mostrarError('No se pudo cargar la base de estudiantes. Actualiza la página.');
@@ -72,18 +73,10 @@ function buscarEstudiante() {
 }
 
 function mostrarDatosEstudiante(e) {
-  // Chip comunidad
-  const comunidadBadge = document.getElementById('comunidadBadge');
-  comunidadBadge.textContent = e.comunidad;
-  comunidadBadge.setAttribute('data-comunidad', e.comunidad);
+  // Mentor info
+  document.getElementById('mentorFullname').textContent = e.mentorFullname;
 
-  // Datos estudiante
-  document.getElementById('nombreEstudiante').textContent = e.nameEstudiante;
-  document.getElementById('matriculaEstudiante').textContent = e.matricula;
-  document.getElementById('campusEstudiante').textContent = e.campusOrigen;
-  document.getElementById('nombreMentor').textContent = e.mentorFullname;
-
-  // Mentor foto o placeholder
+  // Foto mentor
   const foto = document.getElementById('fotoMentor');
   const placeholder = document.getElementById('fotoPlaceholder');
   if (e.fotoMentor) {
@@ -96,6 +89,21 @@ function mostrarDatosEstudiante(e) {
     foto.style.display = 'none';
     placeholder.style.display = '';
   }
+
+  // Student card fondo según comunidad
+  const studentCard = document.getElementById('studentCardBg');
+  const comunidadKey = e.comunidad.replace(/ /g, '');
+  studentCard.className = 'student-card bg-' + comunidadKey;
+
+  // Datos alumno
+  document.getElementById('fullnameEstudiante').textContent = e.fullnameEstudiante;
+  const comunidadBadge = document.getElementById('comunidadBadge');
+  comunidadBadge.textContent = e.comunidad;
+  comunidadBadge.setAttribute('data-comunidad', e.comunidad);
+
+  document.getElementById('matriculaEstudiante').textContent = e.matricula;
+  document.getElementById('campusEstudiante').textContent = e.campusOrigen;
+  document.getElementById('carreraEstudiante').textContent = e.carrera;
 
   // Botón asistencia: ya registrado?
   const btn = document.getElementById('asistenciaBtn');
