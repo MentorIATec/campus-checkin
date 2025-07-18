@@ -1,49 +1,55 @@
-let mentoresData = [];
-let mentorActual = null;
+let estudiantesData = [];
+let estudianteActual = null;
 
-// Cargar datos al iniciar
-fetch('mentores.json')
-  .then(res => res.json())
-  .then(data => mentoresData = data);
+// Carga el JSON de estudiantes al iniciar
+window.onload = async function() {
+    const res = await fetch('estudiantes.json');
+    estudiantesData = await res.json();
+};
 
-function buscarMentor() {
-  const input = document.getElementById('matriculaInput');
-  const matricula = input.value.trim().toUpperCase();
-  document.getElementById('errorMsg').textContent = '';
-  const mentor = mentoresData.find(m => m.matricula === matricula);
-  if (!mentor) {
-    document.getElementById('errorMsg').textContent = 'Matrícula no encontrada.';
-    return;
-  }
-  mentorActual = mentor;
-  mostrarTarjetaMentor();
+function buscarEstudiante() {
+    const input = document.getElementById('matriculaInput');
+    const matricula = input.value.trim().toUpperCase();
+    const errorMsg = document.getElementById('errorMsg');
+    errorMsg.textContent = '';
+    estudianteActual = estudiantesData.find(e =>
+        (e.matricula || e["matrícula"] || "").trim().toUpperCase() === matricula
+    );
+    if (!estudianteActual) {
+        errorMsg.textContent = 'Matrícula no encontrada. Intenta de nuevo.';
+        return;
+    }
+    mostrarTarjetaEstudiante();
 }
 
-function mostrarTarjetaMentor() {
-  document.getElementById('ingresoMatricula').classList.add('hidden');
-  document.getElementById('tarjetaMentor').classList.remove('hidden');
+function mostrarTarjetaEstudiante() {
+    document.getElementById('checkin-section').classList.add('hidden');
+    document.getElementById('tarjetaEstudiante').classList.remove('hidden');
 
-  // Set card color by comunidad
-  const comunidadKey = mentorActual.comunidad.trim().toLowerCase();
-  const tarjeta = document.getElementById('comunidadBox');
-  tarjeta.className = 'tarjeta-comunidad comunidad-' + comunidadKey;
+    // Nombre estudiante (nombre corto o completo)
+    document.getElementById('nombreEstudiante').textContent = estudianteActual.nameEstudiante || estudianteActual.fullnameEstudiante;
 
-  document.getElementById('fotoMentor').src = mentorActual.urlFoto;
-  document.getElementById('nombreMentor').textContent = mentorActual.nombreCompleto;
-  document.getElementById('comunidadMentor').textContent = mentorActual.comunidad;
+    // Comunidad (colores)
+    const comunidadKey = (estudianteActual.comunidad || "").toLowerCase();
+    const card = document.getElementById('comunidadCard');
+    card.className = 'card-comunidad comunidad-' + comunidadKey;
+
+    document.getElementById('comunidadBadge').textContent = estudianteActual.comunidad;
+
+    // Mentor/a
+    document.getElementById('nombreMentor').textContent = estudianteActual.mentorFullname + (estudianteActual.mentorNickname ? ` (${estudianteActual.mentorNickname})` : '');
+
+    // Foto mentor/a
+    document.getElementById('fotoMentor').src = estudianteActual.fotoMentor || 'default-mentor.png';
+    document.getElementById('fotoMentor').alt = estudianteActual.mentorFullname;
 }
 
-function registrarAsistencia() {
-  // Aquí va el código para enviar a Google Sheets o Airtable
-  // Ejemplo de Google Forms: fetch(URL, { method: 'POST', body: ... })
-  document.getElementById('mensajeExito').classList.remove('hidden');
-  document.getElementById('asistenciaBtn').style.display = 'none';
+function resetCheckin() {
+    document.getElementById('tarjetaEstudiante').classList.add('hidden');
+    document.getElementById('checkin-section').classList.remove('hidden');
+    document.getElementById('matriculaInput').value = '';
+    document.getElementById('errorMsg').textContent = '';
+    estudianteActual = null;
 }
 
-function resetForm() {
-  document.getElementById('tarjetaMentor').classList.add('hidden');
-  document.getElementById('ingresoMatricula').classList.remove('hidden');
-  document.getElementById('matriculaInput').value = '';
-  document.getElementById('mensajeExito').classList.add('hidden');
-  document.getElementById('asistenciaBtn').style.display = '';
-}
+// Puedes agregar aquí la función registrarAsistencia() cuando quieras registrar asistencia en Sheets, Airtable, etc.
