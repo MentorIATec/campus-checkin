@@ -1,4 +1,4 @@
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz0_8hWuFGaZ9LjA1tK1iUlpu8aDFqA71-J9bz2wfG8joKtapNrABpvmQ3IbhOAH3mx2g/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyhoxSaOweOvZXy133krD6AN1lZDhhjYGFC3jNyocLxx5R5m9KeTiyL-XTMPCPnluo8Cw/exec";
 let estudiantesData = [];
 let estudianteActual = null;
 
