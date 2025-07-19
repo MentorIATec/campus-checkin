@@ -1,26 +1,9 @@
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyhoxSaOweOvZXy133krD6AN1lZDhhjYGFC3jNyocLxx5R5m9KeTiyL-XTMPCPnluo8Cw/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz0_8hWuFGaZ9LjA1tK1iUlpu8aDFqA71-J9bz2wfG8joKtapNrABpvmQ3IbhOAH3mx2g/exec";
 let estudiantesData = [];
 let estudianteActual = null;
 
-// Función fetchWithTimeout que faltaba
-async function fetchWithTimeout(url, options = {}) {
-  const { timeout = 15000 } = options;
-  
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), timeout);
-  
-  try {
-    const response = await fetch(url, {
-      ...options,
-      signal: controller.signal
-    });
-    clearTimeout(id);
-    return response;
-  } catch (error) {
-    clearTimeout(id);
-    throw error;
-  }
-}
+// Cache local para evitar verificaciones repetidas
+const registrosCache = new Set();
 
 async function cargarDatos() {
   try {
@@ -76,9 +59,10 @@ function ocultarTarjeta() {
 
 async function actualizarStatsBar() {
   try {
-    const res = await fetchWithTimeout(GOOGLE_SCRIPT_URL, {
+    // No usar no-cors para GET porque necesitamos leer la respuesta
+    const res = await fetch(GOOGLE_SCRIPT_URL + '?t=' + Date.now(), {
       method: 'GET',
-      timeout: 10000
+      cache: 'no-cache'
     });
     
     if (!res.ok) throw new Error('Error en respuesta');
@@ -86,12 +70,18 @@ async function actualizarStatsBar() {
     const info = await res.json();
     
     // Actualizar contadores
-    document.getElementById('totalCheckins').textContent = info.checkins || 0;
-    
-    // Actualizar último check-in si está disponible
-    if (info.lastCheckinTime) {
-      document.getElementById('lastCheckin').textContent = info.lastCheckinTime;
+    const totalElement = document.getElementById('totalCheckins');
+    if (totalElement) {
+      totalElement.textContent = info.checkins || 0;
     }
+    
+    // Actualizar último check-in
+    const lastElement = document.getElementById('lastCheckin');
+    if (lastElement && info.lastCheckinTime) {
+      lastElement.textContent = info.lastCheckinTime;
+    }
+    
+    console.log(`📊 Stats actualizadas: ${info.checkins} registros`);
   } catch (error) {
     console.error('Error actualizando stats:', error);
     document.getElementById('totalCheckins').textContent = "—";
@@ -102,7 +92,10 @@ function actualizarHoraActual() {
   const ahora = new Date();
   const h = ahora.getHours().toString().padStart(2, '0');
   const m = ahora.getMinutes().toString().padStart(2, '0');
-  document.getElementById('currentTime').textContent = `${h}:${m}`;
+  const timeElement = document.getElementById('currentTime');
+  if (timeElement) {
+    timeElement.textContent = `${h}:${m}`;
+  }
 }
 
 function buscarEstudiante() {
@@ -164,20 +157,33 @@ async function mostrarDatosEstudiante(e) {
   document.getElementById('campusEstudiante').textContent = e.campusOrigen;
   document.getElementById('carreraEstudiante').textContent = e.carrera;
 
-  // Resetear botón y verificar estado
+  // Verificar estado del botón
   const btn = document.getElementById('asistenciaBtn');
-  btn.disabled = true;
-  btn.textContent = 'Verificando...';
-
-  // Verificar si ya hizo check-in
-  try {
-    const yaRegistrado = await checkMatriculaRegistrada(e.matricula);
-    btn.disabled = yaRegistrado;
-    btn.textContent = yaRegistrado ? '✓ Ya registrado' : '¡Ya llegué!';
-  } catch (error) {
-    // Si falla la verificación, permitir el registro
-    btn.disabled = false;
-    btn.textContent = '¡Ya llegué!';
+  
+  // Primero verificar cache local
+  if (registrosCache.has(e.matricula)) {
+    btn.disabled = true;
+    btn.textContent = '✓ Ya registrado';
+  } else {
+    // Si no está en cache, verificar en servidor
+    btn.disabled = true;
+    btn.textContent = 'Verificando...';
+    
+    try {
+      const yaRegistrado = await checkMatriculaRegistrada(e.matricula);
+      if (yaRegistrado) {
+        registrosCache.add(e.matricula);
+        btn.disabled = true;
+        btn.textContent = '✓ Ya registrado';
+      } else {
+        btn.disabled = false;
+        btn.textContent = '¡Ya llegué!';
+      }
+    } catch (error) {
+      // Si falla la verificación, permitir el registro
+      btn.disabled = false;
+      btn.textContent = '¡Ya llegué!';
+    }
   }
 
   document.getElementById('mensajeExito').classList.add('hidden');
@@ -186,9 +192,9 @@ async function mostrarDatosEstudiante(e) {
 
 async function checkMatriculaRegistrada(matricula) {
   try {
-    const res = await fetchWithTimeout(`${GOOGLE_SCRIPT_URL}?matricula=${encodeURIComponent(matricula)}`, {
+    const res = await fetch(`${GOOGLE_SCRIPT_URL}?matricula=${encodeURIComponent(matricula)}&t=${Date.now()}`, {
       method: 'GET',
-      timeout: 5000
+      cache: 'no-cache'
     });
     
     if (!res.ok) throw new Error('Error en respuesta');
@@ -202,7 +208,7 @@ async function checkMatriculaRegistrada(matricula) {
 }
 
 async function registrarAsistencia() {
-  console.log("🌐 registrarAsistencia: iniciada");
+  console.log("🌐 Iniciando registro de asistencia...");
   
   if (!estudianteActual) return;
   
@@ -210,20 +216,15 @@ async function registrarAsistencia() {
   const mensajeExito = document.getElementById('mensajeExito');
   
   // Prevenir doble clic
-  if (btn.disabled) return;
+  if (btn.disabled || registrosCache.has(estudianteActual.matricula)) {
+    return;
+  }
   
   btn.disabled = true;
   btn.textContent = 'Registrando...';
+  limpiarError();
 
   try {
-    // Primero verificar si ya está registrado
-    const yaRegistrado = await checkMatriculaRegistrada(estudianteActual.matricula);
-    if (yaRegistrado) {
-      btn.textContent = '✓ Ya registrado';
-      mostrarError('Este estudiante ya hizo check-in anteriormente.');
-      return;
-    }
-    
     // Preparar datos
     const data = {
       matricula: estudianteActual.matricula,
@@ -234,82 +235,62 @@ async function registrarAsistencia() {
       carrera: estudianteActual.carrera
     };
     
-    // Enviar registro
-    const res = await fetchWithTimeout(GOOGLE_SCRIPT_URL, {
+    // Enviar registro con no-cors
+    await fetch(GOOGLE_SCRIPT_URL, {
       method: 'POST',
-      mode: 'no-cors', // Importante para Google Apps Script
+      mode: 'no-cors',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(data),
-      timeout: 8000
+      body: JSON.stringify(data)
     });
     
-    console.log("✅ Petición enviada (modo no-cors)");
+    console.log("✅ Petición enviada");
     
-    // Esperar un momento y verificar si se registró
-    await new Promise(resolve => setTimeout(resolve, 800));
+    // Agregar a cache local inmediatamente
+    registrosCache.add(estudianteActual.matricula);
     
-    // Verificar si se registró
-    const registradoAhora = await checkMatriculaRegistrada(estudianteActual.matricula);
+    // Mostrar éxito inmediatamente (optimista)
+    mensajeExito.classList.remove('hidden');
+    mensajeExito.innerHTML = `
+      <p>✅ Registro de asistencia realizado<br>
+        <b>¡Entrega el kit de ${estudianteActual.comunidad}!</b><br>
+        <span class="small-note">Muestra esta pantalla al staff</span>
+      </p>
+    `;
     
-    if (registradoAhora) {
-      // Éxito confirmado - MOSTRAR MENSAJE
-      mensajeExito.classList.remove('hidden');
-      mensajeExito.innerHTML = `
-        <p>✅ Registro de asistencia realizado<br>
-          <b>¡Entrega el kit de ${estudianteActual.comunidad}!</b><br>
-          <span class="small-note">Muestra esta pantalla al staff</span>
-        </p>
-      `;
-      
-      btn.textContent = '✓ Ya registrado';
-      btn.disabled = true;
-      
-      // Actualizar último check-in
-      const horaActual = new Date().toLocaleTimeString('es-MX', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
-      });
-      document.getElementById('lastCheckin').textContent = horaActual;
-      
-      // Actualizar estadísticas
-      setTimeout(actualizarStatsBar, 1000);
-      
-    } else {
-      // Si no se confirmó el registro, intentar una vez más
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      const segundoIntento = await checkMatriculaRegistrada(estudianteActual.matricula);
-      
-      if (segundoIntento) {
-        // Éxito en segundo intento
-        mensajeExito.classList.remove('hidden');
-        mensajeExito.innerHTML = `
-          <p>✅ Registro de asistencia realizado<br>
-            <b>¡Entrega el kit de ${estudianteActual.comunidad}!</b><br>
-            <span class="small-note">Muestra esta pantalla al staff</span>
-          </p>
-        `;
-        btn.textContent = '✓ Ya registrado';
-        btn.disabled = true;
-        
-        // Actualizar hora
-        const horaActual = new Date().toLocaleTimeString('es-MX', {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false
-        });
-        document.getElementById('lastCheckin').textContent = horaActual;
-        
-        setTimeout(actualizarStatsBar, 1000);
-      } else {
-        throw new Error("No se pudo confirmar el registro");
-      }
+    btn.textContent = '✓ Ya registrado';
+    btn.disabled = true;
+    
+    // Actualizar hora local
+    const horaActual = new Date().toLocaleTimeString('es-MX', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+    const lastElement = document.getElementById('lastCheckin');
+    if (lastElement) {
+      lastElement.textContent = horaActual;
     }
+    
+    // Actualizar contador localmente (incrementar)
+    const totalElement = document.getElementById('totalCheckins');
+    if (totalElement) {
+      const currentTotal = parseInt(totalElement.textContent) || 0;
+      totalElement.textContent = currentTotal + 1;
+    }
+    
+    // Actualizar stats del servidor después de 2 segundos
+    setTimeout(() => {
+      actualizarStatsBar();
+    }, 2000);
     
   } catch (error) {
     console.error("❌ Error en registrarAsistencia:", error);
+    
+    // Remover de cache si hubo error
+    registrosCache.delete(estudianteActual.matricula);
+    
     mostrarError("Error al registrar. Por favor intenta de nuevo.");
     btn.disabled = false;
     btn.textContent = '¡Ya llegué!';
@@ -321,6 +302,12 @@ function resetCheckin() {
   ocultarTarjeta();
   document.getElementById('matriculaInput').value = '';
   limpiarError();
+  
+  // Ocultar mensaje de éxito si está visible
+  const mensajeExito = document.getElementById('mensajeExito');
+  if (mensajeExito) {
+    mensajeExito.classList.add('hidden');
+  }
   
   setTimeout(() => {
     const input = document.getElementById('matriculaInput');
@@ -347,14 +334,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   
   // Actualizar estadísticas iniciales
-  actualizarStatsBar();
+  await actualizarStatsBar();
   
   // Actualizar hora cada segundo
   actualizarHoraActual();
   setInterval(actualizarHoraActual, 1000);
   
-  // Actualizar estadísticas cada 30 segundos
-  setInterval(actualizarStatsBar, 30000);
+  // Actualizar estadísticas cada 15 segundos (más frecuente)
+  setInterval(actualizarStatsBar, 15000);
   
   // Reset inicial
   resetCheckin();
