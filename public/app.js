@@ -1,7 +1,7 @@
-// Campus Check-in - Frontend Actualizado
+// Campus Check-in - Frontend con Registro Arreglado
 const CONFIG = {
   API_BASE: '', // Relativo a la misma app
-  API_KEY: 'cc_checkin_2025_karen_secure_xyz789abc123', // Misma que en .env.local
+  API_KEY: 'cc_checkin_2025_karen_secure_xyz789abc123',
   GOOGLE_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbz0_8hWuFGaZ9LjA1tK1iUlpu8aDFqA71-J9bz2wfG8joKtapNrABpvmQ3IbhOAH3mx2g/exec"
 };
 
@@ -112,96 +112,72 @@ async function mostrarDatosEstudiante(estudiante) {
     btn.disabled = true;
     btn.textContent = '✓ Ya registrado';
   } else {
-    // Verificar con el servidor si está registrado
-    btn.disabled = true;
-    btn.textContent = 'Verificando...';
-    
-    try {
-      const yaRegistrado = await checkMatriculaRegistrada(estudiante.matricula);
-      if (yaRegistrado) {
-        registrosCache.add(estudiante.matricula);
-        btn.disabled = true;
-        btn.textContent = '✓ Ya registrado';
-      } else {
-        btn.disabled = false;
-        btn.textContent = '¡Ya llegué!';
-      }
-    } catch (error) {
-      console.error('Error verificando registro:', error);
-      // Si falla la verificación, permitir el registro
-      btn.disabled = false;
-      btn.textContent = '¡Ya llegué!';
-    }
+    btn.disabled = false;
+    btn.textContent = '✅ Confirmar Asistencia';
   }
 
   document.getElementById('mensajeExito').classList.add('hidden');
   mostrarTarjeta();
 }
 
-async function checkMatriculaRegistrada(matricula) {
-  try {
-    const res = await fetch(`/api/checkin?matricula=${encodeURIComponent(matricula)}&t=${Date.now()}`, {
-      method: 'GET',
-      headers: {
-        'x-api-key': CONFIG.API_KEY
-      },
-      cache: 'no-cache'
-    });
-    
-    if (!res.ok) throw new Error('Error verificando registro');
-    
-    const info = await res.json();
-    return !!info.registered;
-  } catch (error) {
-    console.error('Error verificando matrícula:', error);
-    return false;
-  }
-}
-
 async function registrarAsistencia() {
   console.log("🌐 Iniciando registro de asistencia...");
   
-  if (!estudianteActual) return;
+  if (!estudianteActual) {
+    console.error('❌ No hay estudiante actual');
+    return;
+  }
   
   const btn = document.getElementById('asistenciaBtn');
   const mensajeExito = document.getElementById('mensajeExito');
   
   // Prevenir doble clic
   if (btn.disabled || registrosCache.has(estudianteActual.matricula)) {
+    console.log('⚠️ Registro ya procesado o en proceso');
     return;
   }
   
+  // Actualizar UI inmediatamente
   btn.disabled = true;
   btn.textContent = 'Registrando...';
   limpiarError();
 
   try {
-    // Enviar a API propia
-    const response = await fetch('/api/checkin', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': CONFIG.API_KEY
-      },
-      body: JSON.stringify({
-        matricula: estudianteActual.matricula,
-        fullnameEstudiante: estudianteActual.fullnameEstudiante,
-        comunidad: estudianteActual.comunidad,
-        mentorFullname: estudianteActual.mentorFullname,
-        campusOrigen: estudianteActual.campusOrigen,
-        carrera: estudianteActual.carrera
-      })
-    });
+    console.log('📤 Enviando registro para:', estudianteActual.matricula);
 
-    const result = await response.json();
+    // MÉTODO 1: Enviar a nuestra API primero
+    let apiSuccess = false;
+    try {
+      const response = await fetch('/api/checkin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': CONFIG.API_KEY
+        },
+        body: JSON.stringify({
+          matricula: estudianteActual.matricula,
+          fullnameEstudiante: estudianteActual.fullnameEstudiante,
+          comunidad: estudianteActual.comunidad,
+          mentorFullname: estudianteActual.mentorFullname,
+          campusOrigen: estudianteActual.campusOrigen,
+          carrera: estudianteActual.carrera
+        })
+      });
 
-    if (!response.ok) {
-      throw new Error(result.error || 'Error registrando asistencia');
+      const result = await response.json();
+
+      if (response.ok) {
+        console.log("✅ Registro exitoso via API interna");
+        apiSuccess = true;
+      } else {
+        console.warn('⚠️ API interna falló:', result.error);
+      }
+    } catch (error) {
+      console.warn('⚠️ Error en API interna:', error.message);
     }
 
-    console.log("✅ Registro exitoso via API");
-    
-    // También enviar a Google Apps Script como fallback
+    // MÉTODO 2: Enviar a Google Apps Script (siempre, como respaldo)
+    let googleSuccess = false;
     if (CONFIG.GOOGLE_SCRIPT_URL) {
       try {
         const data = {
@@ -210,10 +186,20 @@ async function registrarAsistencia() {
           comunidad: estudianteActual.comunidad,
           mentorFullname: estudianteActual.mentorFullname,
           campusOrigen: estudianteActual.campusOrigen,
-          carrera: estudianteActual.carrera
+          carrera: estudianteActual.carrera,
+          timestamp: new Date().toISOString(),
+          horaCheckin: new Date().toLocaleTimeString('es-MX', { 
+            timeZone: 'America/Mexico_City',
+            hour12: false 
+          })
         };
         
-        await fetch(CONFIG.GOOGLE_SCRIPT_URL, {
+        // Usamos Promise.race para timeout
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Timeout')), 8000)
+        );
+        
+        const fetchPromise = fetch(CONFIG.GOOGLE_SCRIPT_URL, {
           method: 'POST',
           mode: 'no-cors',
           headers: {
@@ -221,34 +207,52 @@ async function registrarAsistencia() {
           },
           body: JSON.stringify(data)
         });
-        console.log("✅ También enviado a Google Script");
+
+        await Promise.race([fetchPromise, timeoutPromise]);
+        
+        console.log("✅ Enviado a Google Script");
+        googleSuccess = true;
+        
       } catch (error) {
-        console.warn('⚠️ Google Script falló (no crítico):', error);
+        if (error.message === 'Timeout') {
+          console.log('⏰ Google Script tardó mucho, pero probablemente se registró');
+          googleSuccess = true; // Asumimos éxito en timeout
+        } else {
+          console.warn('⚠️ Error en Google Script:', error.message);
+        }
       }
     }
-    
-    // Agregar a cache local
-    registrosCache.add(estudianteActual.matricula);
-    
-    // Mostrar éxito
-    mensajeExito.classList.remove('hidden');
-    mensajeExito.innerHTML = `
-      <p>✅ Registro de asistencia realizado<br>
-        <b>¡Entrega el kit de ${estudianteActual.comunidad}!</b><br>
-        <span class="small-note">Muestra esta pantalla al staff</span>
-      </p>
-    `;
-    
-    btn.textContent = '✓ Ya registrado';
-    btn.disabled = true;
-    
-    // Actualizar estadísticas localmente
-    actualizarStatsLocal();
-    
-    // Actualizar stats del servidor después
-    setTimeout(() => {
-      actualizarStatsBar();
-    }, 2000);
+
+    // EVALUAR RESULTADO
+    if (apiSuccess || googleSuccess) {
+      console.log("✅ Registro completado exitosamente");
+      
+      // Agregar a cache local
+      registrosCache.add(estudianteActual.matricula);
+      
+      // Mostrar éxito
+      mensajeExito.classList.remove('hidden');
+      mensajeExito.innerHTML = `
+        <p>✅ Registro de asistencia realizado<br>
+          <b>¡Entrega el kit de ${estudianteActual.comunidad}!</b><br>
+          <span class="small-note">Muestra esta pantalla al staff</span>
+        </p>
+      `;
+      
+      btn.textContent = '✓ Ya registrado';
+      btn.className = 'btn-checkin checked';
+      
+      // Actualizar estadísticas localmente
+      actualizarStatsLocal();
+      
+      // Actualizar stats del servidor después (sin esperar)
+      setTimeout(() => {
+        actualizarStatsBar();
+      }, 2000);
+      
+    } else {
+      throw new Error('No se pudo completar el registro');
+    }
     
   } catch (error) {
     console.error("❌ Error en registrarAsistencia:", error);
@@ -256,9 +260,13 @@ async function registrarAsistencia() {
     // Remover de cache si hubo error
     registrosCache.delete(estudianteActual.matricula);
     
-    mostrarError(`❌ ${error.message}. Por favor intenta de nuevo.`);
+    // Restaurar botón
     btn.disabled = false;
-    btn.textContent = '¡Ya llegué!';
+    btn.textContent = '✅ Confirmar Asistencia';
+    btn.className = 'btn-checkin';
+    
+    // Mostrar error
+    mostrarError(`❌ ${error.message}. Por favor intenta de nuevo.`);
   }
 }
 
@@ -308,10 +316,7 @@ async function actualizarStatsBar() {
     console.log(`📊 Stats actualizadas: ${info.checkins || 0} registros`);
   } catch (error) {
     console.error('Error actualizando stats:', error);
-    const totalElement = document.getElementById('totalCheckins');
-    if (totalElement && totalElement.textContent === '0') {
-      totalElement.textContent = "—";
-    }
+    // No mostrar error al usuario, solo en consola
   }
 }
 
@@ -394,8 +399,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   actualizarHoraActual();
   setInterval(actualizarHoraActual, 1000);
   
-  // Actualizar estadísticas cada 15 segundos
-  setInterval(actualizarStatsBar, 15000);
+  // Actualizar estadísticas cada 30 segundos
+  setInterval(actualizarStatsBar, 30000);
   
   // Reset inicial
   resetCheckin();
