@@ -599,3 +599,20 @@ main {
     font-size: 1.6em;
   }
 }
+/* Estilo para botón ya registrado */
+.btn-checkin.checked {
+  background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%) !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+  color: #fff !important;
+}
+
+.btn-checkin.checked:hover {
+  background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%) !important;
+  transform: none !important;
+}
+
+.btn-checkin.checked::before {
+  display: none !important;
+}
