@@ -1,7 +1,7 @@
 // api/checkin.js - Registrar asistencia
 export default async function handler(req, res) {
   // Configurar CORS
-  res.setHeader('Access-Control-Allow-Origin', 'https://campus-checkin.vercel.app');
+  res.setHeader('Access-Control-Allow-Origin', 'https://nodoxcheckin.vercel.app');
   res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-api-key');
   
