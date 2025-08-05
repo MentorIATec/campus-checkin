@@ -1,0 +1,58 @@
+{
+  "name": "campus-checkin",
+  "version": "2.0.0",
+  "description": "Sistema de registro de asistencia para estudiantes transferidos - Campus Check-in",
+  "main": "public/index.html",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'No build required for static files'",
+    "start": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "keywords": [
+    "campus",
+    "checkin",
+    "check-in",
+    "estudiantes",
+    "tec",
+    "monterrey",
+    "transferencias",
+    "mentoria",
+    "asistencia"
+  ],
+  "author": {
+    "name": "Karen Ariadna Guzmán Vega",
+    "email": "kareng@tec.mx",
+    "role": "Mentora Estudiantil"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MentorIATec/campus-checkin.git"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "vercel": "^32.0.0"
+  },
+  "vercel": {
+    "functions": {
+      "api/estudiante.js": {
+        "maxDuration": 10
+      },
+      "api/checkin.js": {
+        "maxDuration": 10
+      }
+    }
+  },
+  "environment": {
+    "production": {
+      "API_URL": "https://campus-checkin.vercel.app/api"
+    },
+    "development": {
+      "API_URL": "http://localhost:3000/api"
+    }
+  }
+}
