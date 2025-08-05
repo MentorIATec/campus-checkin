@@ -1,4 +1,3 @@
-// Campus Check-in - Frontend Actualizado
 const CONFIG = {
   API_BASE: '', // Relativo a la misma app
   API_KEY: 'cc_checkin_2025_public_frontend', // Key pública para frontend
