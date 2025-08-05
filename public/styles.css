@@ -1,1 +1,619 @@
+/* Campus Check-in - Estilos Actualizados */
+:root {
+  /* Colores institucionales */
+  --tec-blue: #003b5c;
+  --tec-blue-light: #005b8a;
+  --tec-blue-bright: #0062cc;
+  
+  /* Colores de comunidades estudiantiles */
+  --com-talenta: #EC008C;
+  --com-revo: #C4829A;
+  --com-kresko: #0DCCCC;
+  --com-pasio: #CC0202;
+  --com-energio: #FD8204;
+  --com-krei: #79858B;
+  --com-reflekto: #FFDE17;
+  --com-forta: #870074;
+  --com-spirita: #5B0F8B;
+  --com-ekvilibro: #6FD34A;
+  
+  /* Paleta extendida */
+  --success: #28a745;
+  --error: #dc3545;
+  --warning: #ffc107;
+  --info: #17a2b8;
+  --light: #f8f9fa;
+  --dark: #343a40;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  color: var(--tec-blue);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header con estadísticas */
+.header-stats {
+  background: linear-gradient(135deg, var(--tec-blue) 0%, var(--tec-blue-light) 100%);
+  color: #fff;
+  padding: 20px 0 0 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.4em;
+  font-weight: 700;
+  padding: 0 30px;
+  letter-spacing: 0.5px;
+}
+
+.header-title .icon {
+  font-size: 1.5em;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.header-main {
+  background: linear-gradient(45deg, #fff, #e3f2fd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.header-sub {
+  font-size: 1.05em;
+  font-weight: 400;
+  opacity: 0.92;
+  padding: 6px 30px 18px 54px;
+  letter-spacing: 0.3px;
+}
+
+.stats-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+  color: var(--tec-blue);
+  gap: 60px;
+  padding: 22px 15px 24px 15px;
+  box-shadow: 0 6px 30px rgba(0,0,0,0.12);
+  border-radius: 25px;
+  width: 90%;
+  max-width: 800px;
+  margin: -20px auto 30px auto;
+  position: relative;
+  z-index: 10;
+  border: 2px solid rgba(255,255,255,0.3);
+}
+
+.stat {
+  text-align: center;
+  transition: transform 0.2s ease;
+}
+
+.stat:hover {
+  transform: translateY(-2px);
+}
+
+.stat-value {
+  font-size: 2.2em;
+  font-weight: 800;
+  color: var(--tec-blue-bright);
+  letter-spacing: 1px;
+  line-height: 1;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.stat-label {
+  font-size: 0.95em;
+  color: #666;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+/* Responsive para móvil */
+@media (max-width: 768px) {
+  .header-stats {
+    box-shadow: none;
+    padding: 0;
+    position: relative;
+  }
+  .stats-bar, .header-sub, .header-title {
+    display: none !important;
+  }
+}
+
+/* Contenedor principal */
+main {
+  flex: 1;
+  padding: 20px;
+}
+
+.checkin-container {
+  max-width: 480px;
+  margin: 0 auto;
+  background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+  border-radius: 28px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.1);
+  padding: 40px 30px 35px 30px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px solid rgba(255,255,255,0.5);
+  backdrop-filter: blur(10px);
+}
+
+.header-checkin {
+  text-align: center;
+  margin-bottom: 30px;
+  width: 100%;
+}
+
+.header-checkin h1 {
+  font-size: 2.2em;
+  background: linear-gradient(135deg, var(--tec-blue) 0%, var(--tec-blue-bright) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.subtitle-checkin {
+  color: var(--tec-blue-light);
+  font-size: 1.15em;
+  margin-bottom: 15px;
+  letter-spacing: 0.3px;
+  font-weight: 500;
+}
+
+/* Inputs y botones */
+.input-wrap {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.input-checkin {
+  width: 100%;
+  max-width: 340px;
+  font-size: 1.15em;
+  padding: 16px 20px;
+  border-radius: 16px;
+  border: 2px solid #e3e8ee;
+  text-align: center;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.input-checkin:focus {
+  outline: none;
+  border-color: var(--tec-blue-bright);
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(0,98,204,0.1);
+  transform: translateY(-2px);
+}
+
+.input-checkin::placeholder {
+  color: #999;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+}
+
+.btn-checkin {
+  width: 100%;
+  background: linear-gradient(135deg, var(--tec-blue-bright) 0%, var(--tec-blue) 100%);
+  color: #fff;
+  font-weight: 700;
+  padding: 16px 0;
+  font-size: 1.1em;
+  border-radius: 16px;
+  border: none;
+  margin: 10px 0 0 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0,98,204,0.3);
+  letter-spacing: 0.5px;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-checkin::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn-checkin:hover:not(:disabled)::before {
+  left: 100%;
+}
+
+.btn-checkin:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--tec-blue) 0%, var(--tec-blue-light) 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,98,204,0.4);
+}
+
+.btn-checkin:active {
+  transform: translateY(0);
+}
+
+.btn-checkin:disabled {
+  background: linear-gradient(135deg, #a3b6c7 0%, #8fa3b3 100%);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.btn-back {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  color: var(--tec-blue);
+  border: 2px solid var(--tec-blue-bright);
+  margin-top: 20px;
+  font-weight: 600;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.btn-back:hover:not(:disabled) {
+  background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+  transform: translateY(-2px);
+}
+
+.error-checkin {
+  color: var(--error);
+  margin: 15px 0 0 0;
+  text-align: center;
+  font-size: 1.05em;
+  font-weight: 500;
+  padding: 10px 15px;
+  border-radius: 10px;
+  background: rgba(220, 53, 69, 0.1);
+  border: 1px solid rgba(220, 53, 69, 0.2);
+  display: none;
+}
+
+/* Tarjeta del estudiante */
+.student-card {
+  border-radius: 28px;
+  padding: 40px 20px 28px 20px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+  text-align: center;
+  margin-bottom: 20px;
+  margin-top: 10px;
+  transition: all 0.4s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.student-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+  animation: rotate 20s linear infinite;
+}
+
+@keyframes rotate {
+  to { transform: rotate(360deg); }
+}
+
+/* Gradientes de comunidades */
+.bg-Talenta { background: linear-gradient(135deg, var(--com-talenta), #d10078); }
+.bg-Revo { background: linear-gradient(135deg, var(--com-revo), #b07189); }
+.bg-Kresko { background: linear-gradient(135deg, var(--com-kresko), #0bb8b8); }
+.bg-Pasio { background: linear-gradient(135deg, var(--com-pasio), #b80202); }
+.bg-Energio { background: linear-gradient(135deg, var(--com-energio), #e37404); }
+.bg-Krei { background: linear-gradient(135deg, var(--com-krei), #6a757a); }
+.bg-Reflekto { background: linear-gradient(135deg, var(--com-reflekto), #e6c815); }
+.bg-Forta { background: linear-gradient(135deg, var(--com-forta), #750063); }
+.bg-Spirita { background: linear-gradient(135deg, var(--com-spirita), #4f0c7a); }
+.bg-Ekvilibro { background: linear-gradient(135deg, var(--com-ekvilibro), #5fc33d); }
+
+.mentor-title {
+  color: rgba(255,255,255,0.9);
+  font-size: 1.15em;
+  font-weight: 600;
+  margin-bottom: 5px;
+  position: relative;
+  z-index: 1;
+}
+
+.mentor-fullname {
+  font-size: 1.4em;
+  color: #fff;
+  font-weight: 800;
+  margin-bottom: 12px;
+  letter-spacing: 0.5px;
+  position: relative;
+  z-index: 1;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+.comunidad-badge {
+  display: inline-block;
+  border-radius: 20px;
+  padding: 8px 24px;
+  font-size: 1.1em;
+  font-weight: 800;
+  border: none;
+  margin-bottom: 20px;
+  background: rgba(255,255,255,0.95);
+  color: #222;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  min-width: 100px;
+  position: relative;
+  z-index: 1;
+  letter-spacing: 0.5px;
+}
+
+/* Colores específicos para badges */
+.comunidad-badge[data-comunidad="Talenta"] { color: var(--com-talenta); }
+.comunidad-badge[data-comunidad="Revo"] { color: var(--com-revo); }
+.comunidad-badge[data-comunidad="Kresko"] { color: var(--com-kresko); }
+.comunidad-badge[data-comunidad="Pasio"] { color: var(--com-pasio); }
+.comunidad-badge[data-comunidad="Energio"] { color: var(--com-energio); }
+.comunidad-badge[data-comunidad="Krei"] { color: var(--com-krei); }
+.comunidad-badge[data-comunidad="Reflekto"] { color: #b8a515; }
+.comunidad-badge[data-comunidad="Forta"] { color: var(--com-forta); }
+.comunidad-badge[data-comunidad="Spirita"] { color: var(--com-spirita); }
+.comunidad-badge[data-comunidad="Ekvilibro"] { color: var(--com-ekvilibro); }
+
+.mentor-foto-wrap { 
+  display: flex; 
+  justify-content: center; 
+  margin-bottom: 18px; 
+}
+
+.mentor-foto, .placeholder-foto {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 5px solid rgba(255,255,255,0.9);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  background: #e9e9e9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.8em;
+  color: #666;
+  position: relative;
+  z-index: 1;
+  transition: transform 0.3s ease;
+}
+
+.mentor-foto:hover, .placeholder-foto:hover {
+  transform: scale(1.05);
+}
+
+.datos-alumno-bloque {
+  margin-top: 15px;
+  padding: 18px 15px 15px 15px;
+  border-radius: 16px;
+  background: rgba(0,0,0,0.15);
+  backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 1;
+}
+
+.alumno-nombre {
+  font-size: 1.3em;
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  margin-bottom: 6px;
+  letter-spacing: 0.3px;
+}
+
+.alumno-detalle, .dato-carrera {
+  font-size: 1.08em;
+  color: rgba(255,255,255,0.95);
+  text-shadow: 0 1px 6px rgba(0,0,0,0.2);
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.dato-carrera { 
+  margin-top: 4px; 
+  font-size: 1.05em;
+}
+
+/* Mensaje de éxito */
+#mensajeExito {
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  color: var(--success);
+  border-radius: 18px;
+  margin: 18px 0 0 0;
+  padding: 18px 15px;
+  font-size: 1.1em;
+  text-align: center;
+  font-weight: 600;
+  border: 2px solid rgba(40, 167, 69, 0.3);
+  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.2);
+  animation: slideUp 0.5s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+#mensajeExito .small-note {
+  color: #666;
+  font-size: 0.95em;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+.hidden { 
+  display: none !important; 
+}
+
+/* Footer mejorado */
+.app-footer {
+  text-align: center;
+  margin-top: auto;
+  padding: 25px 15px 20px 15px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,249,250,0.9) 100%);
+  border-top: 2px solid rgba(0,59,92,0.1);
+  backdrop-filter: blur(10px);
+}
+
+.footer-main {
+  font-size: 1.1em;
+  font-weight: 700;
+  color: var(--tec-blue-bright);
+  margin-bottom: 6px;
+  letter-spacing: 0.5px;
+}
+
+.footer-secondary {
+  font-size: 0.95em;
+  color: #666;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.footer-tech {
+  font-size: 0.9em;
+  color: #888;
+  font-weight: 400;
+  font-style: italic;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .checkin-container {
+    margin: 10px;
+    padding: 25px 20px 30px 20px;
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+  }
+  
+  .header-checkin h1 { 
+    font-size: 1.8em; 
+  }
+  
+  .subtitle-checkin {
+    font-size: 1.05em;
+  }
+  
+  .input-checkin { 
+    font-size: 1.05em;
+    padding: 14px 18px;
+  }
+  
+  .btn-checkin { 
+    font-size: 1.05em;
+    padding: 15px 0;
+  }
+  
+  .mentor-foto, .placeholder-foto { 
+    width: 100px; 
+    height: 100px; 
+    font-size: 2.2em; 
+  }
+  
+  .comunidad-badge { 
+    font-size: 1em; 
+    padding: 6px 18px; 
+  }
+  
+  .student-card {
+    padding: 30px 18px 25px 18px;
+  }
+  
+  .stats-bar {
+    gap: 40px;
+    padding: 18px 12px 20px 12px;
+  }
+  
+  .stat-value {
+    font-size: 1.8em;
+  }
+}
+
+@media (max-width: 480px) {
+  .checkin-container {
+    margin: 5px;
+    padding: 20px 15px 25px 15px;
+  }
+  
+  .header-checkin h1 { 
+    font-size: 1.6em; 
+  }
+  
+  .mentor-foto, .placeholder-foto { 
+    width: 90px; 
+    height: 90px; 
+    font-size: 2em; 
+  }
+  
+  .stats-bar {
+    gap: 25px;
+    padding: 15px 10px 18px 10px;
+  }
+  
+  .stat-value {
+    font-size: 1.6em;
+  }
+}
+/* Estilo para botón ya registrado */
+.btn-checkin.checked {
+  background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%) !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+  color: #fff !important;
+}
+
+.btn-checkin.checked:hover {
+  background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%) !important;
+  transform: none !important;
+}
+
+.btn-checkin.checked::before {
+  display: none !important;
+}
 
