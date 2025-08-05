@@ -1,1 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Campus Check-in Debug</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #f5f5f5; }
+        .test { margin: 15px 0; padding: 10px; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        pre { background: #e9ecef; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Campus Check-in Debug Tool</h1>
+    
+    <div class="test info">
+        <h3>1. Test de Conectividad API</h3>
+        <button onclick="testAPI()">🔍 Probar API /estudiante</button>
+        <div id="api-result"></div>
+    </div>
+
+    <div class="test info">
+        <h3>2. Test de Gist Conectividad</h3>
+        <button onclick="testGist()">📄 Probar Gist Direct</button>
+        <div id="gist-result"></div>
+    </div>
+
+    <div class="test info">
+        <h3>3. Test con Matrícula Real</h3>
+        <input type="text" id="testMatricula" placeholder="A01569012" value="A01569012" style="padding: 8px; margin: 5px;">
+        <button onclick="testRealStudent()">👨‍🎓 Buscar Estudiante</button>
+        <div id="student-result"></div>
+    </div>
+
+    <script>
+        const API_BASE = ''; // Cambia si es necesario
+        const API_KEY = 'cc_checkin_2025_public_frontend';
+        
+        async function testAPI() {
+            const resultDiv = document.getElementById('api-result');
+            resultDiv.innerHTML = '<p>⏳ Probando API...</p>';
+            
+            try {
+                const response = await fetch('/api/estudiante', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': API_KEY
+                    },
+                    body: JSON.stringify({ matricula: 'A01569012' })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <p>✅ API funcionando correctamente</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <p>❌ Error en API: ${response.status}</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <p>❌ Error de conexión: ${error.message}</p>
+                        <p>Verifica que estés accediendo desde el dominio correcto</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testGist() {
+            const resultDiv = document.getElementById('gist-result');
+            resultDiv.innerHTML = '<p>⏳ Probando Gist...</p>';
+            
+            // Nota: Este test solo funcionará si el GIST es público o si CORS lo permite
+            try {
+                const gistUrl = "https://gist.githubusercontent.com/MentorIATec/TU_GIST_ID/raw/estudiantes.json";
+                const response = await fetch(gistUrl);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <p>✅ Gist accesible - ${data.length} estudiantes encontrados</p>
+                            <pre>Primer estudiante: ${JSON.stringify(data[0], null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <p>❌ Gist no accesible: ${response.status}</p>
+                            <p>Esto es normal si el Gist es privado</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="info">
+                        <p>⚠️ No se puede acceder directamente al Gist desde el frontend</p>
+                        <p>Esto es esperado si el Gist es privado. La API debe manejarlo.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testRealStudent() {
+            const matricula = document.getElementById('testMatricula').value.trim().toUpperCase();
+            const resultDiv = document.getElementById('student-result');
+            
+            if (!matricula) {
+                resultDiv.innerHTML = '<div class="error">❌ Ingresa una matrícula</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<p>⏳ Buscando estudiante...</p>';
+            
+            try {
+                const response = await fetch('/api/estudiante', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': API_KEY
+                    },
+                    body: JSON.stringify({ matricula: matricula })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <p>✅ Estudiante encontrado: ${data.data.fullnameEstudiante}</p>
+                            <pre>${JSON.stringify(data.data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <p>❌ Error: ${data.error}</p>
+                            <p>Status: ${response.status}</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <p>❌ Error de conexión: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Auto-run first test
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(testAPI, 1000);
+        });
+    </script>
+</body>
+</html>
 
