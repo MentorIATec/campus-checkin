@@ -2,18 +2,20 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>Check-in | NodoX</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+  <title>Campus Check-in | Registro de Asistencia</title>
+  <meta name="description" content="Sistema de registro de asistencia para estudiantes transferidos - Campus Monterrey">
   <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>">
 </head>
 <body>
-  <!-- Barra de estadísticas solo escritorio -->
+  <!-- Barra de estadísticas desktop -->
   <header class="header-stats">
     <div class="header-title">
       <span class="icon">📋</span>
-      <span class="header-main">Check-in Transferencias</span>
+      <span class="header-main">Campus Check-in</span>
     </div>
-    <div class="header-sub">Registro de asistentes - Verano 2025</div>
+    <div class="header-sub">Sistema de Registro de Asistencia - Verano 2025</div>
     <div class="stats-bar">
       <div class="stat">
         <div class="stat-value" id="totalCheckins">0</div>
@@ -29,52 +31,83 @@
       </div>
     </div>
   </header>
+
   <main>
     <div class="checkin-container">
       <div class="header-checkin">
-        <h1>Bienvenida de Transferencias</h1>
-        <p class="subtitle-checkin" id="leyendaMatricula">Ingresa tu matrícula</p>
+        <h1>Campus Check-in</h1>
+        <p class="subtitle-checkin" id="leyendaMatricula">Ingresa tu matrícula para registrar tu asistencia</p>
       </div>
+      
       <div id="checkin-section">
         <div class="input-wrap">
-          <input id="matriculaInput" class="input-checkin" maxlength="12" autocomplete="off" placeholder="Ej: A01234567" />
+          <input 
+            id="matriculaInput" 
+            class="input-checkin" 
+            maxlength="9" 
+            autocomplete="off" 
+            placeholder="Ej: A01234567"
+            pattern="[A-Z][0-9]{8}"
+            title="Formato: A seguido de 8 números"
+          />
         </div>
-        <button class="btn-checkin" onclick="buscarEstudiante()">Buscar</button>
+        <button class="btn-checkin" onclick="buscarEstudiante()">
+          🔍 Buscar Estudiante
+        </button>
         <p id="errorMsg" class="error-checkin"></p>
       </div>
+      
       <div id="tarjetaEstudiante" class="tarjeta-checkin hidden">
         <div id="studentCardBg" class="student-card">
-          <div class="mentor-title">Tu mentor/a es:</div>
-          <div id="mentorFullname" class="mentor-fullname"></div>
-          <div id="comunidadBadge" class="comunidad-badge"></div>
+          <div class="mentor-title">Tu mentor/a asignado:</div>
+          <div id="mentorFullname" class="mentor-fullname">Cargando...</div>
+          <div id="comunidadBadge" class="comunidad-badge">Comunidad</div>
+          
           <div class="mentor-foto-wrap">
             <img id="fotoMentor" class="mentor-foto" src="" alt="Foto mentor/a" style="display:none;" />
             <div id="fotoPlaceholder" class="mentor-foto placeholder-foto">👤</div>
           </div>
+          
           <div class="datos-alumno-bloque">
-            <div id="fullnameEstudiante" class="alumno-nombre"></div>
+            <div id="fullnameEstudiante" class="alumno-nombre">Nombre del Estudiante</div>
             <div class="alumno-detalle">
-              <span id="matriculaEstudiante" class="dato-matricula"></span> • 
-              <span id="campusEstudiante" class="dato-campus"></span>
+              <span id="matriculaEstudiante" class="dato-matricula">A00000000</span> • 
+              <span id="campusEstudiante" class="dato-campus">Campus</span>
             </div>
-            <div id="carreraEstudiante" class="dato-carrera"></div>
+            <div id="carreraEstudiante" class="dato-carrera">Carrera</div>
           </div>
-          <button class="btn-checkin" id="asistenciaBtn" onclick="registrarAsistencia()">¡Ya llegué!</button>
+          
+          <button class="btn-checkin" id="asistenciaBtn" onclick="registrarAsistencia()">
+            ✅ Confirmar Asistencia
+          </button>
+          
           <div id="mensajeExito" class="hidden">
             <p>✅ Registro de asistencia realizado<br>
               <b>¡Entrega el kit de <span id="kitComunidad"></span>!</b><br>
               <span class="small-note">Muestra esta pantalla al staff</span>
             </p>
           </div>
-          <button class="btn-checkin btn-back" onclick="resetCheckin()">Buscar otra matrícula</button>
+          
+          <button class="btn-checkin btn-back" onclick="resetCheckin()">
+            🔍 Registrar Otro Estudiante
+          </button>
         </div>
       </div>
     </div>
   </main>
+
   <footer class="app-footer">
-    Mentoría y Bienestar Estudiantil · Tecnológico de Monterrey · Campus Monterrey<br>
-    NodoXCheckin · Desarrollado con fines educativos por Karen Ariadna Guzmán Vega<br>
+    <div class="footer-main">
+      Campus Check-in | MentorIA Tools
+    </div>
+    <div class="footer-secondary">
+      Mentoría y Bienestar Estudiantil · Tecnológico de Monterrey · Campus Monterrey
+    </div>
+    <div class="footer-tech">
+      Desarrollado por Karen Ariadna Guzmán Vega
+    </div>
   </footer>
+
   <script src="app.js"></script>
 </body>
 </html>
