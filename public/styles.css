@@ -624,3 +624,62 @@ main {
 #mensajeExito {
   animation: slideUp 0.2s ease !important; /* Antes era 0.5s */
 }
+/* Mejoras para fotos de mentores */
+.mentor-foto-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 18px;
+  position: relative;
+}
+
+.mentor-foto, .placeholder-foto {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 5px solid rgba(255,255,255,0.9);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  background: #e9e9e9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.8em;
+  color: #666;
+  position: relative;
+  z-index: 1;
+  transition: all 0.3s ease;
+}
+
+.mentor-foto:hover, .placeholder-foto:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 25px rgba(0,0,0,0.4);
+}
+
+/* Loading state para imágenes */
+.mentor-foto.loading {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Responsive para móvil */
+@media (max-width: 768px) {
+  .mentor-foto, .placeholder-foto {
+    width: 100px;
+    height: 100px;
+    font-size: 2.2em;
+  }
+}
+
+@media (max-width: 480px) {
+  .mentor-foto, .placeholder-foto {
+    width: 90px;
+    height: 90px;
+    font-size: 2em;
+  }
+}
