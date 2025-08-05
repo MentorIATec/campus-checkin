@@ -1,7 +1,7 @@
 // api/estudiante.js - Campus Check-in API
 export default async function handler(req, res) {
-  // Configurar CORS
-  res.setHeader('Access-Control-Allow-Origin', 'https://campus-checkin.vercel.app');
+  // Configurar CORS - PERMITIR AMBOS DOMINIOS
+  res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-api-key');
   
@@ -11,11 +11,21 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 1. Validar API Key
+    // 1. Validar API Key - PERMITIR MÚLTIPLES KEYS
     const apiKey = req.headers['x-api-key'];
-    if (!apiKey || apiKey !== process.env.API_KEY_CHECKIN) {
+    const validKeys = [
+      process.env.API_KEY_CHECKIN,                    // Key del .env
+      'cc_checkin_2025_karen_secure_xyz789abc123',    // Key hardcoded para GitHub
+      'cc_checkin_2025_public_frontend',              // Key del debug
+      'test_key_github'                               // Key de prueba
+    ].filter(Boolean);
+    
+    if (!apiKey || !validKeys.includes(apiKey)) {
+      console.error('❌ API Key inválida recibida:', apiKey);
+      console.error('❌ Keys válidas:', validKeys);
       return res.status(401).json({ 
         error: 'Acceso no autorizado',
+        debug: `Key recibida: ${apiKey?.substring(0, 20)}...`,
         timestamp: new Date().toISOString()
       });
     }
@@ -44,13 +54,15 @@ export default async function handler(req, res) {
     }
 
     // 5. Cargar datos desde Gist Secret
-    const gistUrl = process.env.GIST_URL;
-    if (!gistUrl) {
-      console.error('❌ GIST_URL no configurada');
+    const gistUrl = process.env.GIST_URL || "https://gist.githubusercontent.com/MentorIATec/294ad6050de3384eb8806360294e49b3/raw/626a0573adcdac7a643eabba4f32f8890be19e08/estudiantes.json";
+    
+    if (!gistUrl.includes('gist.githubusercontent.com')) {
+      console.error('❌ GIST_URL inválida:', gistUrl);
       return res.status(500).json({ error: 'Configuración del servidor incompleta' });
     }
 
     console.log('🔍 Buscando estudiante:', matricula);
+    console.log('🔍 Usando Gist URL:', gistUrl.substring(0, 80) + '...');
     
     const response = await fetch(gistUrl, {
       headers: {
@@ -59,11 +71,12 @@ export default async function handler(req, res) {
     });
 
     if (!response.ok) {
-      console.error('❌ Error cargando datos:', response.status);
-      throw new Error('Error al cargar base de datos');
+      console.error('❌ Error cargando datos:', response.status, response.statusText);
+      throw new Error(`Error al cargar base de datos: ${response.status}`);
     }
 
     const estudiantes = await response.json();
+    console.log('✅ Datos cargados:', estudiantes.length, 'estudiantes');
 
     // 6. Buscar estudiante
     const estudiante = estudiantes.find(e => 
@@ -72,9 +85,11 @@ export default async function handler(req, res) {
 
     if (!estudiante) {
       console.log('❌ Estudiante no encontrado:', matricula);
+      console.log('📋 Matrículas disponibles:', estudiantes.slice(0, 3).map(e => e.matricula || e.matrícula));
       return res.status(404).json({ 
         error: 'Estudiante no encontrado',
-        matricula: matricula
+        matricula: matricula,
+        totalEstudiantes: estudiantes.length
       });
     }
 
@@ -106,6 +121,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ 
       error: 'Error interno del servidor',
       message: 'Por favor intenta de nuevo',
+      debug: error.message,
       timestamp: new Date().toISOString()
     });
   }
