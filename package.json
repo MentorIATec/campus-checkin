@@ -49,7 +49,7 @@
   },
   "environment": {
     "production": {
-      "API_URL": "https://campus-checkin.vercel.app/api"
+      "API_URL": "https://nodoxcheckin.vercel.app/api"
     },
     "development": {
       "API_URL": "http://localhost:3000/api"
