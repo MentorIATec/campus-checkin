@@ -616,4 +616,11 @@ main {
 .btn-checkin.checked::before {
   display: none !important;
 }
+/* Transiciones más rápidas para mayor velocidad */
+.btn-checkin {
+  transition: all 0.1s ease !important; /* Antes era 0.3s */
+}
 
+#mensajeExito {
+  animation: slideUp 0.2s ease !important; /* Antes era 0.5s */
+}
