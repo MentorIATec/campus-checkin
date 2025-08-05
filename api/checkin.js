@@ -1,4 +1,3 @@
-// api/checkin.js - Registrar asistencia
 export default async function handler(req, res) {
   // Configurar CORS - PERMITIR TODOS LOS DOMINIOS
   res.setHeader('Access-Control-Allow-Origin', '*');
