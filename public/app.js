@@ -70,23 +70,51 @@ async function mostrarDatosEstudiante(estudiante) {
   document.getElementById('mentorFullname').textContent = estudiante.mentorFullname || 'Sin asignar';
 
   // Manejar foto del mentor
-  const foto = document.getElementById('fotoMentor');
-  const placeholder = document.getElementById('fotoPlaceholder');
+const foto = document.getElementById('fotoMentor');
+const placeholder = document.getElementById('fotoPlaceholder');
+
+if (estudiante.fotoMentor) {
+  // Mostrar loading state
+  foto.className = 'mentor-foto loading';
+  foto.style.display = 'block';
+  placeholder.style.display = 'none';
   
-  if (estudiante.fotoMentor) {
+  // Precargar imagen
+  const img = new Image();
+  img.onload = () => {
+    // Imagen cargada exitosamente
     foto.src = estudiante.fotoMentor;
-    foto.alt = estudiante.mentorNickname || 'Mentor';
-    foto.style.display = 'block';
-    placeholder.style.display = 'none';
-    
-    foto.onerror = () => {
-      foto.style.display = 'none';
-      placeholder.style.display = 'flex';
-    };
-  } else {
+    foto.alt = `Foto de ${estudiante.mentorNickname || estudiante.mentorFullname}`;
+    foto.className = 'mentor-foto'; // Remover loading
+    console.log('✅ Foto de mentor cargada:', estudiante.fotoMentor);
+  };
+  
+  img.onerror = () => {
+    // Error cargando imagen
+    console.warn('⚠️ Error cargando foto del mentor:', estudiante.fotoMentor);
     foto.style.display = 'none';
     placeholder.style.display = 'flex';
-  }
+    placeholder.title = `Foto no disponible para ${estudiante.mentorNickname}`;
+  };
+  
+  // Timeout si tarda mucho
+  setTimeout(() => {
+    if (foto.className.includes('loading')) {
+      console.warn('⏰ Timeout cargando foto del mentor');
+      foto.style.display = 'none';
+      placeholder.style.display = 'flex';
+      placeholder.title = `Foto no disponible para ${estudiante.mentorNickname}`;
+    }
+  }, 5000);
+  
+  img.src = estudiante.fotoMentor;
+  
+} else {
+  // No hay foto configurada
+  foto.style.display = 'none';
+  placeholder.style.display = 'flex';
+  placeholder.title = `${estudiante.mentorNickname || estudiante.mentorFullname}`;
+}
 
   // Aplicar estilo de comunidad
   const studentCard = document.getElementById('studentCardBg');
