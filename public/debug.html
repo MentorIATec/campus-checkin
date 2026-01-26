@@ -34,15 +34,30 @@
         <div id="student-result"></div>
     </div>
 
+    <script src="config.js"></script>
+    <script src="config.local.js"></script>
     <script>
-        const API_BASE = ''; // Cambia si es necesario
-        const API_KEY = 'cc_checkin_2025_public_frontend';
+        const CONFIG = {
+            API_BASE: '',
+            API_KEY: '',
+            ...(window.CHECKIN_CONFIG || {})
+        };
+        const API_KEY = CONFIG.API_KEY;
         
         async function testAPI() {
             const resultDiv = document.getElementById('api-result');
             resultDiv.innerHTML = '<p>⏳ Probando API...</p>';
             
             try {
+                if (!API_KEY) {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <p>❌ API_KEY no configurada</p>
+                            <p>Define <code>public/config.local.js</code> para pruebas locales.</p>
+                        </div>
+                    `;
+                    return;
+                }
                 const response = await fetch('/api/estudiante', {
                     method: 'POST',
                     headers: {
@@ -85,7 +100,16 @@
             
             // Nota: Este test solo funcionará si el GIST es público o si CORS lo permite
             try {
-                const gistUrl = "https://gist.githubusercontent.com/MentorIATec/294ad6050de3384eb8806360294e49b3/raw/626a0573adcdac7a643eabba4f32f8890be19e08/estudiantes.json";
+                const gistUrl = (window.CHECKIN_CONFIG || {}).GIST_URL;
+                if (!gistUrl) {
+                    resultDiv.innerHTML = `
+                        <div class="info">
+                            <p>ℹ️ GIST_URL no está configurada</p>
+                            <p>Configúrala solo para pruebas locales.</p>
+                        </div>
+                    `;
+                    return;
+                }
                 const response = await fetch(gistUrl);
                 
                 if (response.ok) {
@@ -126,6 +150,15 @@
             resultDiv.innerHTML = '<p>⏳ Buscando estudiante...</p>';
             
             try {
+                if (!API_KEY) {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <p>❌ API_KEY no configurada</p>
+                            <p>Define <code>public/config.local.js</code> para pruebas locales.</p>
+                        </div>
+                    `;
+                    return;
+                }
                 const response = await fetch('/api/estudiante', {
                     method: 'POST',
                     headers: {

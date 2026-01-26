@@ -57,13 +57,29 @@ npm install
 Crear archivo `.env.local`:
 ```bash
 # API Security
-API_KEY_CHECKIN=cc_checkin_2025_karen_secure_xyz789abc123
+API_KEY_CHECKIN=TU_API_KEY
+API_KEY_CHECKIN_LIST=TU_API_KEY,OTRA_API_KEY
+ALLOWED_ORIGINS=https://tu-dominio.edu.mx,https://otro-dominio.edu.mx
 
 # Data Source (Gist Secret URL)
 GIST_URL=https://gist.githubusercontent.com/TU_USUARIO/GIST_ID/raw/HASH/estudiantes.json
 
 # Google Apps Script (opcional)
 GOOGLE_SCRIPT_URL=https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec
+```
+
+### **2.1 Configurar frontend (opcional)**
+Si necesitas enviar la `x-api-key` desde el frontend, define un archivo local **no versionado**:
+```bash
+public/config.local.js
+```
+Ejemplo:
+```js
+window.CHECKIN_CONFIG = {
+  API_BASE: '',
+  API_KEY: 'TU_API_KEY',
+  GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec'
+};
 ```
 
 ### **3. Crear Gist Secret**
@@ -113,7 +129,7 @@ El sistema soporta **10 comunidades** con branding dinámico:
 ### **Medidas de Protección**
 - ✅ **API Key Authentication** - Validación en cada request
 - ✅ **Rate Limiting** - Prevención de spam y scraping
-- ✅ **CORS restrictivo** - Solo dominios autorizados
+- ✅ **CORS opcional** - Define `ALLOWED_ORIGINS` para permitir solo dominios autorizados
 - ✅ **Validación de entrada** - Formato de matrícula obligatorio
 - ✅ **Datos privados** - Archivo JSON en Gist Secret
 - ✅ **Logs de auditoría** - Registro de accesos

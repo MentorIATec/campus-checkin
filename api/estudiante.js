@@ -1,7 +1,22 @@
 // api/estudiante.js - Campus Check-in API
 export default async function handler(req, res) {
-  // Configurar CORS - PERMITIR AMBOS DOMINIOS
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  // Configurar CORS
+  const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+  const requestOrigin = req.headers.origin;
+
+  if (allowedOrigins.length > 0) {
+    if (requestOrigin && allowedOrigins.includes(requestOrigin)) {
+      res.setHeader('Access-Control-Allow-Origin', requestOrigin);
+    } else {
+      res.setHeader('Access-Control-Allow-Origin', allowedOrigins[0]);
+    }
+    res.setHeader('Vary', 'Origin');
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
   res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-api-key');
   
@@ -11,21 +26,26 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 1. Validar API Key - PERMITIR MÚLTIPLES KEYS
+    // 1. Validar API Key
     const apiKey = req.headers['x-api-key'];
-    const validKeys = [
-      process.env.API_KEY_CHECKIN,                    // Key del .env
-      'cc_checkin_2025_karen_secure_xyz789abc123',    // Key hardcoded para GitHub
-      'cc_checkin_2025_public_frontend',              // Key del debug
-      'test_key_github'                               // Key de prueba
-    ].filter(Boolean);
+    const validKeys = (
+      process.env.API_KEY_CHECKIN_LIST ||
+      process.env.API_KEY_CHECKIN ||
+      ''
+    )
+      .split(',')
+      .map((key) => key.trim())
+      .filter(Boolean);
+
+    if (validKeys.length === 0) {
+      console.error('❌ API_KEY_CHECKIN no configurada');
+      return res.status(500).json({ error: 'Configuración del servidor incompleta' });
+    }
     
     if (!apiKey || !validKeys.includes(apiKey)) {
-      console.error('❌ API Key inválida recibida:', apiKey);
-      console.error('❌ Keys válidas:', validKeys);
+      console.error('❌ API Key inválida recibida');
       return res.status(401).json({ 
         error: 'Acceso no autorizado',
-        debug: `Key recibida: ${apiKey?.substring(0, 20)}...`,
         timestamp: new Date().toISOString()
       });
     }
@@ -53,16 +73,21 @@ export default async function handler(req, res) {
       });
     }
 
-    // 5. Cargar datos desde Gist Secret
-    const gistUrl = process.env.GIST_URL || "https://gist.githubusercontent.com/MentorIATec/294ad6050de3384eb8806360294e49b3/raw/626a0573adcdac7a643eabba4f32f8890be19e08/estudiantes.json";
+    // 5. Cargar datos desde Gist (solo si está configurado)
+    const gistUrl = process.env.GIST_URL;
     
+    if (!gistUrl) {
+      console.error('❌ GIST_URL no configurada');
+      return res.status(500).json({ error: 'Configuración del servidor incompleta' });
+    }
+
     if (!gistUrl.includes('gist.githubusercontent.com')) {
-      console.error('❌ GIST_URL inválida:', gistUrl);
+      console.error('❌ GIST_URL inválida');
       return res.status(500).json({ error: 'Configuración del servidor incompleta' });
     }
 
     console.log('🔍 Buscando estudiante:', matricula);
-    console.log('🔍 Usando Gist URL:', gistUrl.substring(0, 80) + '...');
+    console.log('🔍 Cargando base de datos desde Gist');
     
     const response = await fetch(gistUrl, {
       headers: {
