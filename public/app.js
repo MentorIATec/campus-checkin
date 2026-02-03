@@ -14,7 +14,8 @@ const isDesktop = window.matchMedia && window.matchMedia('(min-width: 900px)').m
 // Función principal: buscar estudiante via API
 async function buscarEstudiante() {
   limpiarError();
-  const input = document.getElementById('matriculaInput').value.trim().toUpperCase();
+  const inputEl = document.getElementById('matriculaInput');
+  const input = inputEl.value.trim().toUpperCase();
 
   if (!CONFIG.API_KEY) {
     mostrarError('Configuración incompleta. Revisa la API key.');
@@ -33,10 +34,16 @@ async function buscarEstudiante() {
   }
 
   // Mostrar loading
+  const btnBuscar = document.getElementById('buscarBtn');
+  inputEl.disabled = true;
+  if (btnBuscar) {
+    btnBuscar.disabled = true;
+    btnBuscar.textContent = '🔎 Buscando...';
+  }
   const errorElement = document.getElementById('errorMsg');
   errorElement.style.display = 'block';
   errorElement.textContent = '🔍 Buscando estudiante...';
-  errorElement.style.color = '#0062cc';
+  errorElement.classList.add('status-info');
 
   try {
     console.log('🔍 Buscando estudiante via API:', input);
@@ -70,6 +77,12 @@ async function buscarEstudiante() {
   } catch (error) {
     console.error('❌ Error buscando estudiante:', error);
     mostrarError(`❌ ${error.message}`);
+  } finally {
+    inputEl.disabled = false;
+    if (btnBuscar) {
+      btnBuscar.disabled = false;
+      btnBuscar.textContent = '🔍 Buscar Estudiante';
+    }
   }
 }
 
@@ -349,6 +362,7 @@ function mostrarError(msg) {
     errorElement.innerText = msg;
     errorElement.style.display = 'block';
     errorElement.style.color = '#c92e2e';
+    errorElement.classList.remove('status-info');
   }
 }
 
@@ -357,6 +371,7 @@ function limpiarError() {
   if (errorElement) {
     errorElement.innerText = '';
     errorElement.style.display = 'none';
+    errorElement.classList.remove('status-info');
   }
 }
 

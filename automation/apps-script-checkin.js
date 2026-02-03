@@ -111,14 +111,17 @@ function lookupEstudiante(body) {
   const carrera = String(row[CHECKIN_CONFIG.COLS_ASIGNACIONES.CARRERA - 1] || '').trim();
   const email = String(row[CHECKIN_CONFIG.COLS_ASIGNACIONES.EMAIL - 1] || '').trim();
 
+  const comunidad = mentorInfo.comunidad || '';
+  const fotoMentor = mentorInfo.foto || buildMentorFoto(mentorInfo.nickname || mentorAsignado, comunidad);
+
   const data = {
     matricula,
     fullnameEstudiante: fullname || fullnameRaw,
     nameEstudiante: name,
     mentorFullname: mentorInfo.nombre || mentorAsignado,
     mentorNickname: mentorInfo.nickname || (mentorAsignado.split(' ')[0] || mentorAsignado),
-    fotoMentor: mentorInfo.foto || '',
-    comunidad: mentorInfo.comunidad || '',
+    fotoMentor: fotoMentor || '',
+    comunidad,
     campusOrigen: campus,
     carrera,
     email,
@@ -235,6 +238,23 @@ function buscarMentor(sheet, mentorNombre) {
     }
   }
   return {};
+}
+
+function buildMentorFoto(nickname, comunidad) {
+  const nick = normalizarId(nickname);
+  const com = normalizarId(comunidad);
+  if (!nick || !com) return '';
+  return `/mentores/${nick}${com}.jpg`;
+}
+
+function normalizarId(value) {
+  if (!value) return '';
+  return value
+    .toString()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, '')
+    .replace(/[^a-zA-Z0-9]/g, '');
 }
 
 function parseBody(e) {

@@ -332,6 +332,12 @@ main {
   display: none;
 }
 
+.status-info {
+  color: var(--tec-blue-bright);
+  background: rgba(0, 98, 204, 0.08);
+  border: 1px solid rgba(0, 98, 204, 0.2);
+}
+
 /* Tarjeta del estudiante */
 .student-card {
   border-radius: 28px;
