@@ -114,13 +114,16 @@ function lookupEstudiante(body) {
   const campus = String(row[CHECKIN_CONFIG.COLS_ASIGNACIONES.CAMPUS_ORIGEN - 1] || '').trim();
   const carrera = String(row[CHECKIN_CONFIG.COLS_ASIGNACIONES.CARRERA - 1] || '').trim();
   const email = String(row[CHECKIN_CONFIG.COLS_ASIGNACIONES.EMAIL - 1] || '').trim();
-
   const comunidad = mentorInfo.comunidad || '';
-  const fotoMentor = mentorInfo.foto || buildMentorFoto(mentorInfo.nickname || mentorAsignado, comunidad);
+  const fotoMentor = resolveMentorFoto(
+    mentorInfo.foto,
+    mentorInfo.nickname || mentorAsignado,
+    comunidad
+  );
 
   const data = {
     matricula,
-    fullnameEstudiante: fullname || fullnameRaw,
+    fullnameEstudiante: fullname,
     nameEstudiante: name,
     mentorFullname: mentorInfo.nombre || mentorAsignado,
     mentorNickname: mentorInfo.nickname || (mentorAsignado.split(' ')[0] || mentorAsignado),
@@ -249,6 +252,16 @@ function buildMentorFoto(nickname, comunidad) {
   const com = normalizarIdCapitalizado(comunidad);
   if (!nick || !com) return '';
   return `/mentores/${nick}${com}.jpg`;
+}
+
+function resolveMentorFoto(rawFoto, nickname, comunidad) {
+  const value = (rawFoto || '').toString().trim();
+  if (value) {
+    if (/^https?:\/\//i.test(value)) return value;
+    if (value.startsWith('/')) return value;
+    return `/mentores/${value}`;
+  }
+  return buildMentorFoto(nickname, comunidad);
 }
 
 function normalizarIdCapitalizado(value) {
