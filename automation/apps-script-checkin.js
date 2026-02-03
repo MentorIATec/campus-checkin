@@ -106,7 +106,11 @@ function lookupEstudiante(body) {
   const fullnameRaw = String(row[CHECKIN_CONFIG.COLS_ASIGNACIONES.NOMBRE_COMPLETO - 1] || '').trim();
   const name = String(row[CHECKIN_CONFIG.COLS_ASIGNACIONES.NOMBRES - 1] || '').trim();
   const lastnames = String(row[CHECKIN_CONFIG.COLS_ASIGNACIONES.APELLIDOS - 1] || '').trim();
-  const fullname = [name, lastnames].filter(Boolean).join(' ').trim() || fullnameRaw;
+  const parsed = parseNombreCompleto(fullnameRaw);
+  const fullname = [name || parsed.nombres, lastnames || parsed.apellidos]
+    .filter(Boolean)
+    .join(' ')
+    .trim() || fullnameRaw;
   const campus = String(row[CHECKIN_CONFIG.COLS_ASIGNACIONES.CAMPUS_ORIGEN - 1] || '').trim();
   const carrera = String(row[CHECKIN_CONFIG.COLS_ASIGNACIONES.CARRERA - 1] || '').trim();
   const email = String(row[CHECKIN_CONFIG.COLS_ASIGNACIONES.EMAIL - 1] || '').trim();
@@ -241,20 +245,35 @@ function buscarMentor(sheet, mentorNombre) {
 }
 
 function buildMentorFoto(nickname, comunidad) {
-  const nick = normalizarId(nickname);
-  const com = normalizarId(comunidad);
+  const nick = normalizarIdCapitalizado(nickname);
+  const com = normalizarIdCapitalizado(comunidad);
   if (!nick || !com) return '';
   return `/mentores/${nick}${com}.jpg`;
 }
 
-function normalizarId(value) {
+function normalizarIdCapitalizado(value) {
   if (!value) return '';
-  return value
+  const clean = value
     .toString()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/\s+/g, '')
     .replace(/[^a-zA-Z0-9]/g, '');
+  if (!clean) return '';
+  return clean.charAt(0).toUpperCase() + clean.slice(1);
+}
+
+function parseNombreCompleto(value) {
+  if (!value) return { nombres: '', apellidos: '' };
+  const text = value.toString().trim();
+  if (text.includes(',')) {
+    const parts = text.split(',');
+    return {
+      apellidos: parts[0].trim(),
+      nombres: parts.slice(1).join(',').trim()
+    };
+  }
+  return { nombres: '', apellidos: '' };
 }
 
 function parseBody(e) {
