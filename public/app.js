@@ -14,6 +14,11 @@ const STORAGE_KEY = 'checkinCacheFJ26';
 async function buscarEstudiante() {
   limpiarError();
   const input = document.getElementById('matriculaInput').value.trim().toUpperCase();
+
+  if (!CONFIG.API_KEY) {
+    mostrarError('Configuración incompleta. Revisa la API key.');
+    return;
+  }
   
   if (!input) {
     mostrarError('Ingresa una matrícula');
@@ -291,6 +296,7 @@ function actualizarStatsLocal() {
 
 async function actualizarStatsBar() {
   try {
+    if (!CONFIG.API_KEY) return;
     const res = await fetch(`/api/stats?t=${Date.now()}`, {
       method: 'GET',
       cache: 'no-cache',
