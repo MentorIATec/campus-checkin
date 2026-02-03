@@ -8,6 +8,7 @@ const CONFIG = {
 
 let estudianteActual = null;
 const registrosCache = new Set();
+const STORAGE_KEY = 'checkinCacheFJ26';
 
 // Función principal: buscar estudiante via API
 async function buscarEstudiante() {
@@ -112,6 +113,7 @@ async function mostrarDatosEstudiante(estudiante) {
   if (registrosCache.has(estudiante.matricula)) {
     btn.disabled = true;
     btn.textContent = '✓ Ya registrado';
+    mostrarMensajeYaRegistrado();
   } else {
     // Verificar con el servidor si está registrado
     btn.disabled = true;
@@ -121,17 +123,19 @@ async function mostrarDatosEstudiante(estudiante) {
       const yaRegistrado = await checkMatriculaRegistrada(estudiante.matricula);
       if (yaRegistrado) {
         registrosCache.add(estudiante.matricula);
+        persistirCache();
         btn.disabled = true;
         btn.textContent = '✓ Ya registrado';
+        mostrarMensajeYaRegistrado();
       } else {
         btn.disabled = false;
-        btn.textContent = '¡Ya llegué!';
+        btn.textContent = '✅ Confirmar asistencia presencial';
       }
     } catch (error) {
       console.error('Error verificando registro:', error);
       // Si falla la verificación, permitir el registro
       btn.disabled = false;
-      btn.textContent = '¡Ya llegué!';
+      btn.textContent = '✅ Confirmar asistencia presencial';
     }
   }
 
@@ -230,18 +234,20 @@ async function registrarAsistencia() {
     
     // Agregar a cache local
     registrosCache.add(estudianteActual.matricula);
+    persistirCache();
     
     // Mostrar éxito
     mensajeExito.classList.remove('hidden');
     mensajeExito.innerHTML = `
       <p>✅ Registro de asistencia realizado<br>
         <b>¡Entrega el kit de ${estudianteActual.comunidad}!</b><br>
-        <span class="small-note">Muestra esta pantalla al staff</span>
+        <span class="small-note">Muestra esta pantalla al staff y no recargues</span>
       </p>
     `;
     
     btn.textContent = '✓ Ya registrado';
     btn.disabled = true;
+    setResetButtonLabel('Registrar otro estudiante');
     
     // Actualizar estadísticas localmente
     actualizarStatsLocal();
@@ -259,7 +265,7 @@ async function registrarAsistencia() {
     
     mostrarError(`❌ ${error.message}. Por favor intenta de nuevo.`);
     btn.disabled = false;
-    btn.textContent = '¡Ya llegué!';
+    btn.textContent = '✅ Confirmar asistencia presencial';
   }
 }
 
@@ -285,9 +291,12 @@ function actualizarStatsLocal() {
 
 async function actualizarStatsBar() {
   try {
-    const res = await fetch(CONFIG.GOOGLE_SCRIPT_URL + '?t=' + Date.now(), {
+    const res = await fetch(`/api/stats?t=${Date.now()}`, {
       method: 'GET',
-      cache: 'no-cache'
+      cache: 'no-cache',
+      headers: {
+        'x-api-key': CONFIG.API_KEY
+      }
     });
     
     if (!res.ok) throw new Error('Error en respuesta');
@@ -361,6 +370,7 @@ function resetCheckin() {
   ocultarTarjeta();
   document.getElementById('matriculaInput').value = '';
   limpiarError();
+  setResetButtonLabel('⬅️ Corregir matrícula');
   
   const mensajeExito = document.getElementById('mensajeExito');
   if (mensajeExito) {
@@ -376,6 +386,8 @@ function resetCheckin() {
 // Inicialización
 document.addEventListener('DOMContentLoaded', async () => {
   console.log("🚀 Iniciando Campus Check-in...");
+
+  cargarCache();
   
   // Configurar evento Enter en el input
   const inputMatricula = document.getElementById('matriculaInput');
@@ -403,3 +415,49 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   console.log("✅ Campus Check-in listo");
 });
+
+function cargarCache() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const items = JSON.parse(raw);
+    if (!Array.isArray(items)) return;
+    items.forEach(item => {
+      if (item && item.matricula) {
+        registrosCache.add(String(item.matricula).trim().toUpperCase());
+      }
+    });
+  } catch (error) {
+    console.warn('⚠️ No se pudo cargar cache local:', error);
+  }
+}
+
+function persistirCache() {
+  try {
+    const data = Array.from(registrosCache).slice(-200).map(m => ({
+      matricula: m,
+      ts: Date.now()
+    }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch (error) {
+    console.warn('⚠️ No se pudo guardar cache local:', error);
+  }
+}
+
+function mostrarMensajeYaRegistrado() {
+  const mensajeExito = document.getElementById('mensajeExito');
+  if (!mensajeExito) return;
+  mensajeExito.classList.remove('hidden');
+  mensajeExito.innerHTML = `
+    <p>✓ Este estudiante ya cuenta con registro<br>
+      <span class="small-note">Si necesitas corregir, vuelve a buscar la matrícula</span>
+    </p>
+  `;
+}
+
+function setResetButtonLabel(text) {
+  const resetBtn = document.getElementById('resetBtn');
+  if (resetBtn) {
+    resetBtn.textContent = text;
+  }
+}

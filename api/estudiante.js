@@ -73,66 +73,41 @@ export default async function handler(req, res) {
       });
     }
 
-    // 5. Cargar datos desde Gist (solo si está configurado)
-    const gistUrl = process.env.GIST_URL;
-    
-    if (!gistUrl) {
-      console.error('❌ GIST_URL no configurada');
-      return res.status(500).json({ error: 'Configuración del servidor incompleta' });
-    }
+    // 5. Consultar Apps Script (lookup seguro)
+    const scriptUrl = process.env.GOOGLE_SCRIPT_URL;
+    const scriptKey = process.env.GOOGLE_SCRIPT_KEY;
 
-    if (!gistUrl.includes('gist.githubusercontent.com')) {
-      console.error('❌ GIST_URL inválida');
+    if (!scriptUrl || !scriptKey) {
+      console.error('❌ GOOGLE_SCRIPT_URL/GOOGLE_SCRIPT_KEY no configurados');
       return res.status(500).json({ error: 'Configuración del servidor incompleta' });
     }
 
     console.log('🔍 Buscando estudiante:', matricula);
-    console.log('🔍 Cargando base de datos desde Gist');
-    
-    const response = await fetch(gistUrl, {
+    console.log('🔍 Consultando Apps Script');
+
+    const response = await fetch(scriptUrl, {
+      method: 'POST',
       headers: {
-        'User-Agent': 'Campus-Checkin-API/1.0'
-      }
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        action: 'lookup',
+        matricula: matricula.trim().toUpperCase(),
+        api_key: scriptKey
+      })
     });
 
     if (!response.ok) {
-      console.error('❌ Error cargando datos:', response.status, response.statusText);
-      throw new Error(`Error al cargar base de datos: ${response.status}`);
+      console.error('❌ Error Apps Script:', response.status, response.statusText);
+      throw new Error(`Error Apps Script: ${response.status}`);
     }
 
-    const estudiantes = await response.json();
-    console.log('✅ Datos cargados:', estudiantes.length, 'estudiantes');
-
-    // 6. Buscar estudiante
-    const estudiante = estudiantes.find(e => 
-      (e.matricula || e.matrícula)?.trim().toUpperCase() === matricula.trim().toUpperCase()
-    );
-
-    if (!estudiante) {
-      console.log('❌ Estudiante no encontrado:', matricula);
-      console.log('📋 Matrículas disponibles:', estudiantes.slice(0, 3).map(e => e.matricula || e.matrícula));
-      return res.status(404).json({ 
-        error: 'Estudiante no encontrado',
-        matricula: matricula,
-        totalEstudiantes: estudiantes.length
-      });
+    const result = await response.json();
+    if (result.status >= 400 || result.error) {
+      return res.status(result.status || 500).json({ error: result.error || 'Error en lookup' });
     }
 
-    // 7. Preparar respuesta segura
-    const safeData = {
-      matricula: estudiante.matricula || estudiante.matrícula,
-      fullnameEstudiante: estudiante.fullnameEstudiante?.trim(),
-      nameEstudiante: estudiante.nameEstudiante?.trim(),
-      mentorFullname: estudiante.mentorFullname?.trim(),
-      mentorNickname: estudiante.mentorNickname?.trim(),
-      fotoMentor: estudiante.fotoMentor?.trim(),
-      comunidad: estudiante.comunidad?.trim(),
-      campusOrigen: estudiante.campusOrigen?.trim(),
-      carrera: estudiante.carrera?.trim(),
-      whatsappMentor: estudiante.whatsappMentor?.trim()
-    };
-
-    // 8. Log exitoso (parcial para privacidad)
+    const safeData = result.data || {};
     console.log('✅ Estudiante encontrado:', matricula, '-', safeData.nameEstudiante);
 
     return res.status(200).json({

@@ -15,7 +15,7 @@
       <span class="icon">📋</span>
       <span class="header-main">Campus Check-in</span>
     </div>
-    <div class="header-sub">Sistema de Registro de Asistencia - Verano 2025</div>
+    <div class="header-sub">Sistema de Registro de Asistencia - FJ26</div>
     <div class="stats-bar">
       <div class="stat">
         <div class="stat-value" id="totalCheckins">0</div>
@@ -36,7 +36,8 @@
     <div class="checkin-container">
       <div class="header-checkin">
         <h1>Campus Check-in</h1>
-        <p class="subtitle-checkin" id="leyendaMatricula">Ingresa tu matrícula para registrar tu asistencia</p>
+        <p class="subtitle-checkin" id="leyendaMatricula">Ingresa tu matrícula institucional para registrar tu asistencia presencial</p>
+        <p class="privacy-note">Tus datos se usan solo para el registro del evento y seguimiento de mentoría.</p>
       </div>
       
       <div id="checkin-section">
@@ -77,8 +78,8 @@
             <div id="carreraEstudiante" class="dato-carrera">Carrera</div>
           </div>
           
-          <button class="btn-checkin" id="asistenciaBtn" onclick="registrarAsistencia()">
-            ✅ Confirmar Asistencia
+          <button class="btn-checkin btn-confirm" id="asistenciaBtn" onclick="registrarAsistencia()">
+            ✅ Confirmar asistencia presencial
           </button>
           
           <div id="mensajeExito" class="hidden">
@@ -88,8 +89,8 @@
             </p>
           </div>
           
-          <button class="btn-checkin btn-back" onclick="resetCheckin()">
-            🔍 Registrar Otro Estudiante
+          <button class="btn-checkin btn-back" id="resetBtn" onclick="resetCheckin()">
+            ⬅️ Corregir matrícula
           </button>
         </div>
       </div>

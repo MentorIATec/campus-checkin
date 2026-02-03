@@ -74,40 +74,42 @@ export default async function handler(req, res) {
         });
       }
 
-      // Registrar en Google Apps Script (si está configurado)
-      const googleScriptUrl = process.env.GOOGLE_SCRIPT_URL;
-      if (googleScriptUrl) {
-        const registroData = {
-          matricula,
-          fullnameEstudiante,
-          comunidad,
-          mentorFullname,
-          campusOrigen,
-          carrera,
-          timestamp: new Date().toISOString(),
-          horaCheckin: new Date().toLocaleTimeString('es-MX', { 
-            timeZone: 'America/Mexico_City',
-            hour12: false 
-          }),
-          fechaCheckin: new Date().toLocaleDateString('es-MX', {
-            timeZone: 'America/Mexico_City'
-          })
-        };
+      // Registrar en Apps Script (idempotente)
+      const scriptUrl = process.env.GOOGLE_SCRIPT_URL;
+      const scriptKey = process.env.GOOGLE_SCRIPT_KEY;
+      if (!scriptUrl || !scriptKey) {
+        console.error('❌ GOOGLE_SCRIPT_URL/GOOGLE_SCRIPT_KEY no configurados');
+        return res.status(500).json({ error: 'Configuración del servidor incompleta' });
+      }
 
-        try {
-          await fetch(googleScriptUrl, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(registroData)
-          });
-          console.log('✅ Check-in registrado:', matricula);
-        } catch (error) {
-          console.error('⚠️ Error enviando a Google Script:', error);
-          // No fallar por esto - continuar
-        }
+      const registroData = {
+        action: 'checkin',
+        api_key: scriptKey,
+        matricula,
+        fullnameEstudiante,
+        comunidad,
+        mentorFullname,
+        campusOrigen,
+        carrera,
+        source: 'onsite'
+      };
+
+      const scriptResponse = await fetch(scriptUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(registroData)
+      });
+
+      if (!scriptResponse.ok) {
+        console.error('❌ Error Apps Script:', scriptResponse.status, scriptResponse.statusText);
+        return res.status(502).json({ error: 'Error registrando asistencia' });
+      }
+
+      const scriptResult = await scriptResponse.json();
+      if (scriptResult.status >= 400 || scriptResult.error) {
+        return res.status(scriptResult.status || 500).json({ error: scriptResult.error || 'Error registrando asistencia' });
       }
 
       return res.status(200).json({
@@ -117,7 +119,8 @@ export default async function handler(req, res) {
           matricula,
           nombre: fullnameEstudiante,
           comunidad,
-          timestamp: new Date().toISOString()
+          timestamp: scriptResult.timestamp || new Date().toISOString(),
+          alreadyRegistered: !!scriptResult.alreadyRegistered
         }
       });
 
@@ -129,10 +132,37 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Matrícula requerida' });
       }
 
-      // Por ahora retornamos que no está registrado (puedes mejorar esto después)
+      const scriptUrl = process.env.GOOGLE_SCRIPT_URL;
+      const scriptKey = process.env.GOOGLE_SCRIPT_KEY;
+      if (!scriptUrl || !scriptKey) {
+        console.error('❌ GOOGLE_SCRIPT_URL/GOOGLE_SCRIPT_KEY no configurados');
+        return res.status(500).json({ error: 'Configuración del servidor incompleta' });
+      }
+
+      const scriptResponse = await fetch(scriptUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          action: 'lookup',
+          api_key: scriptKey,
+          matricula
+        })
+      });
+
+      if (!scriptResponse.ok) {
+        return res.status(502).json({ error: 'Error consultando estado' });
+      }
+
+      const scriptResult = await scriptResponse.json();
+      if (scriptResult.status >= 400 || scriptResult.error) {
+        return res.status(scriptResult.status || 500).json({ error: scriptResult.error || 'Error consultando estado' });
+      }
+
       return res.status(200).json({
         matricula,
-        registered: false,
+        registered: !!(scriptResult.data && scriptResult.data.yaRegistrado),
         timestamp: new Date().toISOString()
       });
     }

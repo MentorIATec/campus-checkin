@@ -190,6 +190,13 @@ main {
   font-weight: 500;
 }
 
+.privacy-note {
+  font-size: 0.95em;
+  color: #5b6b77;
+  margin-top: -6px;
+  margin-bottom: 18px;
+}
+
 /* Inputs y botones */
 .input-wrap {
   display: flex;
@@ -275,6 +282,23 @@ main {
   cursor: not-allowed;
   transform: none;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.btn-confirm {
+  background: linear-gradient(135deg, #20bf6b 0%, #16a34a 100%);
+  font-size: 1.2em;
+  padding: 18px 0;
+  box-shadow: 0 6px 18px rgba(16, 163, 74, 0.35);
+  animation: pulseCta 2.2s ease-in-out infinite;
+}
+
+.btn-confirm:hover:not(:disabled) {
+  background: linear-gradient(135deg, #1ea85f 0%, #148f41 100%);
+}
+
+@keyframes pulseCta {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
 }
 
 .btn-back {
