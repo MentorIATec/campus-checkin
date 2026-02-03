@@ -30,11 +30,13 @@ const SETUP_CONFIG = {
       'Columna 1'
     ],
     MENTORES: [
-      'Mentor(a)',
-      'Nickname',
+      'nombreMentor',
+      'nicknameMentor',
+      'fotoMentor',
       'Email',
       'Celular',
-      'Comunidad'
+      'Comunidad',
+      'Instagram'
     ],
     CHECKINS: [
       'checkinId',

@@ -28,9 +28,11 @@ const CHECKIN_CONFIG = {
   COLS_MENTORES: {
     NOMBRE_MENTOR: 1, // A
     NICKNAME: 2, // B
+    FOTO: 3, // C
     EMAIL: 4, // D
     CELULAR: 5, // E
-    COMUNIDAD: 6 // F
+    COMUNIDAD: 6, // F
+    INSTAGRAM: 7 // G
   },
   COLS_CHECKINS: {
     CHECKIN_ID: 1, // A
@@ -113,6 +115,7 @@ function lookupEstudiante(body) {
     nameEstudiante: name,
     mentorFullname: mentorInfo.nombre || mentorAsignado,
     mentorNickname: mentorInfo.nickname || (mentorAsignado.split(' ')[0] || mentorAsignado),
+    fotoMentor: mentorInfo.foto || '',
     comunidad: mentorInfo.comunidad || '',
     campusOrigen: campus,
     carrera,
@@ -221,9 +224,11 @@ function buscarMentor(sheet, mentorNombre) {
       return {
         nombre,
         nickname: String(rows[i][CHECKIN_CONFIG.COLS_MENTORES.NICKNAME - 1] || '').trim(),
+        foto: String(rows[i][CHECKIN_CONFIG.COLS_MENTORES.FOTO - 1] || '').trim(),
         email: String(rows[i][CHECKIN_CONFIG.COLS_MENTORES.EMAIL - 1] || '').trim(),
         celular: String(rows[i][CHECKIN_CONFIG.COLS_MENTORES.CELULAR - 1] || '').trim(),
-        comunidad: String(rows[i][CHECKIN_CONFIG.COLS_MENTORES.COMUNIDAD - 1] || '').trim()
+        comunidad: String(rows[i][CHECKIN_CONFIG.COLS_MENTORES.COMUNIDAD - 1] || '').trim(),
+        instagram: String(rows[i][CHECKIN_CONFIG.COLS_MENTORES.INSTAGRAM - 1] || '').trim()
       };
     }
   }
