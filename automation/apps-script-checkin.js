@@ -34,6 +34,10 @@ const CHECKIN_CONFIG = {
     COMUNIDAD: 6, // F
     INSTAGRAM: 7 // G
   },
+  MENTOR_EXCEPCIONES: {
+    'mentor pendiente pasio': { mentor: 'Norman Ernesto Ramírez González', comunidad: 'Pasio' },
+    'mentor(a) talenta pendiente': { mentor: 'Zoé Nohemí Montoya Campos', comunidad: 'Talenta' }
+  },
   COLS_CHECKINS: {
     CHECKIN_ID: 1, // A
     TIMESTAMP: 2, // B
@@ -101,7 +105,13 @@ function lookupEstudiante(body) {
     return jsonResponse({ error: 'Estudiante no encontrado' }, 404);
   }
 
-  const mentorAsignado = String(row[CHECKIN_CONFIG.COLS_ASIGNACIONES.MENTOR_ASIGNADO - 1] || '').trim();
+  let mentorAsignado = String(row[CHECKIN_CONFIG.COLS_ASIGNACIONES.MENTOR_ASIGNADO - 1] || '').trim();
+  const mentorKey = normalizar(mentorAsignado);
+  let comunidadOverride = '';
+  if (CHECKIN_CONFIG.MENTOR_EXCEPCIONES[mentorKey]) {
+    mentorAsignado = CHECKIN_CONFIG.MENTOR_EXCEPCIONES[mentorKey].mentor;
+    comunidadOverride = CHECKIN_CONFIG.MENTOR_EXCEPCIONES[mentorKey].comunidad;
+  }
   const mentorInfo = buscarMentor(mentores, mentorAsignado);
   const fullnameRaw = String(row[CHECKIN_CONFIG.COLS_ASIGNACIONES.NOMBRE_COMPLETO - 1] || '').trim();
   const name = String(row[CHECKIN_CONFIG.COLS_ASIGNACIONES.NOMBRES - 1] || '').trim();
@@ -114,7 +124,7 @@ function lookupEstudiante(body) {
   const campus = String(row[CHECKIN_CONFIG.COLS_ASIGNACIONES.CAMPUS_ORIGEN - 1] || '').trim();
   const carrera = String(row[CHECKIN_CONFIG.COLS_ASIGNACIONES.CARRERA - 1] || '').trim();
   const email = String(row[CHECKIN_CONFIG.COLS_ASIGNACIONES.EMAIL - 1] || '').trim();
-  const comunidad = mentorInfo.comunidad || '';
+  const comunidad = comunidadOverride || mentorInfo.comunidad || '';
   const fotoMentor = resolveMentorFoto(
     mentorInfo.foto,
     mentorInfo.nickname || mentorAsignado,
