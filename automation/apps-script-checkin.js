@@ -9,7 +9,7 @@
  */
 
 const CHECKIN_CONFIG = {
-  API_KEY: 'REEMPLAZA_ESTA_API_KEY',
+  API_KEY: 'FJ26_gs_4e8d2c9a7b1f3d6e0a5c8f2b9d4e7c1a',
   EVENT_KEY: 'FJ26',
   TIMEZONE: 'America/Mexico_City',
   ASIGNACIONES_SHEET: 'Asignaciones',
