@@ -190,6 +190,10 @@ main {
   font-weight: 500;
 }
 
+.subtitle-staff {
+  margin-top: -6px;
+}
+
 .privacy-note {
   font-size: 0.95em;
   color: #5b6b77;

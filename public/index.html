@@ -37,6 +37,7 @@
       <div class="header-checkin">
         <h1>Campus Check-in</h1>
         <p class="subtitle-checkin" id="leyendaMatricula">Ingresa tu matrícula institucional para registrar tu asistencia presencial</p>
+        <p class="subtitle-checkin subtitle-staff hidden" id="leyendaStaff">Ingresa la matrícula del estudiante para registrar su asistencia presencial</p>
         <p class="privacy-note">Tus datos se usan solo para el registro del evento y seguimiento de mentoría.</p>
       </div>
       
@@ -52,7 +53,7 @@
             title="Formato: A seguido de 8 números"
           />
         </div>
-        <button class="btn-checkin" onclick="buscarEstudiante()">
+        <button class="btn-checkin" id="buscarBtn" onclick="buscarEstudiante()">
           🔍 Buscar Estudiante
         </button>
         <p id="errorMsg" class="error-checkin"></p>
@@ -60,7 +61,7 @@
       
       <div id="tarjetaEstudiante" class="tarjeta-checkin hidden">
         <div id="studentCardBg" class="student-card">
-          <div class="mentor-title">Tu mentor/a asignado:</div>
+          <div class="mentor-title" id="mentorTitle">Tu mentor/a asignado:</div>
           <div id="mentorFullname" class="mentor-fullname">Cargando...</div>
           <div id="comunidadBadge" class="comunidad-badge">Comunidad</div>
           

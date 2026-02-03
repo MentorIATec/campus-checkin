@@ -9,6 +9,7 @@ const CONFIG = {
 let estudianteActual = null;
 const registrosCache = new Set();
 const STORAGE_KEY = 'checkinCacheFJ26';
+const isDesktop = window.matchMedia && window.matchMedia('(min-width: 900px)').matches;
 
 // Función principal: buscar estudiante via API
 async function buscarEstudiante() {
@@ -394,6 +395,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   console.log("🚀 Iniciando Campus Check-in...");
 
   cargarCache();
+  ajustarCopyPorDispositivo();
   
   // Configurar evento Enter en el input
   const inputMatricula = document.getElementById('matriculaInput');
@@ -421,6 +423,25 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   console.log("✅ Campus Check-in listo");
 });
+
+function ajustarCopyPorDispositivo() {
+  const leyendaMatricula = document.getElementById('leyendaMatricula');
+  const leyendaStaff = document.getElementById('leyendaStaff');
+  const mentorTitle = document.getElementById('mentorTitle');
+  const buscarBtn = document.getElementById('buscarBtn');
+
+  if (isDesktop) {
+    if (leyendaMatricula) leyendaMatricula.classList.add('hidden');
+    if (leyendaStaff) leyendaStaff.classList.remove('hidden');
+    if (mentorTitle) mentorTitle.textContent = 'Mentor/a asignado/a:';
+    if (buscarBtn) buscarBtn.textContent = '🔍 Buscar estudiante';
+  } else {
+    if (leyendaStaff) leyendaStaff.classList.add('hidden');
+    if (leyendaMatricula) leyendaMatricula.classList.remove('hidden');
+    if (mentorTitle) mentorTitle.textContent = 'Tu mentor/a asignado:';
+    if (buscarBtn) buscarBtn.textContent = '🔍 Buscar Estudiante';
+  }
+}
 
 function cargarCache() {
   try {

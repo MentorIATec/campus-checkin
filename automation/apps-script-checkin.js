@@ -103,15 +103,17 @@ function lookupEstudiante(body) {
 
   const mentorAsignado = String(row[CHECKIN_CONFIG.COLS_ASIGNACIONES.MENTOR_ASIGNADO - 1] || '').trim();
   const mentorInfo = buscarMentor(mentores, mentorAsignado);
-  const fullname = String(row[CHECKIN_CONFIG.COLS_ASIGNACIONES.NOMBRE_COMPLETO - 1] || '').trim();
+  const fullnameRaw = String(row[CHECKIN_CONFIG.COLS_ASIGNACIONES.NOMBRE_COMPLETO - 1] || '').trim();
   const name = String(row[CHECKIN_CONFIG.COLS_ASIGNACIONES.NOMBRES - 1] || '').trim();
+  const lastnames = String(row[CHECKIN_CONFIG.COLS_ASIGNACIONES.APELLIDOS - 1] || '').trim();
+  const fullname = [name, lastnames].filter(Boolean).join(' ').trim() || fullnameRaw;
   const campus = String(row[CHECKIN_CONFIG.COLS_ASIGNACIONES.CAMPUS_ORIGEN - 1] || '').trim();
   const carrera = String(row[CHECKIN_CONFIG.COLS_ASIGNACIONES.CARRERA - 1] || '').trim();
   const email = String(row[CHECKIN_CONFIG.COLS_ASIGNACIONES.EMAIL - 1] || '').trim();
 
   const data = {
     matricula,
-    fullnameEstudiante: fullname || `${name} ${String(row[CHECKIN_CONFIG.COLS_ASIGNACIONES.APELLIDOS - 1] || '').trim()}`.trim(),
+    fullnameEstudiante: fullname || fullnameRaw,
     nameEstudiante: name,
     mentorFullname: mentorInfo.nombre || mentorAsignado,
     mentorNickname: mentorInfo.nickname || (mentorAsignado.split(' ')[0] || mentorAsignado),
