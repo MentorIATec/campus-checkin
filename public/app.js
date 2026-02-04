@@ -3,6 +3,7 @@ const CONFIG = {
   API_BASE: '',
   API_KEY: '',
   GOOGLE_SCRIPT_URL: '',
+  CONTINUOUS_MODE: false,
   ...(window.CHECKIN_CONFIG || {})
 };
 
@@ -14,6 +15,7 @@ const isDesktop = window.matchMedia && window.matchMedia('(min-width: 900px)').m
 let isSearching = false;
 let isSubmitting = false;
 let autoResetTimer = null;
+const allowAutoReset = !!CONFIG.CONTINUOUS_MODE;
 
 // Función principal: buscar estudiante via API
 async function buscarEstudiante() {
@@ -292,7 +294,7 @@ async function registrarAsistencia() {
       actualizarStatsBar();
     }, 2000);
 
-    if (isDesktop) {
+    if (allowAutoReset) {
       clearTimeout(autoResetTimer);
       autoResetTimer = setTimeout(() => {
         resetCheckin();
