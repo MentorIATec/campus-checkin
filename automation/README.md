@@ -71,7 +71,9 @@ No cargar `config.local.js` en produccion.
 Para generar metricas en la misma spreadsheet:
 1. Pega `automation/apps-script-stats.js` en Apps Script.
 2. Ejecuta `generarStatsCheckin()`.
-3. Se creara/actualizara la hoja `Stats` con:
+3. Recarga la hoja para ver el menu `Check-in FJ26`.
+4. Usa `Check-in FJ26 -> Actualizar Stats` cuando necesites refrescar dashboard.
+5. Se creara/actualizara la hoja `Stats` con:
    - Totales, unicos, duplicados y pendientes.
    - Dashboard visual con bloques KPI de color.
    - Tablas Top 5 (comunidades, mentores, carreras).

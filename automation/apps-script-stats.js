@@ -123,6 +123,13 @@ function generarStatsCheckin() {
   statsSheet.setFrozenRows(1);
 }
 
+function onOpen() {
+  SpreadsheetApp.getUi()
+    .createMenu('Check-in FJ26')
+    .addItem('Actualizar Stats', 'generarStatsCheckin')
+    .addToUi();
+}
+
 function writeDashboardHeader(sheet) {
   sheet.getRange('A1:J1').merge();
   sheet.getRange('A1')
