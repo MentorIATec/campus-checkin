@@ -136,6 +136,7 @@ async function mostrarDatosEstudiante(estudiante) {
 
   // Verificar estado del botón
   const btn = document.getElementById('asistenciaBtn');
+  btn.style.display = '';
   
   // Verificar cache local primero
   if (registrosCache.has(estudiante.matricula)) {
@@ -271,13 +272,17 @@ async function registrarAsistencia() {
     
     // Mostrar éxito corto para flujo continuo
     mensajeExito.classList.remove('hidden');
-    mensajeExito.classList.add('toast-short');
     mensajeExito.innerHTML = `
-      <p>✅ Registro guardado</p>
+      <p>✅ Registro confirmado<br>
+        <span class="small-note">${isDesktop ? 'Puedes continuar con la siguiente matrícula.' : 'Haz screenshot de esta pantalla como comprobante.'}</span>
+      </p>
     `;
     
     btn.textContent = isDesktop ? '✓ Ya registrado' : '✅ Listo';
     btn.disabled = true;
+    btn.style.display = 'none';
+    setCardBusy(false);
+    isSubmitting = false;
     
     // Actualizar estadísticas localmente
     actualizarStatsLocal();
@@ -287,10 +292,12 @@ async function registrarAsistencia() {
       actualizarStatsBar();
     }, 2000);
 
-    clearTimeout(autoResetTimer);
-    autoResetTimer = setTimeout(() => {
-      resetCheckin();
-    }, 1800);
+    if (isDesktop) {
+      clearTimeout(autoResetTimer);
+      autoResetTimer = setTimeout(() => {
+        resetCheckin();
+      }, 1800);
+    }
     
   } catch (error) {
     console.error("❌ Error en registrarAsistencia:", error);
@@ -420,7 +427,10 @@ function resetCheckin() {
   const mensajeExito = document.getElementById('mensajeExito');
   if (mensajeExito) {
     mensajeExito.classList.add('hidden');
-    mensajeExito.classList.remove('toast-short');
+  }
+  const asistenciaBtn = document.getElementById('asistenciaBtn');
+  if (asistenciaBtn) {
+    asistenciaBtn.style.display = '';
   }
   
   setTimeout(() => {
