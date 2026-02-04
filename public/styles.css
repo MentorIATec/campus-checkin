@@ -16,6 +16,7 @@
   --com-forta: #870074;
   --com-spirita: #5B0F8B;
   --com-ekvilibro: #6FD34A;
+  --com-academicas: #ffaba9;
   
   /* Paleta extendida */
   --success: #28a745;
@@ -382,6 +383,8 @@ main {
 .bg-Forta { background: linear-gradient(135deg, var(--com-forta), #750063); }
 .bg-Spirita { background: linear-gradient(135deg, var(--com-spirita), #4f0c7a); }
 .bg-Ekvilibro { background: linear-gradient(135deg, var(--com-ekvilibro), #5fc33d); }
+.bg-ComunidadesAcademicas { background: linear-gradient(135deg, var(--com-academicas), #ff8e8a); }
+.bg-SinComunidad { background: linear-gradient(135deg, #b8b8b8, #a8a8a8); }
 
 .mentor-title {
   color: rgba(255,255,255,0.9);
@@ -431,6 +434,7 @@ main {
 .comunidad-badge[data-comunidad="Forta"] { color: var(--com-forta); }
 .comunidad-badge[data-comunidad="Spirita"] { color: var(--com-spirita); }
 .comunidad-badge[data-comunidad="Ekvilibro"] { color: var(--com-ekvilibro); }
+.comunidad-badge[data-comunidad="Comunidades Académicas"] { color: #d76662; }
 
 .mentor-foto-wrap { 
   display: flex; 

@@ -36,7 +36,19 @@ const CHECKIN_CONFIG = {
   },
   MENTOR_EXCEPCIONES: {
     'mentor pendiente pasio': { mentor: 'Norman Ernesto Ramírez González', comunidad: 'Pasio' },
-    'mentor(a) talenta pendiente': { mentor: 'Zoé Nohemí Montoya Campos', comunidad: 'Talenta' }
+    'mentor(a) talenta pendiente': { mentor: 'Zoé Nohemí Montoya Campos', comunidad: 'Talenta' },
+    'salud': {
+      mentor: '',
+      comunidad: 'Comunidades Académicas',
+      noMentorAsignado: true,
+      mentorDisplay: 'Escuela de Salud'
+    },
+    'escuela de salud': {
+      mentor: '',
+      comunidad: 'Comunidades Académicas',
+      noMentorAsignado: true,
+      mentorDisplay: 'Escuela de Salud'
+    }
   },
   COLS_CHECKINS: {
     CHECKIN_ID: 1, // A
@@ -108,11 +120,16 @@ function lookupEstudiante(body) {
   let mentorAsignado = String(row[CHECKIN_CONFIG.COLS_ASIGNACIONES.MENTOR_ASIGNADO - 1] || '').trim();
   const mentorKey = normalizar(mentorAsignado);
   let comunidadOverride = '';
+  let noMentorAsignado = false;
+  let mentorDisplay = '';
   if (CHECKIN_CONFIG.MENTOR_EXCEPCIONES[mentorKey]) {
-    mentorAsignado = CHECKIN_CONFIG.MENTOR_EXCEPCIONES[mentorKey].mentor;
-    comunidadOverride = CHECKIN_CONFIG.MENTOR_EXCEPCIONES[mentorKey].comunidad;
+    const excepcion = CHECKIN_CONFIG.MENTOR_EXCEPCIONES[mentorKey];
+    mentorAsignado = excepcion.mentor || '';
+    comunidadOverride = excepcion.comunidad || '';
+    noMentorAsignado = !!excepcion.noMentorAsignado;
+    mentorDisplay = excepcion.mentorDisplay || '';
   }
-  const mentorInfo = buscarMentor(mentores, mentorAsignado);
+  const mentorInfo = mentorAsignado ? buscarMentor(mentores, mentorAsignado) : {};
   const fullnameRaw = String(row[CHECKIN_CONFIG.COLS_ASIGNACIONES.NOMBRE_COMPLETO - 1] || '').trim();
   const name = String(row[CHECKIN_CONFIG.COLS_ASIGNACIONES.NOMBRES - 1] || '').trim();
   const lastnames = String(row[CHECKIN_CONFIG.COLS_ASIGNACIONES.APELLIDOS - 1] || '').trim();
@@ -135,10 +152,11 @@ function lookupEstudiante(body) {
     matricula,
     fullnameEstudiante: fullname,
     nameEstudiante: name,
-    mentorFullname: mentorInfo.nombre || mentorAsignado,
+    mentorFullname: mentorDisplay || mentorInfo.nombre || mentorAsignado,
     mentorNickname: mentorInfo.nickname || (mentorAsignado.split(' ')[0] || mentorAsignado),
     fotoMentor: fotoMentor || '',
     comunidad,
+    noMentorAsignado,
     campusOrigen: campus,
     carrera,
     email,

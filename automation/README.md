@@ -1,43 +1,68 @@
-# Campus Check-in FJ26 - Setup rápido
+# Campus Check-in FJ26 - Guia operativa
 
-## 1) Google Sheets
-1. Crea un Spreadsheet.
-2. Abre Apps Script y pega `automation/apps-script-setup.js`.
-3. Ejecuta `setupSheets()` para crear:
-   - `Asignaciones`
-   - `Mentores`
-   - `Checkins`
+## 1) Estructura de Sheets
+Ejecuta `setupSheets()` desde `automation/apps-script-setup.js` para crear:
+- `Asignaciones`
+- `Mentores`
+- `Checkins`
 
-## 2) Apps Script Web App (Lookup + Check-in)
-1. En Apps Script, crea un archivo nuevo y pega `automation/apps-script-checkin.js`.
-2. Reemplaza `REEMPLAZA_ESTA_API_KEY` por una key segura.
-3. Ajusta columnas en `CHECKIN_CONFIG.COLS_ASIGNACIONES` si cambiaste headers.
-4. Deploy -> "Web App":
-   - Ejecutar como: **tú**
-   - Quién tiene acceso: **Cualquiera**
-5. Guarda la URL del Web App.
+Headers clave esperados:
+- `Asignaciones`: `Matricula`, `Mentor(a) Asignado(a) FJ26` (K), `Nombre_completo` (M), `Nombres` (N), `Apellidos` (O), `email` (Q).
+- `Mentores`: `nombreMentor`, `nicknameMentor`, `fotoMentor`, `Email`, `Celular`, `Comunidad`, `Instagram`.
+- `Checkins`: `checkinId`, `timestamp`, `matricula`, `nombre`, `comunidad`, `mentor`, `campus`, `carrera`, `source`.
 
-## 3) Vercel (API Proxy)
-Variables de entorno requeridas:
-- `API_KEY_CHECKIN` o `API_KEY_CHECKIN_LIST`
-- `GOOGLE_SCRIPT_URL` (URL del Web App)
-- `GOOGLE_SCRIPT_KEY` (API key del Apps Script)
+## 2) Apps Script (lookup + checkin idempotente)
+1. Pega `automation/apps-script-checkin.js`.
+2. Verifica:
+   - `CHECKIN_CONFIG.API_KEY` = key interna de Apps Script.
+   - `MENTOR_EXCEPCIONES` activa (Pasio/Talenta y Salud).
+3. Deploy como Web App:
+   - Ejecutar como: tu cuenta.
+   - Acceso: cualquiera.
+4. Cada cambio requiere `Deploy -> Manage deployments -> New version`.
+
+## 3) Variables en Vercel
+Configura en `All Environments`:
+- `API_KEY_CHECKIN` (key del frontend)
+- `GOOGLE_SCRIPT_URL` (URL `/exec` de Apps Script)
+- `GOOGLE_SCRIPT_KEY` (misma key de `CHECKIN_CONFIG.API_KEY`)
+
+Recomendado: no usar `API_KEY_CHECKIN_LIST` si no es necesario.
 
 ## 4) Frontend
-En `public/config.local.js`:
+La key publica se define en `public/config.js`:
+
 ```js
 window.CHECKIN_CONFIG = {
-  API_KEY: 'TU_API_KEY_FRONTEND'
+  API_BASE: '',
+  API_KEY: 'TU_API_KEY_CHECKIN',
+  GOOGLE_SCRIPT_URL: ''
 };
 ```
 
-## 5) Endpoints
-- `POST /api/estudiante` -> lookup
-- `POST /api/checkin` -> registrar asistencia
-- `GET /api/checkin?matricula=A01234567` -> verificar status
-- `GET /api/stats` -> conteo y último check-in
+No cargar `config.local.js` en produccion.
 
-## 6) Prueba rápida
-1. En Sheets, carga una fila en `Asignaciones`.
-2. Verifica lookup en el frontend.
-3. Confirma asistencia y revisa `Checkins`.
+## 5) Convencion de fotos de mentores
+- Preferente: usar `fotoMentor` en la hoja `Mentores` (URL o nombre de archivo).
+- Fallback automatico: `/mentores/{nicknameMentor}{Comunidad}.jpg`
+  - Ejemplo: `AbbyReflekto.jpg`.
+- Las fotos viven en `public/mentores`.
+
+## 6) Excepciones activas
+- `Mentor Pendiente Pasio` -> `Norman Ernesto Ramirez Gonzalez` / `Pasio`.
+- `Mentor(a) Talenta pendiente` -> `Zoe Nohemi Montoya Campos` / `Talenta`.
+- `Salud` o `Escuela de Salud` -> comunidad `Comunidades Academicas` (sin mentor asignado).
+
+## 7) Flujo operativo (evento)
+- Lookup por matricula.
+- Verificacion anti-duplicado (`GET /api/checkin`).
+- Registro idempotente (`POST /api/checkin` con `checkinId=matricula|FJ26`).
+- Auto-reset corto en movil para fila continua.
+
+## 8) Checklist pre-produccion
+1. Buscar 3 matriculas validas y 1 invalida.
+2. Confirmar que no duplique registro.
+3. Validar foto/fallback mentor.
+4. Probar excepciones (Pasio, Talenta, Salud).
+5. Probar en movil flujo continuo (3 registros seguidos).
+6. Revisar `Checkins` en Sheet en tiempo real.

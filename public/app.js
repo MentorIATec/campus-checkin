@@ -88,8 +88,16 @@ async function buscarEstudiante() {
 }
 
 async function mostrarDatosEstudiante(estudiante) {
-  // Actualizar mentor
-  document.getElementById('mentorFullname').textContent = estudiante.mentorFullname || 'Sin asignar';
+  // Actualizar mentor/comunidad
+  const mentorTitle = document.getElementById('mentorTitle');
+  const mentorFullname = document.getElementById('mentorFullname');
+  if (estudiante.noMentorAsignado) {
+    if (mentorTitle) mentorTitle.textContent = 'Comunidad académica:';
+    if (mentorFullname) mentorFullname.textContent = estudiante.mentorFullname || 'Escuela de Salud';
+  } else {
+    if (mentorTitle) mentorTitle.textContent = isDesktop ? 'Mentor/a asignado/a:' : 'Tu mentor/a asignado:';
+    if (mentorFullname) mentorFullname.textContent = estudiante.mentorFullname || 'Sin asignar';
+  }
 
   // Manejar foto del mentor
   const foto = document.getElementById('fotoMentor');
@@ -112,7 +120,7 @@ async function mostrarDatosEstudiante(estudiante) {
 
   // Aplicar estilo de comunidad
   const studentCard = document.getElementById('studentCardBg');
-  const comunidadKey = (estudiante.comunidad || '').replace(/ /g, '');
+  const comunidadKey = normalizarComunidadClass(estudiante.comunidad || '');
   studentCard.className = 'student-card bg-' + comunidadKey;
 
   // Actualizar datos del estudiante
@@ -520,6 +528,15 @@ function setResetButtonLabel(text) {
   if (resetBtn) {
     resetBtn.textContent = text;
   }
+}
+
+function normalizarComunidadClass(value) {
+  if (!value) return 'SinComunidad';
+  return value
+    .toString()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, '');
 }
 
 function setCardBusy(busy) {
