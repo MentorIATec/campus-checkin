@@ -29,6 +29,7 @@ function generarStatsCheckin() {
 
   const statsSheet = getOrCreateSheet(ss, STATS_CONFIG.STATS_SHEET);
   statsSheet.clear();
+  statsSheet.clearFormats();
 
   const checkins = readRows(checkinsSheet);
   const totalRows = checkins.length;
@@ -82,6 +83,20 @@ function generarStatsCheckin() {
     return acc + Math.max((byMatricula[key] || 0) - 1, 0);
   }, 0);
 
+  writeDashboardHeader(statsSheet);
+  writeKpiCards(statsSheet, {
+    total: totalRows,
+    unicos: uniqueMatriculas.size,
+    pendientes: pendientes,
+    duplicados: duplicados,
+    sinMentor: sinMentor
+  });
+
+  writeTop5Table(statsSheet, 7, 1, 'Top 5 Comunidades', byComunidad);
+  writeTop5Table(statsSheet, 7, 4, 'Top 5 Mentores', byMentor);
+  writeTop5Table(statsSheet, 7, 7, 'Top 5 Carreras', byCarrera);
+
+  let currentRow = 15;
   const metrics = [
     ['Metrica', 'Valor'],
     ['Total check-ins', totalRows],
@@ -91,13 +106,12 @@ function generarStatsCheckin() {
     ['Pendientes por llegar', pendientes],
     ['Actualizado', new Date()]
   ];
+  statsSheet.getRange(currentRow, 1, metrics.length, 2).setValues(metrics);
+  statsSheet.getRange(currentRow, 1, 1, 2).setFontWeight('bold');
+  statsSheet.getRange(currentRow + 1, 1, metrics.length - 1, 1).setFontWeight('bold');
+  statsSheet.getRange(currentRow + metrics.length - 1, 2).setNumberFormat('yyyy-mm-dd hh:mm:ss');
+  currentRow += metrics.length + 2;
 
-  statsSheet.getRange(1, 1, metrics.length, 2).setValues(metrics);
-  statsSheet.getRange(1, 1, 1, 2).setFontWeight('bold');
-  statsSheet.getRange(2, 1, metrics.length - 1, 1).setFontWeight('bold');
-  statsSheet.getRange(metrics.length, 2).setNumberFormat('yyyy-mm-dd hh:mm:ss');
-
-  let currentRow = metrics.length + 2;
   currentRow = writeCountTable(statsSheet, currentRow, 'Check-ins por comunidad', byComunidad);
   currentRow = writeCountTable(statsSheet, currentRow, 'Check-ins por mentor', byMentor);
   currentRow = writeCountTable(statsSheet, currentRow, 'Check-ins por campus', byCampus);
@@ -105,8 +119,53 @@ function generarStatsCheckin() {
   currentRow = writeCountTable(statsSheet, currentRow, 'Check-ins por hora', byHour, true);
   currentRow = writeRecentTable(statsSheet, currentRow, checkins);
 
-  statsSheet.autoResizeColumns(1, 4);
+  statsSheet.autoResizeColumns(1, 10);
   statsSheet.setFrozenRows(1);
+}
+
+function writeDashboardHeader(sheet) {
+  sheet.getRange('A1:J1').merge();
+  sheet.getRange('A1')
+    .setValue('Dashboard Campus Check-in FJ26')
+    .setFontWeight('bold')
+    .setFontSize(15)
+    .setHorizontalAlignment('center')
+    .setBackground('#003b5c')
+    .setFontColor('#ffffff');
+}
+
+function writeKpiCards(sheet, kpi) {
+  const cards = [
+    { label: 'Total check-ins', value: kpi.total, col: 1, bg: '#d9ecff' },
+    { label: 'Unicos', value: kpi.unicos, col: 3, bg: '#dff7e3' },
+    { label: 'Pendientes', value: kpi.pendientes, col: 5, bg: '#fff4d9' },
+    { label: 'Duplicados', value: kpi.duplicados, col: 7, bg: '#ffe3e3' },
+    { label: 'Sin mentor', value: kpi.sinMentor, col: 9, bg: '#f4e8ff' }
+  ];
+  for (var i = 0; i < cards.length; i++) {
+    const c = cards[i];
+    sheet.getRange(3, c.col, 1, 2).merge();
+    sheet.getRange(4, c.col, 1, 2).merge();
+    sheet.getRange(3, c.col).setValue(c.label).setFontWeight('bold').setHorizontalAlignment('center');
+    sheet.getRange(4, c.col).setValue(c.value).setFontWeight('bold').setFontSize(16).setHorizontalAlignment('center');
+    sheet.getRange(3, c.col, 2, 2).setBackground(c.bg).setBorder(true, true, true, true, false, false);
+  }
+}
+
+function writeTop5Table(sheet, row, col, title, sourceMap) {
+  const top = Object.keys(sourceMap)
+    .map(function(key) { return [key, sourceMap[key]]; })
+    .sort(function(a, b) { return b[1] - a[1]; })
+    .slice(0, 5);
+
+  sheet.getRange(row, col, 1, 2).merge();
+  sheet.getRange(row, col).setValue(title).setFontWeight('bold').setBackground('#edf2f7');
+  sheet.getRange(row + 1, col, 1, 2).setValues([['Categoria', 'Total']]).setFontWeight('bold');
+  if (top.length > 0) {
+    sheet.getRange(row + 2, col, top.length, 2).setValues(top);
+  } else {
+    sheet.getRange(row + 2, col, 1, 2).setValues([['Sin datos', 0]]);
+  }
 }
 
 function writeCountTable(sheet, startRow, title, sourceMap, sortByKey) {
@@ -186,4 +245,3 @@ function toDateValue(value) {
   if (!isNaN(parsed.getTime())) return parsed.getTime();
   return 0;
 }
-

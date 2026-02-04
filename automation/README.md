@@ -73,5 +73,7 @@ Para generar metricas en la misma spreadsheet:
 2. Ejecuta `generarStatsCheckin()`.
 3. Se creara/actualizara la hoja `Stats` con:
    - Totales, unicos, duplicados y pendientes.
+   - Dashboard visual con bloques KPI de color.
+   - Tablas Top 5 (comunidades, mentores, carreras).
    - Check-ins por comunidad, mentor, campus, carrera y hora.
    - Ultimos 10 check-ins.
