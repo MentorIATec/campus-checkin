@@ -46,12 +46,6 @@ async function buscarEstudiante() {
     btnBuscar.disabled = true;
     btnBuscar.textContent = '🔎 Buscando...';
   }
-  const errorElement = document.getElementById('errorMsg');
-  errorElement.style.display = 'block';
-  errorElement.textContent = isDesktop ? '🔍 Buscando estudiante...' : '🔍 Buscando...';
-  errorElement.style.color = '#0062cc';
-  errorElement.classList.add('status-info');
-
   try {
     console.log('🔍 Buscando estudiante via API:', input);
     
@@ -139,7 +133,7 @@ async function mostrarDatosEstudiante(estudiante) {
   if (registrosCache.has(estudiante.matricula)) {
     btn.disabled = true;
     btn.textContent = '✓ Ya registrado';
-    mostrarMensajeYaRegistrado();
+    document.getElementById('mensajeExito').classList.add('hidden');
   } else {
     // Verificar con el servidor si está registrado
     btn.disabled = true;
@@ -152,7 +146,7 @@ async function mostrarDatosEstudiante(estudiante) {
         persistirCache();
         btn.disabled = true;
         btn.textContent = '✓ Ya registrado';
-        mostrarMensajeYaRegistrado();
+        document.getElementById('mensajeExito').classList.add('hidden');
       } else {
         btn.disabled = false;
         btn.textContent = '✅ Confirmar asistencia presencial';
@@ -274,7 +268,7 @@ async function registrarAsistencia() {
       <p>✅ Registro guardado</p>
     `;
     
-    btn.textContent = '✓ Ya registrado';
+    btn.textContent = isDesktop ? '✓ Ya registrado' : '✅ Listo';
     btn.disabled = true;
     
     // Actualizar estadísticas localmente
