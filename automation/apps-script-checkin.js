@@ -41,13 +41,15 @@ const CHECKIN_CONFIG = {
       mentor: '',
       comunidad: 'Comunidades Académicas',
       noMentorAsignado: true,
-      mentorDisplay: 'Escuela de Salud'
+      mentorDisplay: 'Escuela de Salud',
+      foto: 'Salud.jpg'
     },
     'escuela de salud': {
       mentor: '',
       comunidad: 'Comunidades Académicas',
       noMentorAsignado: true,
-      mentorDisplay: 'Escuela de Salud'
+      mentorDisplay: 'Escuela de Salud',
+      foto: 'Salud.jpg'
     }
   },
   COLS_CHECKINS: {
@@ -122,12 +124,14 @@ function lookupEstudiante(body) {
   let comunidadOverride = '';
   let noMentorAsignado = false;
   let mentorDisplay = '';
+  let fotoOverride = '';
   if (CHECKIN_CONFIG.MENTOR_EXCEPCIONES[mentorKey]) {
     const excepcion = CHECKIN_CONFIG.MENTOR_EXCEPCIONES[mentorKey];
     mentorAsignado = excepcion.mentor || '';
     comunidadOverride = excepcion.comunidad || '';
     noMentorAsignado = !!excepcion.noMentorAsignado;
     mentorDisplay = excepcion.mentorDisplay || '';
+    fotoOverride = excepcion.foto || '';
   }
   const mentorInfo = mentorAsignado ? buscarMentor(mentores, mentorAsignado) : {};
   const fullnameRaw = String(row[CHECKIN_CONFIG.COLS_ASIGNACIONES.NOMBRE_COMPLETO - 1] || '').trim();
@@ -143,7 +147,7 @@ function lookupEstudiante(body) {
   const email = String(row[CHECKIN_CONFIG.COLS_ASIGNACIONES.EMAIL - 1] || '').trim();
   const comunidad = comunidadOverride || mentorInfo.comunidad || '';
   const fotoMentor = resolveMentorFoto(
-    mentorInfo.foto,
+    fotoOverride || mentorInfo.foto,
     mentorInfo.nickname || mentorAsignado,
     comunidad
   );
