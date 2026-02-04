@@ -351,6 +351,11 @@ main {
   overflow: hidden;
 }
 
+.student-card.card-busy {
+  opacity: 0.75;
+  pointer-events: none;
+}
+
 .student-card::before {
   content: '';
   position: absolute;
@@ -500,6 +505,12 @@ main {
   border: 2px solid rgba(40, 167, 69, 0.3);
   box-shadow: 0 4px 15px rgba(40, 167, 69, 0.2);
   animation: slideUp 0.5s ease;
+}
+
+#mensajeExito.toast-short {
+  padding: 12px 14px;
+  font-size: 1em;
+  margin-top: 12px;
 }
 
 @keyframes slideUp {

@@ -9,10 +9,15 @@ const CONFIG = {
 let estudianteActual = null;
 const registrosCache = new Set();
 const STORAGE_KEY = 'checkinCacheFJ26';
+const IN_FLIGHT_STORAGE_KEY = 'checkinInFlightFJ26';
 const isDesktop = window.matchMedia && window.matchMedia('(min-width: 900px)').matches;
+let isSearching = false;
+let isSubmitting = false;
+let autoResetTimer = null;
 
 // Función principal: buscar estudiante via API
 async function buscarEstudiante() {
+  if (isSearching) return;
   limpiarError();
   const inputEl = document.getElementById('matriculaInput');
   const input = inputEl.value.trim().toUpperCase();
@@ -35,6 +40,7 @@ async function buscarEstudiante() {
 
   // Mostrar loading
   const btnBuscar = document.getElementById('buscarBtn');
+  isSearching = true;
   inputEl.disabled = true;
   if (btnBuscar) {
     btnBuscar.disabled = true;
@@ -42,7 +48,8 @@ async function buscarEstudiante() {
   }
   const errorElement = document.getElementById('errorMsg');
   errorElement.style.display = 'block';
-  errorElement.textContent = '🔍 Buscando estudiante...';
+  errorElement.textContent = isDesktop ? '🔍 Buscando estudiante...' : '🔍 Buscando...';
+  errorElement.style.color = '#0062cc';
   errorElement.classList.add('status-info');
 
   try {
@@ -67,8 +74,7 @@ async function buscarEstudiante() {
 
     if (result.success && result.data) {
       estudianteActual = result.data;
-      mostrarDatosEstudiante(result.data);
-      limpiarError();
+      await mostrarDatosEstudiante(result.data);
       console.log('✅ Estudiante encontrado:', result.data.nameEstudiante);
     } else {
       throw new Error('Estudiante no encontrado');
@@ -78,10 +84,11 @@ async function buscarEstudiante() {
     console.error('❌ Error buscando estudiante:', error);
     mostrarError(`❌ ${error.message}`);
   } finally {
+    isSearching = false;
     inputEl.disabled = false;
     if (btnBuscar) {
       btnBuscar.disabled = false;
-      btnBuscar.textContent = '🔍 Buscar Estudiante';
+      btnBuscar.textContent = isDesktop ? '🔍 Buscar estudiante' : '🔍 Buscar Estudiante';
     }
   }
 }
@@ -186,6 +193,7 @@ async function registrarAsistencia() {
   console.log("🌐 Iniciando registro de asistencia...");
   
   if (!estudianteActual) return;
+  if (isSubmitting) return;
   
   const btn = document.getElementById('asistenciaBtn');
   const mensajeExito = document.getElementById('mensajeExito');
@@ -195,9 +203,12 @@ async function registrarAsistencia() {
     return;
   }
   
+  isSubmitting = true;
+  setCardBusy(true);
   btn.disabled = true;
   btn.textContent = 'Registrando...';
   limpiarError();
+  guardarInFlight(estudianteActual);
 
   try {
     // Enviar a API propia
@@ -254,19 +265,17 @@ async function registrarAsistencia() {
     // Agregar a cache local
     registrosCache.add(estudianteActual.matricula);
     persistirCache();
+    limpiarInFlight();
     
-    // Mostrar éxito
+    // Mostrar éxito corto para flujo continuo
     mensajeExito.classList.remove('hidden');
+    mensajeExito.classList.add('toast-short');
     mensajeExito.innerHTML = `
-      <p>✅ Registro de asistencia realizado<br>
-        <b>¡Entrega el kit de ${estudianteActual.comunidad}!</b><br>
-        <span class="small-note">Muestra esta pantalla al staff y no recargues</span>
-      </p>
+      <p>✅ Registro guardado</p>
     `;
     
     btn.textContent = '✓ Ya registrado';
     btn.disabled = true;
-    setResetButtonLabel('Registrar otro estudiante');
     
     // Actualizar estadísticas localmente
     actualizarStatsLocal();
@@ -275,16 +284,24 @@ async function registrarAsistencia() {
     setTimeout(() => {
       actualizarStatsBar();
     }, 2000);
+
+    clearTimeout(autoResetTimer);
+    autoResetTimer = setTimeout(() => {
+      resetCheckin();
+    }, 1800);
     
   } catch (error) {
     console.error("❌ Error en registrarAsistencia:", error);
     
     // Remover de cache si hubo error
     registrosCache.delete(estudianteActual.matricula);
+    limpiarInFlight();
     
     mostrarError(`❌ ${error.message}. Por favor intenta de nuevo.`);
     btn.disabled = false;
     btn.textContent = '✅ Confirmar asistencia presencial';
+    setCardBusy(false);
+    isSubmitting = false;
   }
 }
 
@@ -379,6 +396,7 @@ function mostrarTarjeta() {
   document.getElementById('tarjetaEstudiante').classList.remove('hidden');
   document.getElementById('checkin-section').style.display = 'none';
   document.getElementById('leyendaMatricula').style.display = 'none';
+  limpiarError();
 }
 
 function ocultarTarjeta() {
@@ -388,7 +406,10 @@ function ocultarTarjeta() {
 }
 
 function resetCheckin() {
+  clearTimeout(autoResetTimer);
   estudianteActual = null;
+  isSubmitting = false;
+  setCardBusy(false);
   ocultarTarjeta();
   document.getElementById('matriculaInput').value = '';
   limpiarError();
@@ -397,6 +418,7 @@ function resetCheckin() {
   const mensajeExito = document.getElementById('mensajeExito');
   if (mensajeExito) {
     mensajeExito.classList.add('hidden');
+    mensajeExito.classList.remove('toast-short');
   }
   
   setTimeout(() => {
@@ -410,6 +432,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   console.log("🚀 Iniciando Campus Check-in...");
 
   cargarCache();
+  restaurarInFlight();
   ajustarCopyPorDispositivo();
   
   // Configurar evento Enter en el input
@@ -431,7 +454,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setInterval(actualizarHoraActual, 1000);
   
   // Actualizar estadísticas cada 15 segundos
-  setInterval(actualizarStatsBar, 15000);
+  setInterval(actualizarStatsBar, isDesktop ? 15000 : 40000);
   
   // Reset inicial
   resetCheckin();
@@ -490,6 +513,7 @@ function mostrarMensajeYaRegistrado() {
   const mensajeExito = document.getElementById('mensajeExito');
   if (!mensajeExito) return;
   mensajeExito.classList.remove('hidden');
+  mensajeExito.classList.remove('toast-short');
   mensajeExito.innerHTML = `
     <p>✓ Este estudiante ya cuenta con registro<br>
       <span class="small-note">Si necesitas corregir, vuelve a buscar la matrícula</span>
@@ -501,5 +525,62 @@ function setResetButtonLabel(text) {
   const resetBtn = document.getElementById('resetBtn');
   if (resetBtn) {
     resetBtn.textContent = text;
+  }
+}
+
+function setCardBusy(busy) {
+  const card = document.getElementById('studentCardBg');
+  const input = document.getElementById('matriculaInput');
+  const buscarBtn = document.getElementById('buscarBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  if (card) {
+    card.classList.toggle('card-busy', !!busy);
+  }
+  if (input) input.disabled = !!busy;
+  if (buscarBtn) buscarBtn.disabled = !!busy || isSearching;
+  if (resetBtn) resetBtn.disabled = !!busy;
+}
+
+function guardarInFlight(estudiante) {
+  try {
+    sessionStorage.setItem(IN_FLIGHT_STORAGE_KEY, JSON.stringify({
+      matricula: estudiante.matricula,
+      ts: Date.now()
+    }));
+  } catch (error) {
+    console.warn('⚠️ No se pudo guardar inFlight:', error);
+  }
+}
+
+function limpiarInFlight() {
+  try {
+    sessionStorage.removeItem(IN_FLIGHT_STORAGE_KEY);
+  } catch (error) {
+    console.warn('⚠️ No se pudo limpiar inFlight:', error);
+  }
+}
+
+async function restaurarInFlight() {
+  try {
+    const raw = sessionStorage.getItem(IN_FLIGHT_STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (!data || !data.matricula) return;
+    limpiarInFlight();
+    const input = document.getElementById('matriculaInput');
+    if (input) input.value = data.matricula;
+    const yaRegistrado = await checkMatriculaRegistrada(data.matricula);
+    if (yaRegistrado) {
+      registrosCache.add(data.matricula);
+      persistirCache();
+      mostrarError('✅ Registro previo detectado. Puedes continuar con otra matrícula.');
+      const errorElement = document.getElementById('errorMsg');
+      if (errorElement) {
+        errorElement.classList.add('status-info');
+        errorElement.style.color = '#0062cc';
+      }
+    }
+  } catch (error) {
+    console.warn('⚠️ No se pudo restaurar inFlight:', error);
   }
 }
