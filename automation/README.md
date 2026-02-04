@@ -66,3 +66,12 @@ No cargar `config.local.js` en produccion.
 4. Probar excepciones (Pasio, Talenta, Salud).
 5. Probar en movil flujo continuo (3 registros seguidos).
 6. Revisar `Checkins` en Sheet en tiempo real.
+
+## 9) Hoja de estadisticas (opcional pero recomendada)
+Para generar metricas en la misma spreadsheet:
+1. Pega `automation/apps-script-stats.js` en Apps Script.
+2. Ejecuta `generarStatsCheckin()`.
+3. Se creara/actualizara la hoja `Stats` con:
+   - Totales, unicos, duplicados y pendientes.
+   - Check-ins por comunidad, mentor, campus, carrera y hora.
+   - Ultimos 10 check-ins.
