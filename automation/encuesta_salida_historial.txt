@@ -100,11 +100,12 @@ Ruta SÍ (quienes asistieron)
 8. ¿Qué fue lo que más te gustó de la experiencia de bienvenida? (Selección múltiple)
    - El ambiente y la convivencia
    - La dinámica de integración
+   - El auditorio y la experiencia del evento
+   - El kit de regalo (Playera y Sticker)
    - El recorrido por el campus
    - Conocer a mi mentor/a o mentores/as
    - Conocer gente nueva
    - Las áreas de apoyo
-   - El auditorio y la experiencia del evento
    - La comida
    - Sentirme bienvenido/a al Campus Monterrey
    - Otro: ___________
