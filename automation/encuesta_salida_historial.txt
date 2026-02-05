@@ -1,0 +1,118 @@
+Encuesta de salida - Historico
+================================
+
+Semestre: AD25 (Agosto-Diciembre 2025)
+Fuente: Index.html (Encuesta de Salida AD25)
+
+1. ¿Pudiste asistir al evento de Bienvenida de Transferencias que se realizó al inicio del semestre?
+   - Sí, asistí.
+   - No, no pude asistir.
+
+Si NO:
+2. Lamentamos que no pudieras acompañarnos. ¿Podrías contarnos cuál fue el principal motivo?
+   - Conflicto de horario
+   - No me enteré del evento
+   - Problemas de transporte o logísticos
+   - No me pareció relevante
+   - Otro
+
+Si SÍ:
+2. ¿Utilizaste el sistema de preregistro?
+3. Facilidad para encontrar info de tu mentor/a en el sistema. (escala)
+4. ¿Ya sabes quién es tu mentor/a?
+5. ¿Ya tuviste una cita 1 a 1 con tu mentor/a?
+6. Áreas de interés a las que te acercaste: (selección múltiple)
+7. Contacto con tu director/a de entrada/programa:
+8. ¿El tour por el campus te fue útil? (escala)
+9. La dinámica de integración te permitió conectar:
+10. ¿En qué área te gustaría que tu mentor/a te apoye más? (múltiple + otro)
+11. ¿Algo específico que desees compartir? (abierta)
+12. Califica tu experiencia general en la Bienvenida: (escala)
+
+Semestre: FJ26 (propuesta final)
+Fuente: ChatGPT + ajuste operativo (Febrero 2026)
+
+Bienvenida de Transferencias FJ26
+Campus Monterrey · Auditorio Luis Elizondo
+
+1. Asistencia
+1. ¿Pudiste asistir a la Bienvenida de Transferencias realizada el viernes 6 de febrero en el Auditorio Luis Elizondo?
+   - Sí, asistí
+   - No, no pude asistir
+
+Ruta NO (quienes no asistieron)
+2. ¿Cuál fue el principal motivo por el que no pudiste asistir?
+   - Conflicto de horario
+   - No me enteré del evento
+   - No estaba en la ciudad
+   - Problemas de transporte o logísticos
+   - Otro: ___________
+3. (Opcional) ¿Qué te ayudaría a poder asistir en una próxima edición del evento?
+   - Respuesta abierta corta
+
+(Aquí termina la encuesta para quienes no asistieron)
+
+Ruta SÍ (quienes asistieron)
+2. Sobre tu mentor/a, ¿en cuál de estas opciones te identificas mejor hoy?
+   - Ya sé quién es y ya tengo su contacto
+   - Ya sé quién es, pero aún no tengo su contacto
+   - Ya intercambiamos mensajes
+   - Nos conocimos hoy en el evento
+   - Ya tuvimos o ya agendamos una sesión 1 a 1
+3. ¿Con cuáles áreas o espacios tuviste contacto durante el evento? (Selección múltiple)
+   - Grupos Estudiantiles
+   - Atlética y Deportiva
+   - Arte y Cultura
+   - Tec Services
+   - CVDP (Centro de Vinculación y Desarrollo Profesional)
+   - Consejería emocional
+   - CRDH (Centro de Reconocimiento a la Dignidad Humana)
+   - Servicio Social
+   - Movilidad
+   - Otra: ___________
+4. La dinámica de integración me ayudó a conocer a otras personas:
+   - Muchísimo
+   - Bastante
+   - Algo
+   - Poco
+   - Aún no, pero me llevo intención de conectar
+5. Después de la experiencia, me siento más acompañado/a en esta etapa de mi transferencia:
+   - Completamente acompañado/a
+   - Muy acompañado/a
+   - Moderadamente acompañado/a
+   - Ligeramente acompañado/a
+   - Sin cambios (igual que antes del evento)
+6. ¿Cómo calificarías el recorrido por el campus?
+   - Súper útil
+   - Útil
+   - Más o menos útil
+   - Poco útil
+   - No lo tomé / no lo aproveché
+7. ¿En qué te gustaría que tu mentor/a te apoye más este semestre? (Selección múltiple)
+   - Adaptación académica (forma de trabajo, ritmo, expectativas)
+   - Decisiones o trayectoria académica (prácticas, intercambio, Semestre Tec, opciones a futuro)
+   - Conocer mejor el campus y sus espacios
+   - Conectar con grupos o actividades estudiantiles
+   - Vida en Monterrey / tips prácticos (ciudad, transporte, recomendaciones)
+   - Bienestar y acompañamiento emocional
+   - Orientación sobre trámites o servicios (saber a dónde acudir)
+   - Otro: ___________
+8. ¿Qué fue lo que más te gustó de la experiencia de bienvenida? (Selección múltiple)
+   - El ambiente y la convivencia
+   - La dinámica de integración
+   - El recorrido por el campus
+   - Conocer a mi mentor/a o mentores/as
+   - Conocer gente nueva
+   - Las áreas de apoyo
+   - El auditorio y la experiencia del evento
+   - La comida
+   - Sentirme bienvenido/a al Campus Monterrey
+   - Otro: ___________
+9. ¿Hay algo que te gustaría compartirnos sobre tu experiencia o alguna sugerencia para acompañarte mejor durante este semestre?
+   - Respuesta abierta (opcional)
+10. En general, ¿cómo calificarías tu experiencia en la Bienvenida de Transferencias?
+   - Excelente
+   - Muy buena
+   - Buena
+   - Adecuada
+   - Básica
