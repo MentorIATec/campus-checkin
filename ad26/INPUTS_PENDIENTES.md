@@ -9,9 +9,9 @@
 
 ## Mentores
 
-- Copiar o renombrar las imagenes pendientes reportadas por `npm run validate:mentor-assets`.
 - Importar los 47 registros de `DATOSME_CURSOR.xlsx` a `Mentores_AD26` en el spreadsheet privado.
-- Validar que `foto_mentor` coincida exactamente, incluyendo acentos y mayusculas.
+- Conservar en `foto_mentor` los nombres aprobados en `mentor-assets.expected.txt`.
+- Completar la revision visual de identidad y encuadre; la validacion automatica de los 47 archivos ya esta completa.
 
 ## Integraciones
 

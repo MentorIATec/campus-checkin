@@ -6,11 +6,9 @@ Fuente revisada: `DATOSME_CURSOR.xlsx`.
 
 - 47 registros de mentor.
 - 47 nombres de imagen esperados.
-- 45 mentores cuentan con una imagen vigente identificable en `public/mentores`.
-- 35 archivos siguen exactamente la convencion `nickname + comunidad` sin espacios.
-- 3 archivos usan la misma convencion con un espacio: `JR Krei.jpg`, `Roger Pasio.jpg` y `Roger Revo.jpg`.
-- 7 archivos vigentes usan otro alias conocido y requieren conservar el nombre exacto en `foto_mentor`.
-- 2 mentoras no tienen una imagen identificable en el inventario actual.
+- 47 mentores cuentan con una imagen vigente identificable en `public/mentores`.
+- 47 coincidencias exactas pasan `npm run validate:mentor-assets`.
+- Las variantes historicas se resolvieron en `ad26/mentor-assets.expected.txt`; no se intenta derivar el archivo desde el nombre formal.
 
 La diferencia inicial se debia a que el catalogo nuevo usa nombres formales mientras el repositorio conserva nicknames, espacios o variantes, por ejemplo:
 
@@ -30,10 +28,8 @@ Las siete equivalencias vigentes que no coinciden literalmente con el nickname d
 - Jorge Mauricio Noriega Montemayor: `MauricioTalenta.jpg`.
 - Laura Gabriela Rios Contreras: `LauraTalenta.jpg`.
 
-Las dos imagenes realmente pendientes son:
-
-- Mariana Ortega Lankenau: `MarianaPasio.jpg`.
-- Ana Lilia Varela Serrato: `AnaTalenta.jpg`.
+Las imagenes de Mariana Ortega Lankenau y Ana Lilia Varela Serrato ya se
+incorporaron como `MarianaPasio.jpg` y `AnaTalenta.jpg`.
 
 ## Convencion AD26
 
@@ -66,7 +62,8 @@ La ruta es relativa al mismo deployment de Vercel. No se guardaran rutas locales
 5. Ejecutar una validacion automatica que compare `fotoMentor` con archivos existentes y falle si falta alguno.
 6. Usar `Salud.jpg` para Escuela de Salud.
 
-No deben sustituirse las dos imagenes pendientes con assets historicos sin confirmar visualmente la identidad de la persona.
+La validacion automatica confirma existencia y nombre exacto. La revision visual
+de identidad y encuadre permanece como control humano antes del evento.
 
 ## Vercel
 

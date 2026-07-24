@@ -89,9 +89,9 @@
 - [ ] Importar los 47 registros del catalogo recibido a la hoja privada.
 - [x] Mantener `fotoMentor` como nombre de archivo, no como ruta absoluta.
 - [x] Servir imagenes desde `/mentores/<fotoMentor>`.
-- [ ] Agregar o renombrar assets en la rama `ad26`, no en FJ26.
-- [ ] Agregar las imagenes pendientes de Mariana Ortega Lankenau y Ana Lilia Varela Serrato.
-- [ ] Cargar en `foto_mentor` el nombre exacto de las 45 imagenes vigentes, incluyendo las variantes documentadas.
+- [x] Agregar o renombrar assets en la rama `ad26`, no en FJ26.
+- [x] Agregar las imagenes de Mariana Ortega Lankenau y Ana Lilia Varela Serrato.
+- [x] Validar los nombres exactos de las 47 imagenes vigentes, incluyendo las variantes documentadas.
 - [x] Agregar validador de mayusculas, espacios y acentos para sistemas case-sensitive.
 - [ ] Mantener `/mentores/Salud.jpg` como fallback de Salud.
 
@@ -120,7 +120,8 @@
 - [ ] Conexion lenta y timeout.
 - [ ] 20 a 30 solicitudes concurrentes.
 - [ ] Recuperacion manual del dashboard.
-- [ ] Validacion visual de todas las fotos de mentores.
+- [x] Validacion automatica de existencia exacta para las 47 fotos de mentores.
+- [ ] Validacion visual de encuadre e identidad de todas las fotos de mentores.
 
 ## Produccion y operacion
 
