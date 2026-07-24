@@ -2,8 +2,11 @@
 
 > Sistema inteligente de registro de asistencia para estudiantes transferidos
 
-![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)
-![Status](https://img.shields.io/badge/status-active-success.svg)
+> [!IMPORTANT]
+> El rediseño operativo para Agosto-Diciembre 2026 se documenta en [`ad26/README.md`](ad26/README.md). El contenido restante de este archivo describe versiones anteriores y debe tratarse como referencia historica hasta completar la migracion AD26.
+
+![Version](https://img.shields.io/badge/version-3.0.0-blue.svg)
+![Status](https://img.shields.io/badge/status-AD26%20en%20preparacion-orange.svg)
 ![Platform](https://img.shields.io/badge/platform-Vercel-black.svg)
 
 ---

@@ -202,6 +202,36 @@ main {
   margin-bottom: 18px;
 }
 
+.step-label {
+  margin: 0 0 14px;
+  color: var(--tec-blue);
+  font-size: 0.95em;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.step-label-card {
+  position: relative;
+  z-index: 1;
+  display: inline-block;
+  padding: 7px 12px;
+  border-radius: 999px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.24);
+}
+
+.pending-checkin {
+  position: relative;
+  z-index: 1;
+  margin: 18px 0 2px;
+  padding: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #8a3d00;
+  font-weight: 800;
+}
+
 /* Inputs y botones */
 .input-wrap {
   display: flex;

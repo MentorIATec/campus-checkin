@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" />
   <title>Campus Check-in | Registro de Asistencia</title>
   <meta name="description" content="Sistema de registro de asistencia para estudiantes transferidos - Campus Monterrey">
-  <link rel="stylesheet" href="styles.css?v=fj26.20260203" />
+  <link rel="stylesheet" href="styles.css?v=ad26.20260723" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>">
 </head>
 <body>
@@ -15,7 +15,7 @@
       <span class="icon">📋</span>
       <span class="header-main">Campus Check-in</span>
     </div>
-    <div class="header-sub">Sistema de Registro de Asistencia - FJ26</div>
+    <div class="header-sub">Sistema de Registro de Asistencia - AD26</div>
     <div class="stats-bar">
       <div class="stat">
         <div class="stat-value" id="totalCheckins">0</div>
@@ -42,8 +42,10 @@
       </div>
       
       <div id="checkin-section">
+        <p class="step-label">Paso 1 de 2 · Busca tu matrícula</p>
         <div class="input-wrap">
           <input 
+            type="text"
             id="matriculaInput" 
             class="input-checkin" 
             maxlength="9" 
@@ -53,7 +55,7 @@
             title="Formato: A seguido de 8 números"
           />
         </div>
-        <button class="btn-checkin" id="buscarBtn" onclick="buscarEstudiante()">
+        <button type="button" class="btn-checkin" id="buscarBtn" onclick="buscarEstudiante()">
           🔍 Buscar Estudiante
         </button>
         <p id="errorMsg" class="error-checkin"></p>
@@ -61,6 +63,7 @@
       
       <div id="tarjetaEstudiante" class="tarjeta-checkin hidden">
         <div id="studentCardBg" class="student-card">
+          <p class="step-label step-label-card">Paso 2 de 2 · Verifica tus datos</p>
           <div class="mentor-title" id="mentorTitle">Tu mentor/a asignado:</div>
           <div id="mentorFullname" class="mentor-fullname">Cargando...</div>
           <div id="comunidadBadge" class="comunidad-badge">Comunidad</div>
@@ -79,8 +82,10 @@
             <div id="carreraEstudiante" class="dato-carrera">Carrera</div>
           </div>
           
-          <button class="btn-checkin btn-confirm" id="asistenciaBtn" onclick="registrarAsistencia()">
-            ✅ Confirmar asistencia presencial
+          <p id="pendingCheckinMsg" class="pending-checkin">Aún no has registrado tu entrada.</p>
+
+          <button type="button" class="btn-checkin btn-confirm" id="asistenciaBtn" onclick="registrarAsistencia()">
+            Registrar mi check-in
           </button>
           
           <div id="mensajeExito" class="hidden">
@@ -90,8 +95,8 @@
             </p>
           </div>
           
-          <button class="btn-checkin btn-back" id="resetBtn" onclick="resetCheckin()">
-            ⬅️ Corregir matrícula
+          <button type="button" class="btn-checkin btn-back" id="resetBtn" onclick="resetCheckin()">
+            Corregir matrícula
           </button>
         </div>
       </div>
@@ -110,7 +115,7 @@
     </div>
   </footer>
 
-  <script src="config.js?v=fj26.20260203"></script>
-  <script src="app.js?v=fj26.20260203"></script>
+  <script src="config.js?v=ad26.20260723"></script>
+  <script src="app.js?v=ad26.20260723"></script>
 </body>
 </html>

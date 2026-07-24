@@ -9,7 +9,8 @@
  */
 
 const CHECKIN_CONFIG = {
-  API_KEY: 'FJ26_gs_4e8d2c9a7b1f3d6e0a5c8f2b9d4e7c1a',
+  // Legacy FJ26: el valor debe vivir en Script Properties, nunca en Git.
+  API_KEY: PropertiesService.getScriptProperties().getProperty('CHECKIN_API_KEY') || '',
   EVENT_KEY: 'FJ26',
   TIMEZONE: 'America/Mexico_City',
   ASIGNACIONES_SHEET: 'Asignaciones',

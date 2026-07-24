@@ -12,9 +12,21 @@
     "api/checkin.js": {
       "maxDuration": 10,
       "memory": 128
+    },
+    "api/incidencia.js": {
+      "maxDuration": 10,
+      "memory": 128
+    },
+    "api/stats.js": {
+      "maxDuration": 10,
+      "memory": 128
     }
   },
   "rewrites": [
+    {
+      "source": "/staff",
+      "destination": "/public/ad26/staff.html"
+    },
     {
       "source": "/api/(.*)",
       "destination": "/api/$1"
@@ -25,23 +37,6 @@
     }
   ],
   "headers": [
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        },
-        {
-          "key": "Access-Control-Allow-Methods",
-          "value": "GET, POST, OPTIONS"
-        },
-        {
-          "key": "Access-Control-Allow-Headers",
-          "value": "Content-Type, x-api-key"
-        }
-      ]
-    },
     {
       "source": "/(.*)",
       "headers": [

@@ -1,178 +1,109 @@
-// api/checkin.js - Registrar asistencia
-export default async function handler(req, res) {
-  // Configurar CORS
-  const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
-    .split(',')
-    .map((origin) => origin.trim())
-    .filter(Boolean);
-  const requestOrigin = req.headers.origin;
+import { consumeRateLimit } from '../lib/rate-limit.js';
 
-  if (allowedOrigins.length > 0) {
-    if (requestOrigin && allowedOrigins.includes(requestOrigin)) {
-      res.setHeader('Access-Control-Allow-Origin', requestOrigin);
-    } else {
-      res.setHeader('Access-Control-Allow-Origin', allowedOrigins[0]);
-    }
-    res.setHeader('Vary', 'Origin');
-  } else {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-  }
-  res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-api-key');
-  
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+// Registro onsite idempotente. Apps Script resuelve todos los datos privados.
+export default async function handler(req, res) {
+  applyCors(req, res, 'POST, OPTIONS');
+
+  if (req.method === 'OPTIONS') return res.status(204).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Metodo no permitido' });
+  if (!isAllowedOrigin(req)) return res.status(403).json({ error: 'Origen no permitido' });
+
+  const rate = consumeRateLimit(req, {
+    namespace: 'checkin-write',
+    limit: 40,
+    windowMs: 5 * 60 * 1000
+  });
+  if (!rate.allowed) {
+    res.setHeader('Retry-After', String(rate.retryAfter));
+    return res.status(429).json({ error: 'Demasiados intentos de registro. Espera un momento.' });
   }
 
   try {
-    // 1. Validar API Key
-    const apiKey = req.headers['x-api-key'];
-    const validKeys = (
-      process.env.API_KEY_CHECKIN_LIST ||
-      process.env.API_KEY_CHECKIN ||
-      ''
-    )
-      .split(',')
-      .map((key) => key.trim())
-      .filter(Boolean);
-
-    if (validKeys.length === 0) {
-      console.error('❌ API_KEY_CHECKIN no configurada');
-      return res.status(500).json({ error: 'Configuración del servidor incompleta' });
-    }
-    
-    if (!apiKey || !validKeys.includes(apiKey)) {
-      console.error('❌ API Key inválida en checkin');
-      return res.status(401).json({ 
-        error: 'Acceso no autorizado'
-      });
+    const body = parseBody(req.body);
+    const matricula = String(body.matricula || '').trim().toUpperCase();
+    if (!/^[A-Z]\d{8}$/.test(matricula)) {
+      return res.status(400).json({ error: 'Formato de matricula invalido' });
     }
 
-    if (req.method === 'POST') {
-      // REGISTRAR CHECK-IN
-      let body;
-      try {
-        body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-      } catch (e) {
-        return res.status(400).json({ error: 'Datos inválidos' });
-      }
-
-      const { 
-        matricula, 
-        fullnameEstudiante, 
-        comunidad, 
-        mentorFullname,
-        campusOrigen,
-        carrera 
-      } = body;
-
-      // Validar datos requeridos
-      if (!matricula || !fullnameEstudiante || !comunidad) {
-        return res.status(400).json({ 
-          error: 'Datos incompletos',
-          required: ['matricula', 'fullnameEstudiante', 'comunidad']
-        });
-      }
-
-      // Registrar en Apps Script (idempotente)
-      const scriptUrl = process.env.GOOGLE_SCRIPT_URL;
-      const scriptKey = process.env.GOOGLE_SCRIPT_KEY;
-      if (!scriptUrl || !scriptKey) {
-        console.error('❌ GOOGLE_SCRIPT_URL/GOOGLE_SCRIPT_KEY no configurados');
-        return res.status(500).json({ error: 'Configuración del servidor incompleta' });
-      }
-
-      const registroData = {
-        action: 'checkin',
-        api_key: scriptKey,
-        matricula,
-        fullnameEstudiante,
-        comunidad,
-        mentorFullname,
-        campusOrigen,
-        carrera,
-        source: 'onsite'
-      };
-
-      const scriptResponse = await fetch(scriptUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(registroData)
-      });
-
-      if (!scriptResponse.ok) {
-        console.error('❌ Error Apps Script:', scriptResponse.status, scriptResponse.statusText);
-        return res.status(502).json({ error: 'Error registrando asistencia' });
-      }
-
-      const scriptResult = await scriptResponse.json();
-      if (scriptResult.status >= 400 || scriptResult.error) {
-        return res.status(scriptResult.status || 500).json({ error: scriptResult.error || 'Error registrando asistencia' });
-      }
-
-      return res.status(200).json({
-        success: true,
-        message: 'Check-in registrado exitosamente',
-        data: {
-          matricula,
-          nombre: fullnameEstudiante,
-          comunidad,
-          timestamp: scriptResult.timestamp || new Date().toISOString(),
-          alreadyRegistered: !!scriptResult.alreadyRegistered
-        }
-      });
-
-    } else if (req.method === 'GET') {
-      // VERIFICAR SI ESTÁ REGISTRADO
-      const { matricula } = req.query;
-      
-      if (!matricula) {
-        return res.status(400).json({ error: 'Matrícula requerida' });
-      }
-
-      const scriptUrl = process.env.GOOGLE_SCRIPT_URL;
-      const scriptKey = process.env.GOOGLE_SCRIPT_KEY;
-      if (!scriptUrl || !scriptKey) {
-        console.error('❌ GOOGLE_SCRIPT_URL/GOOGLE_SCRIPT_KEY no configurados');
-        return res.status(500).json({ error: 'Configuración del servidor incompleta' });
-      }
-
-      const scriptResponse = await fetch(scriptUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          action: 'lookup',
-          api_key: scriptKey,
-          matricula
-        })
-      });
-
-      if (!scriptResponse.ok) {
-        return res.status(502).json({ error: 'Error consultando estado' });
-      }
-
-      const scriptResult = await scriptResponse.json();
-      if (scriptResult.status >= 400 || scriptResult.error) {
-        return res.status(scriptResult.status || 500).json({ error: scriptResult.error || 'Error consultando estado' });
-      }
-
-      return res.status(200).json({
-        matricula,
-        registered: !!(scriptResult.data && scriptResult.data.yaRegistrado),
-        timestamp: new Date().toISOString()
-      });
-    }
-
-  } catch (error) {
-    console.error('🔥 Error en API check-in:', error);
-    return res.status(500).json({ 
-      error: 'Error interno del servidor',
-      debug: error.message,
-      timestamp: new Date().toISOString()
+    const result = await callAppsScript({
+      action: 'checkin',
+      matricula,
+      source: 'AUTOSERVICIO'
     });
+
+    if (result.status >= 400 || result.error) {
+      return res.status(result.status || 500).json({ error: publicError(result) });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: result.alreadyRegistered ? 'El check-in ya estaba registrado' : 'Check-in registrado',
+      data: {
+        ...(result.data || {}),
+        alreadyRegistered: !!result.alreadyRegistered,
+        timestamp: result.timestamp || new Date().toISOString()
+      }
+    });
+  } catch (error) {
+    console.error('Error registrando check-in:', error);
+    return res.status(502).json({ error: 'No fue posible registrar el check-in. Intenta nuevamente.' });
   }
+}
+
+function parseBody(body) {
+  if (!body) return {};
+  return typeof body === 'string' ? JSON.parse(body) : body;
+}
+
+function publicError(result) {
+  if (result.status === 404) {
+    return 'No encontramos tu matricula. Acercate con el staff para registrar tu acceso.';
+  }
+  if (result.status === 503) {
+    return 'El registro esta ocupado. Espera unos segundos e intenta nuevamente.';
+  }
+  if (result.status === 409) {
+    return 'Esta matricula no esta activa para el evento AD26. Acercate con el staff.';
+  }
+  return result.error || 'Error registrando asistencia';
+}
+
+async function callAppsScript(payload) {
+  const scriptUrl = process.env.GOOGLE_SCRIPT_URL;
+  const scriptKey = process.env.GOOGLE_SCRIPT_KEY;
+  if (!scriptUrl || !scriptKey) throw new Error('Apps Script no configurado');
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 9000);
+  try {
+    const response = await fetch(scriptUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...payload, api_key: scriptKey }),
+      signal: controller.signal
+    });
+    if (!response.ok) throw new Error(`Apps Script ${response.status}`);
+    return response.json();
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function isAllowedOrigin(req) {
+  const allowed = (process.env.ALLOWED_ORIGINS || '')
+    .split(',')
+    .map(value => value.trim())
+    .filter(Boolean);
+  const origin = req.headers.origin;
+  return allowed.length === 0 || !origin || allowed.includes(origin);
+}
+
+function applyCors(req, res, methods) {
+  const origin = req.headers.origin;
+  if (origin && isAllowedOrigin(req)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+  }
+  res.setHeader('Access-Control-Allow-Methods', methods);
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Checkin-Client');
 }

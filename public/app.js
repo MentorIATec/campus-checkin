@@ -1,17 +1,18 @@
 // Campus Check-in - Frontend Actualizado
 const CONFIG = {
   API_BASE: '',
-  API_KEY: '',
-  GOOGLE_SCRIPT_URL: '',
+  EVENT_ID: 'bienvenida-transferencias-ad26',
+  PERIOD: 'AD26',
   CONTINUOUS_MODE: false,
   ...(window.CHECKIN_CONFIG || {})
 };
 
 let estudianteActual = null;
 const registrosCache = new Set();
-const STORAGE_KEY = 'checkinCacheFJ26';
-const IN_FLIGHT_STORAGE_KEY = 'checkinInFlightFJ26';
+const STORAGE_KEY = `checkinCache:${CONFIG.EVENT_ID}`;
+const IN_FLIGHT_STORAGE_KEY = `checkinInFlight:${CONFIG.EVENT_ID}`;
 const isDesktop = window.matchMedia && window.matchMedia('(min-width: 900px)').matches;
+const clientId = getOrCreateClientId();
 let isSearching = false;
 let isSubmitting = false;
 let autoResetTimer = null;
@@ -24,11 +25,6 @@ async function buscarEstudiante() {
   const inputEl = document.getElementById('matriculaInput');
   const input = inputEl.value.trim().toUpperCase();
 
-  if (!CONFIG.API_KEY) {
-    mostrarError('Configuración incompleta. Revisa la API key.');
-    return;
-  }
-  
   if (!input) {
     mostrarError('Ingresa una matrícula');
     return;
@@ -55,7 +51,7 @@ async function buscarEstudiante() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': CONFIG.API_KEY
+        'X-Checkin-Client': clientId
       },
       body: JSON.stringify({
         matricula: input
@@ -136,62 +132,29 @@ async function mostrarDatosEstudiante(estudiante) {
   document.getElementById('campusEstudiante').textContent = estudiante.campusOrigen || 'Campus no especificado';
   document.getElementById('carreraEstudiante').textContent = estudiante.carrera || 'Carrera no especificada';
 
-  // Verificar estado del botón
+  // El lookup ya incluye el estado autoritativo del check-in.
   const btn = document.getElementById('asistenciaBtn');
+  const pendingMsg = document.getElementById('pendingCheckinMsg');
   btn.style.display = '';
-  
-  // Verificar cache local primero
-  if (registrosCache.has(estudiante.matricula)) {
+
+  if (estudiante.yaRegistrado || registrosCache.has(estudiante.matricula)) {
+    registrosCache.add(estudiante.matricula);
+    persistirCache();
     btn.disabled = true;
     btn.textContent = '✓ Ya registrado';
-    document.getElementById('mensajeExito').classList.add('hidden');
+    if (pendingMsg) pendingMsg.classList.add('hidden');
+    mostrarMensajeYaRegistrado();
   } else {
-    // Verificar con el servidor si está registrado
-    btn.disabled = true;
-    btn.textContent = 'Verificando...';
-    
-    try {
-      const yaRegistrado = await checkMatriculaRegistrada(estudiante.matricula);
-      if (yaRegistrado) {
-        registrosCache.add(estudiante.matricula);
-        persistirCache();
-        btn.disabled = true;
-        btn.textContent = '✓ Ya registrado';
-        document.getElementById('mensajeExito').classList.add('hidden');
-      } else {
-        btn.disabled = false;
-        btn.textContent = '✅ Confirmar asistencia presencial';
-      }
-    } catch (error) {
-      console.error('Error verificando registro:', error);
-      // Si falla la verificación, permitir el registro
-      btn.disabled = false;
-      btn.textContent = '✅ Confirmar asistencia presencial';
-    }
+    btn.disabled = false;
+    btn.textContent = 'Registrar mi check-in';
+    if (pendingMsg) pendingMsg.classList.remove('hidden');
+    document.getElementById('mensajeExito').classList.add('hidden');
   }
 
-  document.getElementById('mensajeExito').classList.add('hidden');
   mostrarTarjeta();
-}
-
-async function checkMatriculaRegistrada(matricula) {
-  try {
-    const res = await fetch(`/api/checkin?matricula=${encodeURIComponent(matricula)}&t=${Date.now()}`, {
-      method: 'GET',
-      headers: {
-        'x-api-key': CONFIG.API_KEY
-      },
-      cache: 'no-cache'
-    });
-    
-    if (!res.ok) throw new Error('Error verificando registro');
-    
-    const info = await res.json();
-    return !!info.registered;
-  } catch (error) {
-    console.error('Error verificando matrícula:', error);
-    return false;
-  }
+  requestAnimationFrame(() => {
+    document.getElementById('tarjetaEstudiante').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
 }
 
 async function registrarAsistencia() {
@@ -217,21 +180,7 @@ async function registrarAsistencia() {
 
   try {
     // Enviar a API propia
-    const response = await fetch('/api/checkin', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': CONFIG.API_KEY
-      },
-      body: JSON.stringify({
-        matricula: estudianteActual.matricula,
-        fullnameEstudiante: estudianteActual.fullnameEstudiante,
-        comunidad: estudianteActual.comunidad,
-        mentorFullname: estudianteActual.mentorFullname,
-        campusOrigen: estudianteActual.campusOrigen,
-        carrera: estudianteActual.carrera
-      })
-    });
+    const response = await enviarCheckinConReintento(estudianteActual.matricula);
 
     const result = await response.json();
 
@@ -239,33 +188,7 @@ async function registrarAsistencia() {
       throw new Error(result.error || 'Error registrando asistencia');
     }
 
-    console.log("✅ Registro exitoso via API");
-    
-    // También enviar a Google Apps Script como fallback
-    if (CONFIG.GOOGLE_SCRIPT_URL) {
-      try {
-        const data = {
-          matricula: estudianteActual.matricula,
-          fullnameEstudiante: estudianteActual.fullnameEstudiante,
-          comunidad: estudianteActual.comunidad,
-          mentorFullname: estudianteActual.mentorFullname,
-          campusOrigen: estudianteActual.campusOrigen,
-          carrera: estudianteActual.carrera
-        };
-        
-        await fetch(CONFIG.GOOGLE_SCRIPT_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data)
-        });
-        console.log("✅ También enviado a Google Script");
-      } catch (error) {
-        console.warn('⚠️ Google Script falló (no crítico):', error);
-      }
-    }
+    console.log("✅ Registro procesado via API");
     
     // Agregar a cache local
     registrosCache.add(estudianteActual.matricula);
@@ -275,10 +198,13 @@ async function registrarAsistencia() {
     // Mostrar éxito corto para flujo continuo
     mensajeExito.classList.remove('hidden');
     mensajeExito.innerHTML = `
-      <p>✅ Registro confirmado<br>
+      <p>${result.data && result.data.alreadyRegistered ? '✓ Tu check-in ya estaba registrado' : '✅ Registro confirmado'}<br>
         <span class="small-note">${isDesktop ? 'Puedes continuar con la siguiente matrícula.' : 'Haz screenshot de esta pantalla como comprobante.'}</span>
       </p>
     `;
+
+    const pendingMsg = document.getElementById('pendingCheckinMsg');
+    if (pendingMsg) pendingMsg.classList.add('hidden');
     
     btn.textContent = isDesktop ? '✓ Ya registrado' : '✅ Listo';
     btn.disabled = true;
@@ -286,14 +212,6 @@ async function registrarAsistencia() {
     setCardBusy(false);
     isSubmitting = false;
     
-    // Actualizar estadísticas localmente
-    actualizarStatsLocal();
-    
-    // Actualizar stats del servidor después
-    setTimeout(() => {
-      actualizarStatsBar();
-    }, 2000);
-
     if (allowAutoReset) {
       clearTimeout(autoResetTimer);
       autoResetTimer = setTimeout(() => {
@@ -310,7 +228,7 @@ async function registrarAsistencia() {
     
     mostrarError(`❌ ${error.message}. Por favor intenta de nuevo.`);
     btn.disabled = false;
-    btn.textContent = '✅ Confirmar asistencia presencial';
+    btn.textContent = 'Registrar mi check-in';
     setCardBusy(false);
     isSubmitting = false;
   }
@@ -338,13 +256,9 @@ function actualizarStatsLocal() {
 
 async function actualizarStatsBar() {
   try {
-    if (!CONFIG.API_KEY) return;
     const res = await fetch(`/api/stats?t=${Date.now()}`, {
       method: 'GET',
-      cache: 'no-cache',
-      headers: {
-        'x-api-key': CONFIG.API_KEY
-      }
+      cache: 'no-cache'
     });
     
     if (!res.ok) throw new Error('Error en respuesta');
@@ -353,7 +267,7 @@ async function actualizarStatsBar() {
     
     // Actualizar contadores
     const totalElement = document.getElementById('totalCheckins');
-    if (totalElement && info.checkins) {
+    if (totalElement && Number.isFinite(Number(info.checkins))) {
       totalElement.textContent = info.checkins;
     }
     
@@ -446,8 +360,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   console.log("🚀 Iniciando Campus Check-in...");
 
   cargarCache();
-  restaurarInFlight();
   ajustarCopyPorDispositivo();
+  resetCheckin();
   
   // Configurar evento Enter en el input
   const inputMatricula = document.getElementById('matriculaInput');
@@ -460,18 +374,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
   
-  // Actualizar estadísticas iniciales
-  await actualizarStatsBar();
-  
   // Actualizar hora cada segundo
   actualizarHoraActual();
   setInterval(actualizarHoraActual, 1000);
-  
-  // Actualizar estadísticas cada 15 segundos
-  setInterval(actualizarStatsBar, isDesktop ? 15000 : 40000);
-  
-  // Reset inicial
-  resetCheckin();
+
+  // El monitoreo operativo se consulta manualmente desde Sheets para no competir con los check-ins.
+  ocultarStatsPublicas();
+  void restaurarInFlight();
   
   console.log("✅ Campus Check-in listo");
 });
@@ -592,9 +501,17 @@ async function restaurarInFlight() {
     limpiarInFlight();
     const input = document.getElementById('matriculaInput');
     if (input) input.value = data.matricula;
-    const yaRegistrado = await checkMatriculaRegistrada(data.matricula);
-    if (yaRegistrado) {
-      registrosCache.add(data.matricula);
+    const response = await fetch('/api/estudiante', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Checkin-Client': clientId
+      },
+      body: JSON.stringify({ matricula: data.matricula })
+    });
+    const result = await response.json();
+    if (response.ok && result.data && result.data.yaRegistrado) {
+      registrosCache.add(String(data.matricula).trim().toUpperCase());
       persistirCache();
       mostrarError('✅ Registro previo detectado. Puedes continuar con otra matrícula.');
       const errorElement = document.getElementById('errorMsg');
@@ -606,4 +523,50 @@ async function restaurarInFlight() {
   } catch (error) {
     console.warn('⚠️ No se pudo restaurar inFlight:', error);
   }
+}
+
+async function enviarCheckinConReintento(matricula) {
+  const maxAttempts = 3;
+  let lastResponse = null;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    lastResponse = await fetch('/api/checkin', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Checkin-Client': clientId
+      },
+      body: JSON.stringify({ matricula })
+    });
+
+    if (![502, 503].includes(lastResponse.status) || attempt === maxAttempts) return lastResponse;
+    await sleep(450 + Math.floor(Math.random() * 700) + (attempt * 350));
+  }
+
+  return lastResponse;
+}
+
+function ocultarStatsPublicas() {
+  const bar = document.querySelector('.stats-bar');
+  if (bar) {
+    bar.hidden = true;
+    bar.style.display = 'none';
+  }
+}
+
+function getOrCreateClientId() {
+  const key = `checkinClient:${CONFIG.EVENT_ID}`;
+  try {
+    const existing = localStorage.getItem(key);
+    if (/^[A-Za-z0-9_-]{16,80}$/.test(existing || '')) return existing;
+    const generated = `c_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 18)}`;
+    localStorage.setItem(key, generated);
+    return generated;
+  } catch (error) {
+    return `c_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 18)}`;
+  }
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }

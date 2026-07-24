@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Incidencias staff | Campus Check-in AD26</title>
+  <link rel="stylesheet" href="/styles.css?v=ad26.20260723">
+  <style>
+    .staff-shell { max-width: 620px; margin: 0 auto; padding: 24px 16px 48px; }
+    .staff-card { background: #fff; border-radius: 20px; padding: 24px; box-shadow: 0 12px 35px rgba(0, 59, 92, .14); }
+    .staff-card h1 { margin: 0 0 8px; color: #003b5c; }
+    .staff-note { margin: 0 0 22px; color: #52626e; }
+    .staff-field { display: block; margin: 14px 0; font-weight: 700; color: #12344a; }
+    .staff-field input, .staff-field select { width: 100%; margin-top: 7px; padding: 13px 14px; border: 2px solid #dce4ea; border-radius: 11px; font-size: 16px; }
+    .staff-actions { display: grid; gap: 10px; margin-top: 20px; }
+    .staff-result { display: none; margin-top: 18px; padding: 15px; border-radius: 12px; font-weight: 800; }
+    .staff-result.ok { display: block; color: #126b34; background: #ddf7e6; }
+    .staff-result.error { display: block; color: #9d1c1c; background: #ffe4e4; }
+  </style>
+</head>
+<body>
+  <main class="staff-shell">
+    <section class="staff-card">
+      <h1>Acceso por incidencia</h1>
+      <p class="staff-note">Captura lo mínimo necesario. Todos los casos identificados reciben acceso.</p>
+
+      <form id="incidentForm" novalidate>
+        <label class="staff-field">PIN de staff
+          <input id="staffPin" type="password" autocomplete="current-password" required>
+        </label>
+        <label class="staff-field">Identificador del staff
+          <input id="staffId" type="text" autocomplete="off" placeholder="Nombre o iniciales">
+        </label>
+        <label class="staff-field">Matrícula
+          <input id="incidentMatricula" type="text" maxlength="9" autocomplete="off" placeholder="A01234567" required>
+        </label>
+        <label class="staff-field">Nombre
+          <input id="incidentNombre" type="text" autocomplete="off" required>
+        </label>
+        <label class="staff-field">Campus de procedencia
+          <input id="incidentCampus" type="text" autocomplete="off" required>
+        </label>
+        <label class="staff-field">Motivo
+          <select id="incidentMotivo" required>
+            <option value="TRANSFERENCIA_TARDIA">Transferencia tardía</option>
+            <option value="OTRO">Otro</option>
+          </select>
+        </label>
+        <label class="staff-field" id="otherReasonWrap" hidden>Detalle breve
+          <input id="incidentOther" type="text" autocomplete="off">
+        </label>
+
+        <div class="staff-actions">
+          <button type="submit" class="btn-checkin" id="incidentSubmit">Autorizar acceso y registrar</button>
+          <button type="button" class="btn-checkin btn-back" id="incidentReset">Nueva incidencia</button>
+        </div>
+      </form>
+      <div id="incidentResult" class="staff-result" role="status"></div>
+    </section>
+  </main>
+  <script src="/ad26/staff.js?v=ad26.20260723"></script>
+</body>
+</html>

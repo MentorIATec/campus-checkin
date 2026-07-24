@@ -1,13 +1,15 @@
 {
   "name": "campus-checkin",
-  "version": "2.0.0",
-  "description": "Sistema de registro de asistencia para estudiantes transferidos - Campus Check-in",
+  "version": "3.0.0",
+  "description": "Sistema de registro de asistencia AD26 para estudiantes de transferencia",
   "main": "public/index.html",
   "scripts": {
     "dev": "vercel dev",
     "build": "echo 'No build required for static files'",
     "start": "vercel dev",
-    "deploy": "vercel --prod"
+    "deploy": "vercel --prod",
+    "test": "node ad26/scripts/validate-config.mjs",
+    "validate:mentor-assets": "node ad26/scripts/validate-mentor-assets.mjs"
   },
   "keywords": [
     "campus",
@@ -36,23 +38,5 @@
   "dependencies": {},
   "devDependencies": {
     "vercel": "^32.0.0"
-  },
-  "vercel": {
-    "functions": {
-      "api/estudiante.js": {
-        "maxDuration": 10
-      },
-      "api/checkin.js": {
-        "maxDuration": 10
-      }
-    }
-  },
-  "environment": {
-    "production": {
-      "API_URL": "https://campus-checkin.vercel.app/api"
-    },
-    "development": {
-      "API_URL": "http://localhost:3000/api"
-    }
   }
 }
