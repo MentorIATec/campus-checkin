@@ -10,8 +10,9 @@ const expected = (await readFile(expectedPath, 'utf8'))
   .split(/\r?\n/)
   .map(value => value.trim())
   .filter(Boolean);
-const available = new Set(await readdir(assetsDir));
-const missing = expected.filter(filename => !available.has(filename));
+// macOS normalizes filenames to NFD, while Git/Vercel preserve the NFC spelling.
+const available = new Set((await readdir(assetsDir)).map(filename => filename.normalize('NFC')));
+const missing = expected.filter(filename => !available.has(filename.normalize('NFC')));
 
 console.log(`Referencias AD26: ${expected.length}`);
 console.log(`Coincidencias exactas: ${expected.length - missing.length}`);
