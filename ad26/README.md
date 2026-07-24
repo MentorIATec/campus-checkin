@@ -16,6 +16,7 @@ Documentacion de rediseño, robustecimiento y operacion del registro presencial 
 - `CHECKLIST_ROBUSTECIMIENTO.md`: checklist tecnico, funcional y operativo.
 - `AUDITORIA_REFRESH_AD25.md`: causa probable del borrado/refresco observado en AD25 y controles preventivos.
 - `INVENTARIO_ASSETS_Y_DESPLIEGUES.md`: catalogo de mentores, imagenes y estrategia de archivado en Vercel.
+- `ARQUITECTURA_INTEGRADA_TRANSFERENCIAS_AD26.md`: relacion entre preregistro, invitacion y check-in presencial.
 - `INPUTS_PENDIENTES.md`: insumos externos necesarios antes del ensayo y despliegue.
 - `mentor-assets.expected.txt`: referencias esperadas del catalogo AD26.
 - `scripts/validate-mentor-assets.mjs`: validacion exacta de imagenes con `npm run validate:mentor-assets`.
