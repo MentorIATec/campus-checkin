@@ -90,7 +90,8 @@
 - [x] Mantener `fotoMentor` como nombre de archivo, no como ruta absoluta.
 - [x] Servir imagenes desde `/mentores/<fotoMentor>`.
 - [ ] Agregar o renombrar assets en la rama `ad26`, no en FJ26.
-- [ ] Resolver las 28 referencias que hoy no tienen coincidencia exacta en `public/mentores`.
+- [ ] Agregar las imagenes pendientes de Mariana Ortega Lankenau y Ana Lilia Varela Serrato.
+- [ ] Cargar en `foto_mentor` el nombre exacto de las 45 imagenes vigentes, incluyendo las variantes documentadas.
 - [x] Agregar validador de mayusculas, espacios y acentos para sistemas case-sensitive.
 - [ ] Mantener `/mentores/Salud.jpg` como fallback de Salud.
 

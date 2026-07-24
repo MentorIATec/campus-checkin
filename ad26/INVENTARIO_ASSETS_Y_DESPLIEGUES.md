@@ -5,11 +5,14 @@
 Fuente revisada: `DATOSME_CURSOR.xlsx`.
 
 - 47 registros de mentor.
-- 47 nombres de imagen distintos.
-- 19 referencias coinciden exactamente con archivos actuales de `public/mentores`.
-- 28 referencias no tienen coincidencia exacta.
+- 47 nombres de imagen esperados.
+- 45 mentores cuentan con una imagen vigente identificable en `public/mentores`.
+- 35 archivos siguen exactamente la convencion `nickname + comunidad` sin espacios.
+- 3 archivos usan la misma convencion con un espacio: `JR Krei.jpg`, `Roger Pasio.jpg` y `Roger Revo.jpg`.
+- 7 archivos vigentes usan otro alias conocido y requieren conservar el nombre exacto en `foto_mentor`.
+- 2 mentoras no tienen una imagen identificable en el inventario actual.
 
-La diferencia se debe principalmente a que el catalogo nuevo usa nombres formales mientras el repositorio conserva nicknames, espacios o variantes, por ejemplo:
+La diferencia inicial se debia a que el catalogo nuevo usa nombres formales mientras el repositorio conserva nicknames, espacios o variantes, por ejemplo:
 
 - `LeonardoEkvilibro.jpg` frente a `LeoEkvilibro.jpg`.
 - `MarcoEnergio.jpg` frente a `VinnyEnergio.jpg`.
@@ -17,12 +20,27 @@ La diferencia se debe principalmente a que el catalogo nuevo usa nombres formale
 - `ChristopherSpirita.jpg` frente a `ChrisSpirita.jpg`.
 - `MonserratPasio.jpg` frente a `MonsePasio.jpg`.
 
+Las siete equivalencias vigentes que no coinciden literalmente con el nickname del catalogo son:
+
+- Ricardo Acosta Klein: `RicardoEnergio.jpg`.
+- Andrea Herrera Morales: `AndreaKresko.jpg`.
+- Aleyda Carime Fernandez Marchan: `AleydaKresko.jpg`.
+- Laura Lidia Martinez Ochoa: `LauraReflekto.jpg`.
+- Norman Ernesto Ramirez Gonzalez: `ErnestoRevo.jpg`.
+- Jorge Mauricio Noriega Montemayor: `MauricioTalenta.jpg`.
+- Laura Gabriela Rios Contreras: `LauraTalenta.jpg`.
+
+Las dos imagenes realmente pendientes son:
+
+- Mariana Ortega Lankenau: `MarianaPasio.jpg`.
+- Ana Lilia Varela Serrato: `AnaTalenta.jpg`.
+
 ## Convencion AD26
 
 La hoja privada guardara solo el nombre de archivo en `fotoMentor`, por ejemplo:
 
 ```text
-ChristopherSpirita.jpg
+ChrisSpirita.jpg
 ```
 
 El backend convertira ese valor en:
@@ -48,7 +66,7 @@ La ruta es relativa al mismo deployment de Vercel. No se guardaran rutas locales
 5. Ejecutar una validacion automatica que compare `fotoMentor` con archivos existentes y falle si falta alguno.
 6. Usar `Salud.jpg` para Escuela de Salud.
 
-No debe asumirse que las 28 referencias faltantes pueden mapearse automaticamente: algunas pueden ser nuevos mentores y requieren imagen nueva.
+No deben sustituirse las dos imagenes pendientes con assets historicos sin confirmar visualmente la identidad de la persona.
 
 ## Vercel
 
