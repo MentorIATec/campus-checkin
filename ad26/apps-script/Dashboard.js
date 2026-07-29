@@ -34,6 +34,7 @@ function buildDashboardAD26() {
   sheet.getRange(currentRow, 1, metrics.length, 2).setValues(metrics);
   sheet.getRange(currentRow, 1, 1, 2).setFontWeight('bold').setBackground('#edf2f7');
   sheet.getRange(currentRow + 1, 1, metrics.length - 1, 1).setFontWeight('bold');
+  sheet.getRange(currentRow + 1, 2, metrics.length - 2, 1).setNumberFormat('0');
   sheet.getRange(currentRow + metrics.length - 1, 2).setNumberFormat('yyyy-mm-dd hh:mm:ss');
   currentRow += metrics.length + 2;
 
@@ -173,7 +174,8 @@ function writeKpiCardsAD26(sheet, kpi) {
     sheet.getRange(3, card.col, 1, 2).merge();
     sheet.getRange(4, card.col, 1, 2).merge();
     sheet.getRange(3, card.col).setValue(card.label).setFontWeight('bold').setHorizontalAlignment('center');
-    sheet.getRange(4, card.col).setValue(card.value).setFontWeight('bold').setFontSize(16).setHorizontalAlignment('center');
+    sheet.getRange(4, card.col).setValue(card.value).setNumberFormat('0')
+      .setFontWeight('bold').setFontSize(16).setHorizontalAlignment('center');
     sheet.getRange(3, card.col, 2, 2).setBackground(card.bg).setBorder(true, true, true, true, false, false);
   });
 }
@@ -183,6 +185,7 @@ function writeTop5TableAD26(sheet, row, col, title, sourceMap) {
   sheet.getRange(row, col, 1, 2).merge().setValue(title).setFontWeight('bold').setBackground('#edf2f7');
   sheet.getRange(row + 1, col, 1, 2).setValues([['Categoria', 'Total']]).setFontWeight('bold');
   sheet.getRange(row + 2, col, Math.max(rows.length, 1), 2).setValues(rows.length ? rows : [['Sin datos', 0]]);
+  sheet.getRange(row + 2, col + 1, Math.max(rows.length, 1), 1).setNumberFormat('0');
 }
 
 function writeCountTableAD26(sheet, startRow, title, sourceMap, sortByKey) {
@@ -190,6 +193,7 @@ function writeCountTableAD26(sheet, startRow, title, sourceMap, sortByKey) {
   sheet.getRange(startRow, 1).setValue(title).setFontWeight('bold');
   sheet.getRange(startRow + 1, 1, 1, 2).setValues([['Categoria', 'Total']]).setFontWeight('bold').setBackground('#edf2f7');
   sheet.getRange(startRow + 2, 1, Math.max(rows.length, 1), 2).setValues(rows.length ? rows : [['Sin datos', 0]]);
+  sheet.getRange(startRow + 2, 2, Math.max(rows.length, 1), 1).setNumberFormat('0');
   return startRow + Math.max(rows.length, 1) + 4;
 }
 
