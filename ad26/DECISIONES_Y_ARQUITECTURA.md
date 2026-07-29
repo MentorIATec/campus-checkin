@@ -127,7 +127,7 @@ Salida visual:
 
 ## Dashboard sin timer
 
-`Dashboard_AD26` sera un resumen minimo con formulas sobre rangos acotados. No escribira en `Checkins_AD26`, no adquirira locks y no tendra un apartado especializado de gestion de incidencias.
+`Dashboard_AD26` se regenerara manualmente mediante Apps Script, siguiendo la estructura operativa validada en FJ26. No usara formulas volatiles, no escribira en `Checkins_AD26`, no adquirira locks durante el registro y no tendra un apartado especializado de gestion de incidencias.
 
 Metricas:
 

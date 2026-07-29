@@ -9,7 +9,66 @@ const AD26_SNAPSHOT = {
   ASSIGNMENTS_SHEET: 'Asignaciones',
   RESPONSES_SHEET: 'Respuestas',
   MENTORS_SHEET: 'Datos mentor',
+  ACADEMIC_SHEETS: ['Importacion_Raw_Verano26', 'Importacion_Raw_AD26'],
   TEST_MATRICULAS: ['A00000001', 'A00000002', 'A00000003']
+};
+
+// Catalogo estable para no depender de abreviaturas o de "Por clasificar" en Asignaciones.
+const AD26_ACADEMIC_CATALOG = {
+  AMC: ['Ambiente Construido', 'Arquitectura, Arte y Diseno'],
+  ARQ: ['Arquitectura', 'Arquitectura, Arte y Diseno'],
+  BA: ['Arquitectura', 'Arquitectura, Arte y Diseno'],
+  BBA: ['Estrategia y Transformacion de Negocios', 'Negocios'],
+  BFI: ['Finanzas', 'Negocios'],
+  BGB: ['Negocios Internacionales', 'Negocios'],
+  BIE: ['Ingenieria Industrial y de Sistemas', 'Ingenieria y Ciencias'],
+  BME: ['Ingenieria en Mecatronica', 'Ingenieria y Ciencias'],
+  CIS: ['Ciencias Sociales y Gobierno', 'Ciencias Sociales y Gobierno'],
+  CPF: ['Contaduria Publica y Finanzas', 'Negocios'],
+  ESC: ['Estudios Creativos', 'Arquitectura, Arte y Diseno'],
+  IAG: ['Ingenieria en Biosistemas Agroalimentarios', 'Ingenieria y Ciencias'],
+  IAL: ['Ingenieria en Alimentos', 'Ingenieria y Ciencias'],
+  IBQ: ['Bioingenieria y Procesos Quimicos', 'Ingenieria y Ciencias'],
+  IBT: ['Ingenieria en Biotecnologia', 'Ingenieria y Ciencias'],
+  IC: ['Ingenieria Civil', 'Ingenieria y Ciencias'],
+  ICI: ['Ingenieria - Ciencias Aplicadas', 'Ingenieria y Ciencias'],
+  ICT: ['Ingenieria - Computacion y Tecnologias de Informacion', 'Ingenieria y Ciencias'],
+  IDM: ['Ingenieria en Ciencia de Datos y Matematicas', 'Ingenieria y Ciencias'],
+  IDS: ['Ingenieria en Desarrollo Sustentable', 'Ingenieria y Ciencias'],
+  IE: ['Ingenieria en Electronica', 'Ingenieria y Ciencias'],
+  IFI: ['Ingenieria en Fisica Industrial', 'Ingenieria y Ciencias'],
+  IID: ['Ingenieria en Innovacion y Desarrollo', 'Ingenieria y Ciencias'],
+  IIS: ['Ingenieria Industrial y de Sistemas', 'Ingenieria y Ciencias'],
+  IIT: ['Ingenieria - Innovacion y Transformacion', 'Ingenieria y Ciencias'],
+  IM: ['Ingenieria Mecanica', 'Ingenieria y Ciencias'],
+  IMD: ['Ingenieria Biomedica', 'Ingenieria y Ciencias'],
+  IMT: ['Ingenieria en Mecatronica', 'Ingenieria y Ciencias'],
+  INA: ['Ingenieria en Nanotecnologia', 'Ingenieria y Ciencias'],
+  ING: ['Ingenieria', 'Ingenieria y Ciencias'],
+  IQ: ['Ingenieria Quimica', 'Ingenieria y Ciencias'],
+  IRS: ['Ingenieria en Robotica y Sistemas Digitales', 'Ingenieria y Ciencias'],
+  ITC: ['Ingenieria en Tecnologias Computacionales', 'Ingenieria y Ciencias'],
+  ITD: ['Ingenieria en Transformacion Digital de Negocios', 'Ingenieria y Ciencias'],
+  LAD: ['Animacion y Arte Digital', 'Arquitectura, Arte y Diseno'],
+  LAE: ['Estrategia y Transformacion de Negocios', 'Negocios'],
+  LAF: ['Finanzas', 'Negocios'],
+  LC: ['Comunicacion', 'Humanidades, Comunicacion y Tecnologia Musical'],
+  LDE: ['Emprendimiento e Innovacion', 'Negocios'],
+  LDI: ['Diseno', 'Arquitectura, Arte y Diseno'],
+  LDO: ['Desarrollo de Talento y Cultura Organizacional', 'Negocios'],
+  LEC: ['Economia', 'Ciencias Sociales y Gobierno'],
+  LED: ['Derecho', 'Ciencias Sociales y Gobierno'],
+  LEI: ['Innovacion y Transformacion Educativa', 'Humanidades, Comunicacion y Tecnologia Musical'],
+  LEM: ['Mercadotecnia', 'Negocios'],
+  LIN: ['Negocios Internacionales', 'Negocios'],
+  LIT: ['Inteligencia de Negocios', 'Negocios'],
+  LLE: ['Letras y Emprendimiento Editorial', 'Humanidades, Comunicacion y Tecnologia Musical'],
+  LPS: ['Psicologia Clinica y de la Salud', 'Salud'],
+  LRI: ['Relaciones Internacionales', 'Ciencias Sociales y Gobierno'],
+  LTM: ['Tecnologia y Produccion Musical', 'Humanidades, Comunicacion y Tecnologia Musical'],
+  LUB: ['Urbanismo', 'Arquitectura, Arte y Diseno'],
+  MC: ['Medico Cirujano', 'Salud'],
+  NEG: ['Negocios', 'Negocios']
 };
 
 // Los nombres de archivo son parte del despliegue y no dependen de columnas editables del Sheet.
@@ -84,12 +143,16 @@ function previewPreregistrationSnapshotAD26() {
     salud: snapshot.healthCount,
     fotos_configuradas: snapshot.photoCount,
     mentores_sin_foto: snapshot.mentorsWithoutPhoto,
+    cruces_academicos: snapshot.academicMatchedCount,
+    sin_cruce_academico: snapshot.academicUnmatched,
+    escuelas_por_clasificar: snapshot.unclassifiedSchools,
+    registros_fuente_sin_asignacion: snapshot.rawWithoutAssignmentCount,
     duplicados: snapshot.duplicates
   };
   console.log(JSON.stringify(result));
   SpreadsheetApp.getUi().alert(
     'Previsualizacion AD26',
-    `Estudiantes: ${result.estudiantes}\nMentores: ${result.mentores}\nRespuestas: ${result.respuestas}\nSI: ${result.preregistro_si}\nNO: ${result.preregistro_no}\nSin respuesta: ${result.sin_respuesta}\nSalud: ${result.salud}\nFotos configuradas: ${result.fotos_configuradas}\nMentores sin foto: ${result.mentores_sin_foto.length}\nDuplicados: ${result.duplicados.length}`,
+    `Estudiantes: ${result.estudiantes}\nMentores: ${result.mentores}\nRespuestas: ${result.respuestas}\nSI: ${result.preregistro_si}\nNO: ${result.preregistro_no}\nSin respuesta: ${result.sin_respuesta}\nSalud: ${result.salud}\nCruces academicos: ${result.cruces_academicos}\nSin cruce academico: ${result.sin_cruce_academico.length}\nEscuelas por clasificar: ${result.escuelas_por_clasificar.length}\nRegistros fuente sin asignacion: ${result.registros_fuente_sin_asignacion}\nFotos configuradas: ${result.fotos_configuradas}\nMentores sin foto: ${result.mentores_sin_foto.length}\nDuplicados: ${result.duplicados.length}`,
     SpreadsheetApp.getUi().ButtonSet.OK
   );
   return result;
@@ -131,6 +194,7 @@ function buildPreregistrationSnapshotAD26() {
   const assignments = readSnapshotObjectsAD26(source, AD26_SNAPSHOT.ASSIGNMENTS_SHEET);
   const responses = readSnapshotObjectsAD26(source, AD26_SNAPSHOT.RESPONSES_SHEET);
   const sourceMentors = readSnapshotObjectsAD26(source, AD26_SNAPSHOT.MENTORS_SHEET);
+  const academicIndex = buildAcademicIndexAD26(source);
   const existingMentors = readObjects(getSheet(AD26.SHEETS.MENTORS));
   const existingById = indexByAD26(existingMentors, 'mentor_id');
   const latestResponses = latestResponsesByMatriculaAD26(responses);
@@ -148,9 +212,15 @@ function buildPreregistrationSnapshotAD26() {
 
       const response = latestResponses[matricula] || null;
       const answer = response ? clean(response.asistira).toUpperCase() : 'SIN RESPUESTA';
+      const academic = academicIndex.byMatricula[matricula] || {};
+      const careerCode = clean(academic.careerCode || row.carrera).toUpperCase();
+      const catalog = AD26_ACADEMIC_CATALOG[careerCode] || [];
+      const careerName = clean(catalog[0] || academic.careerName || row.nombre_carrera || careerCode);
+      const existingSchool = clean(row.escuela);
+      const school = clean(catalog[1] || academic.school || (!isUnclassifiedSchoolAD26(existingSchool) ? existingSchool : '')) || 'Por clasificar';
       const mentorId = clean(row.mentor_id);
       const currentMentor = existingById[mentorId] || {};
-      const health = isHealthAssignmentAD26(row);
+      const health = isHealthAssignmentAD26(row) || normalizeText(school) === 'salud';
 
       return {
         matricula,
@@ -158,8 +228,9 @@ function buildPreregistrationSnapshotAD26() {
         apellidos: clean(row.apellidos),
         email: clean(row.email),
         campus_origen: clean(row.campus_origen),
-        escuela: clean(row.escuela),
-        carrera: clean(row.carrera || row.nombre_carrera),
+        escuela: school,
+        carrera: careerName,
+        siglas_carrera: careerCode,
         tipo_poblacion: health ? 'SALUD' : clean(row.tipo_poblacion || 'MENTORIA'),
         mentor_id: health ? '' : mentorId,
         mentor_nombre: health ? 'Escuela de Salud' : clean(row.mentor_nombre),
@@ -194,6 +265,7 @@ function buildPreregistrationSnapshotAD26() {
       };
     });
 
+  const populationMatriculas = new Set(population.map(row => row.matricula));
   return {
     population,
     mentors,
@@ -204,8 +276,40 @@ function buildPreregistrationSnapshotAD26() {
     pendingCount: population.filter(row => !row.preregistrado).length,
     healthCount: population.filter(row => row.tipo_poblacion === 'SALUD').length,
     photoCount: mentors.filter(row => row.foto_mentor).length,
-    mentorsWithoutPhoto: mentors.filter(row => !row.foto_mentor).map(row => row.mentor_id)
+    mentorsWithoutPhoto: mentors.filter(row => !row.foto_mentor).map(row => row.mentor_id),
+    academicMatchedCount: population.filter(row => academicIndex.byMatricula[row.matricula]).length,
+    academicUnmatched: population.filter(row => !academicIndex.byMatricula[row.matricula]).map(row => row.matricula),
+    unclassifiedSchools: population.filter(row => isUnclassifiedSchoolAD26(row.escuela)).map(row => row.matricula),
+    rawWithoutAssignmentCount: Object.keys(academicIndex.byMatricula).filter(matricula => !populationMatriculas.has(matricula)).length
   };
+}
+
+function buildAcademicIndexAD26(source) {
+  const byMatricula = {};
+  AD26_SNAPSHOT.ACADEMIC_SHEETS.forEach(sheetName => {
+    readOptionalSnapshotObjectsAD26(source, sheetName).forEach(row => {
+      const matricula = normalizeMatricula(row.matricula);
+      if (!isValidMatricula(matricula)) return;
+      const careerCode = clean(row.carrera).toUpperCase();
+      const catalog = AD26_ACADEMIC_CATALOG[careerCode] || [];
+      byMatricula[matricula] = {
+        careerCode,
+        careerName: clean(catalog[0] || row.nombre_carrera),
+        school: clean(catalog[1])
+      };
+    });
+  });
+  return { byMatricula };
+}
+
+function readOptionalSnapshotObjectsAD26(spreadsheet, sheetName) {
+  const sheet = spreadsheet.getSheetByName(sheetName);
+  return sheet ? readSnapshotObjectsAD26(spreadsheet, sheetName) : [];
+}
+
+function isUnclassifiedSchoolAD26(value) {
+  const normalized = normalizeText(value);
+  return !normalized || normalized === 'por clasificar' || normalized === 'sin clasificar';
 }
 
 function mentorPhotoAD26(mentorId, currentPhoto) {

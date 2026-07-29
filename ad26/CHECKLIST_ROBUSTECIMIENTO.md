@@ -95,7 +95,7 @@
 
 ## Resumen operativo
 
-- [x] Implementar formulas y tablas dinamicas sin trigger cada minuto.
+- [x] Implementar regeneracion manual del dashboard, sin formulas volatiles ni trigger cada minuto.
 - [x] Acotar rangos, por ejemplo hasta 2,000 filas.
 - [x] Mostrar unicos, no solo filas totales.
 - [x] Separar check-ins digitales y registros manuales.
@@ -117,7 +117,9 @@
 - [ ] Perdida de respuesta despues de guardar y reintento idempotente.
 - [ ] Conexion lenta y timeout.
 - [ ] 20 a 30 solicitudes concurrentes.
-- [x] Recuperacion manual del dashboard sin timer, con formulas de actualizacion automatica.
+- [x] Recuperacion y actualizacion manual del dashboard sin timer.
+- [x] Cruzar carrera y escuela desde las fuentes originales por matricula.
+- [x] Recuperar Top 5 y desgloses de FJ26, agregando escuela.
 - [x] Validacion automatica de existencia exacta para las 47 fotos de mentores.
 - [ ] Validacion visual de encuadre e identidad de todas las fotos de mentores.
 

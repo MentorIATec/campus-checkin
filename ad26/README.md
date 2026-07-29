@@ -22,7 +22,8 @@ Documentacion de rediseño, robustecimiento y operacion del registro presencial 
 - `scripts/validate-mentor-assets.mjs`: validacion exacta de imagenes con `npm run validate:mentor-assets`.
 - `REGISTRO_MANUAL_INCIDENCIAS.md`: instrucciones de captura y conteo final.
 - `apps-script/Code.js`: Web App de lookup y check-in idempotente.
-- `apps-script/Setup.js`: preparacion no destructiva de hojas y resumen operativo.
+- `apps-script/Setup.js`: preparacion no destructiva de hojas.
+- `apps-script/Dashboard.js`: dashboard manual inspirado en la version FJ26.
 - `apps-script/Snapshot.js`: previsualizacion e importacion controlada desde el preregistro.
 
 ## Secuencia de fotografia operativa
@@ -30,7 +31,7 @@ Documentacion de rediseño, robustecimiento y operacion del registro presencial 
 El dia del evento se usa la misma secuencia que en los ensayos:
 
 1. Ejecutar `configurePreregistrationSourceAD26` solo si cambio el spreadsheet fuente.
-2. Ejecutar `previewPreregistrationSnapshotAD26` y verificar totales, duplicados y mentores sin foto.
+2. Ejecutar `previewPreregistrationSnapshotAD26` y verificar totales, duplicados, mentores sin foto, cruces academicos y escuelas por clasificar.
 3. Ejecutar `importPreregistrationSnapshotAD26` para reemplazar unicamente `Poblacion_AD26` y `Mentores_AD26`.
 4. Hacer consultas de prueba en el frontend antes de publicar el QR.
 
@@ -38,10 +39,18 @@ La importacion no borra `Checkins_AD26`, `Incidencias_AD26`, intentos ni errores
 
 ## Dashboard
 
-- Los indicadores y desgloses se recalculan automaticamente mediante formulas cuando llegan nuevos check-ins; no existe un timer ni un trigger por minuto.
-- La opcion `Regenerar dashboard` reconstruye formulas, formato y secciones de forma manual cuando se desea reparar o actualizar el tablero.
-- Incluye total y unicidad digital, registros manuales, total combinado sin duplicar, pendientes, ultimo check-in, preregistro, duplicados, Salud/sin mentor, errores, top 5 y desgloses por comunidad, mentor, campus, carrera, hora y ultimos registros.
-- Los registros manuales cuentan en el total general. Los desgloses enriquecidos se alimentan de `Checkins_AD26` porque `Incidencias_AD26` prioriza una captura minima y agil.
+- El dashboard se actualiza unicamente al ejecutar `Actualizar dashboard (manual)`; no usa formulas volatiles, timer ni trigger por minuto.
+- Conserva la estructura operativa de FJ26: tarjetas de total, unicos, pendientes, duplicados y sin mentor; Top 5 de comunidades, mentores y carreras; metricas y desgloses completos.
+- Agrega desgloses por escuela, campus, carrera y hora, ademas de los ultimos diez registros.
+- Los registros manuales de `Incidencias_AD26` se suman sin duplicar matriculas. Sus datos se enriquecen con `Poblacion_AD26` cuando existe coincidencia.
+- Pendientes se calcula contra el padron activo; una incidencia de alguien fuera del padron suma asistencia, pero no reduce pendientes.
+
+## Cruce academico
+
+- La fotografia consulta `Importacion_Raw_Verano26` y `Importacion_Raw_AD26` por matricula antes de construir `Poblacion_AD26`.
+- La clave de carrera se conserva en `siglas_carrera`; `carrera` contiene el nombre legible y `escuela` se deriva de un catalogo estable.
+- `Importacion_Raw_AD26` tiene prioridad sobre Verano 26 cuando una matricula aparece en ambas fuentes.
+- No se debe aceptar una fotografia final con valores reportados en `escuelas_por_clasificar` sin revisar esas matriculas.
 
 ## Fuentes privadas
 
@@ -56,6 +65,6 @@ El workbook de mentores contiene correos y telefonos institucionales. No debe co
 ## Estado
 
 - El spreadsheet de check-in AD26 ya existe y se encuentra vacio, con una pestaña inicial `Hoja 1`.
-- Los encabezados definitivos de la poblacion AD26 siguen pendientes.
+- El esquema operativo incluye carrera legible, siglas de carrera y escuela derivada de las fuentes originales.
 - El preregistro ya cuenta con `Asignaciones`, `Datos mentor`, `Respuestas`, `Configuracion`, `Log_Envios`, `Resumen` y `Errores`.
 - La implementacion se encuentra en la rama `ad26`; FJ26 se conserva como referencia historica.

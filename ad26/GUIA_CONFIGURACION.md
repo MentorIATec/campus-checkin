@@ -10,7 +10,7 @@
    - `PREREG_SPREADSHEET_ID`: ID del spreadsheet A de preregistro.
 4. Ejecutar manualmente `setupAD26` una sola vez y autorizar permisos.
 5. Confirmar que se crearon las hojas AD26 sin borrar `Hoja 1` ni otros datos.
-6. No crear un trigger de actualización cada minuto. El dashboard usa formulas y tiene regeneracion manual.
+6. No crear un trigger de actualización cada minuto. Actualizar el dashboard manualmente desde el menu cuando se necesite monitoreo.
 
 ## 2. Desplegar Apps Script
 

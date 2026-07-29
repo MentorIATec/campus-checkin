@@ -6,7 +6,7 @@
 const AD26_HEADERS = {
   Config_AD26: ['llave', 'valor', 'descripcion'],
   Poblacion_AD26: [
-    'matricula', 'nombres', 'apellidos', 'email', 'campus_origen', 'escuela', 'carrera',
+    'matricula', 'nombres', 'apellidos', 'email', 'campus_origen', 'escuela', 'carrera', 'siglas_carrera',
     'tipo_poblacion', 'mentor_id', 'mentor_nombre', 'comunidad', 'foto_mentor',
     'preregistrado', 'respuesta_preregistro', 'fecha_preregistro', 'activo', 'periodo', 'fecha_importacion'
   ],
@@ -36,7 +36,7 @@ function onOpen() {
     .addItem('Preparar estructura AD26', 'setupAD26')
     .addItem('Previsualizar fotografia de preregistro', 'previewPreregistrationSnapshotAD26')
     .addItem('Importar fotografia de preregistro', 'importPreregistrationSnapshotAD26')
-    .addItem('Regenerar dashboard', 'buildDashboardAD26')
+    .addItem('Actualizar dashboard (manual)', 'buildDashboardAD26')
     .addToUi();
 }
 
@@ -129,78 +129,6 @@ function seedCatalogs(sheet) {
     ['MOTIVO_INCIDENCIA', 'TRANSFERENCIA_TARDIA', true],
     ['MOTIVO_INCIDENCIA', 'OTRO', true]
   ]);
-}
-
-function buildDashboardAD26() {
-  const ss = getSpreadsheet();
-  const sheet = ss.getSheetByName('Dashboard_AD26') || ss.insertSheet('Dashboard_AD26');
-  sheet.clear();
-  sheet.clearFormats();
-
-  sheet.getRange('A1:J1').merge().setValue('Dashboard Campus Check-in AD26')
-    .setBackground('#003b5c').setFontColor('#ffffff').setFontWeight('bold').setFontSize(15)
-    .setHorizontalAlignment('center');
-
-  const labels = [
-    ['Metrica', 'Valor'],
-    ['Registros digitales totales', ''],
-    ['Check-ins digitales unicos', ''],
-    ['Registros manuales unicos', ''],
-    ['Total asistentes unicos', ''],
-    ['Pendientes del padron', ''],
-    ['Ultimo check-in digital', ''],
-    ['Preregistrados que acudieron', ''],
-    ['Asistentes sin preregistro', ''],
-    ['Intentos duplicados', ''],
-    ['Escuela de Salud / sin mentor', ''],
-    ['Errores tecnicos', '']
-  ];
-  sheet.getRange(3, 1, labels.length, 2).setValues(labels);
-  sheet.getRange('A3:B3').setFontWeight('bold').setBackground('#d9ecff');
-
-  const event = AD26.EVENT_ID;
-  sheet.getRange('B4').setFormula(`=COUNTIFS(Checkins_AD26!B2:B2000,"${event}",Checkins_AD26!D2:D2000,"<>")`);
-  sheet.getRange('B5').setFormula(`=IF(B4=0,0,COUNTA(UNIQUE(FILTER(Checkins_AD26!D2:D2000,Checkins_AD26!D2:D2000<>"",Checkins_AD26!B2:B2000="${event}"))))`);
-  sheet.getRange('B6').setFormula(`=IF(COUNTIFS(Incidencias_AD26!B2:B2000,"${event}",Incidencias_AD26!D2:D2000,"<>")=0,0,COUNTA(UNIQUE(FILTER(Incidencias_AD26!D2:D2000,Incidencias_AD26!D2:D2000<>"",Incidencias_AD26!B2:B2000="${event}"))))`);
-  sheet.getRange('B7').setFormula(`=B5+B6-IF(B6=0,0,SUM(ARRAYFORMULA(N(COUNTIF(Checkins_AD26!D2:D2000,UNIQUE(FILTER(Incidencias_AD26!D2:D2000,Incidencias_AD26!D2:D2000<>"",Incidencias_AD26!B2:B2000="${event}")))>0))))`);
-  sheet.getRange('B8').setFormula(`=IFERROR(COUNTA(UNIQUE(FILTER(Poblacion_AD26!A2:A2000,Poblacion_AD26!A2:A2000<>"",Poblacion_AD26!P2:P2000=TRUE,ARRAYFORMULA(COUNTIF(Checkins_AD26!D2:D2000,Poblacion_AD26!A2:A2000)=0),ARRAYFORMULA(COUNTIF(Incidencias_AD26!D2:D2000,Poblacion_AD26!A2:A2000)=0)))),0)`);
-  sheet.getRange('B9').setFormula(`=IFERROR(MAX(FILTER(Checkins_AD26!C2:C2000,Checkins_AD26!B2:B2000="${event}")),"")`).setNumberFormat('yyyy-mm-dd hh:mm:ss');
-  sheet.getRange('B10').setFormula(`=COUNTIFS(Checkins_AD26!B2:B2000,"${event}",Checkins_AD26!K2:K2000,TRUE)`);
-  sheet.getRange('B11').setFormula(`=COUNTIFS(Checkins_AD26!B2:B2000,"${event}",Checkins_AD26!K2:K2000,FALSE)`);
-  sheet.getRange('B12').setFormula(`=COUNTIFS(Intentos_AD26!B2:B2000,"${event}",Intentos_AD26!E2:E2000,"DUPLICADO")`);
-  sheet.getRange('B13').setFormula(`=COUNTIFS(Checkins_AD26!B2:B2000,"${event}",Checkins_AD26!I2:I2000,"Escuela de Salud")+COUNTIFS(Checkins_AD26!B2:B2000,"${event}",Checkins_AD26!I2:I2000,"")`);
-  sheet.getRange('B14').setFormula(`=COUNTIF(Errores_AD26!B2:B2000,"${event}")`);
-  sheet.getRange('B4:B8').setNumberFormat('#,##0');
-  sheet.getRange('B10:B14').setNumberFormat('#,##0');
-
-  sheet.getRange('D3').setFormula(`=QUERY(Checkins_AD26!B2:J2000,"select J,count(D) where B = '${event}' and D is not null group by J order by count(D) desc limit 5 label J 'Top comunidades', count(D) 'Check-ins'",0)`);
-  sheet.getRange('G3').setFormula(`=QUERY(Checkins_AD26!B2:I2000,"select I,count(D) where B = '${event}' and D is not null group by I order by count(D) desc limit 5 label I 'Top mentores', count(D) 'Check-ins'",0)`);
-  sheet.getRange('I3').setFormula(`=QUERY(Checkins_AD26!B2:F2000,"select F,count(D) where B = '${event}' and D is not null group by F order by count(D) desc limit 5 label F 'Top campus', count(D) 'Check-ins'",0)`);
-
-  sheet.getRange('A17').setValue('Desglose completo').setFontWeight('bold').setFontSize(12);
-  sheet.getRange('A18').setFormula(`=QUERY(Checkins_AD26!B2:J2000,"select J,count(D) where B = '${event}' and D is not null group by J order by count(D) desc label J 'Comunidad', count(D) 'Check-ins'",0)`);
-  sheet.getRange('D18').setFormula(`=QUERY(Checkins_AD26!B2:I2000,"select I,count(D) where B = '${event}' and D is not null group by I order by count(D) desc label I 'Mentor', count(D) 'Check-ins'",0)`);
-  sheet.getRange('G18').setFormula(`=QUERY(Checkins_AD26!B2:F2000,"select F,count(D) where B = '${event}' and D is not null group by F order by count(D) desc label F 'Campus', count(D) 'Check-ins'",0)`);
-
-  sheet.getRange('A45').setFormula(`=QUERY(Checkins_AD26!B2:Q2000,"select Q,count(D) where B = '${event}' and D is not null group by Q order by count(D) desc label Q 'Carrera', count(D) 'Check-ins'",0)`);
-  sheet.getRange('D45').setFormula(`=QUERY(Checkins_AD26!B2:C2000,"select hour(C),count(C) where B = '${event}' and C is not null group by hour(C) order by hour(C) label hour(C) 'Hora', count(C) 'Check-ins'",0)`);
-  sheet.getRange('G45').setFormula(`=QUERY(Checkins_AD26!B2:I2000,"select C,D,E,I where B = '${event}' and D is not null order by C desc limit 10 label C 'Hora', D 'Matricula', E 'Estudiante', I 'Mentor'",0)`);
-
-  sheet.getRange('A70:J70').merge().setValue('Los registros manuales se capturan en Incidencias_AD26 y se suman al total sin duplicar matriculas. Los desgloses usan los check-ins digitales, que incluyen datos enriquecidos del padron.')
-    .setFontColor('#52606d').setFontStyle('italic').setWrap(true);
-
-  sheet.setFrozenRows(1);
-  sheet.setColumnWidth(1, 250);
-  sheet.setColumnWidth(2, 120);
-  sheet.setColumnWidth(4, 240);
-  sheet.setColumnWidth(5, 100);
-  sheet.setColumnWidth(7, 190);
-  sheet.setColumnWidth(8, 110);
-  sheet.setColumnWidth(9, 190);
-  sheet.setColumnWidth(10, 110);
-  ['D3:E3', 'G3:H3', 'I3:J3', 'A18:B18', 'D18:E18', 'G18:H18', 'A45:B45', 'D45:E45', 'G45:J45']
-    .forEach(a1 => sheet.getRange(a1).setFontWeight('bold').setBackground('#d9ecff'));
-  protectWarningOnly(sheet.getRange('A1:J2000'), 'AD26_DASHBOARD_FORMULAS');
 }
 
 function configureScriptPropertiesAD26(spreadsheetId, apiKey) {
