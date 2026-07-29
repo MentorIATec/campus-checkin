@@ -1,6 +1,6 @@
 /**
  * Campus Check-in AD26 - Web App
- * Lookup privado, check-in idempotente e incidencias de staff.
+ * Lookup privado y check-in idempotente.
  *
  * Script Properties requeridas:
  * - CHECKIN_API_KEY
@@ -32,7 +32,6 @@ function doPost(e) {
     const action = String(body.action || 'lookup').toLowerCase();
     if (action === 'lookup') return lookupStudent(body);
     if (action === 'checkin') return registerCheckin(body);
-    if (action === 'incident') return registerIncident(body);
     if (action === 'stats') return getStats();
     return jsonResponse({ error: 'Accion no soportada' }, 400);
   } catch (error) {
@@ -116,73 +115,6 @@ function registerCheckin(body) {
   }
 }
 
-function registerIncident(body) {
-  const matricula = normalizeMatricula(body.matricula);
-  const nombre = clean(body.nombre);
-  const campusOrigen = clean(body.campusOrigen);
-  const motivo = clean(body.motivo).toUpperCase();
-  const detalleOtro = clean(body.detalleOtro);
-  const staffId = clean(body.staffId);
-
-  if (!isValidMatricula(matricula) || !nombre || !campusOrigen || !['TRANSFERENCIA_TARDIA', 'OTRO'].includes(motivo)) {
-    return jsonResponse({ error: 'Datos de incidencia incompletos' }, 400);
-  }
-
-  const checkins = getSheet(AD26.SHEETS.CHECKINS);
-  const incidents = getSheet(AD26.SHEETS.INCIDENTS);
-  const checkinId = buildCheckinId(matricula);
-  const incidentId = `${AD26.EVENT_ID}|${matricula}`;
-  const lock = LockService.getScriptLock();
-  if (!lock.tryLock(7000)) return jsonResponse({ error: 'Registro ocupado' }, 503);
-
-  try {
-    if (checkinExists(checkins, checkinId)) {
-      appendAttempt(matricula, 'DUPLICADO', 'STAFF_INCIDENCIA', staffId, 'STAFF_INCIDENCIA');
-      return jsonResponse({ success: true, alreadyRegistered: true, checkinId }, 200);
-    }
-
-    const timestamp = new Date();
-    if (!objectExists(incidents, 'incident_id', incidentId)) {
-      appendObject(incidents, {
-        incident_id: incidentId,
-        event_id: AD26.EVENT_ID,
-        timestamp,
-        matricula_capturada: matricula,
-        nombre,
-        campus_origen: campusOrigen,
-        motivo,
-        detalle_otro: detalleOtro,
-        staff_id: staffId,
-        acceso_autorizado: true,
-        checkin_id_generado: checkinId
-      });
-    }
-
-    appendObject(checkins, {
-      checkin_id: checkinId,
-      event_id: AD26.EVENT_ID,
-      timestamp,
-      matricula,
-      nombre,
-      campus_origen: campusOrigen,
-      escuela: 'Por validar',
-      mentor_id: '',
-      mentor_nombre: '',
-      comunidad: 'Por validar',
-      preregistrado: false,
-      respuesta_preregistro: 'SIN RESPUESTA',
-      en_padron_original: false,
-      ruta_registro: 'STAFF_INCIDENCIA',
-      staff_id: staffId,
-      source: 'STAFF_INCIDENCIA'
-    });
-
-    return jsonResponse({ success: true, alreadyRegistered: false, checkinId }, 200);
-  } finally {
-    lock.releaseLock();
-  }
-}
-
 function appendAttempt(matricula, result, route, staffId, source) {
   const timestamp = new Date();
   appendObject(getSheet(AD26.SHEETS.ATTEMPTS), {
@@ -214,8 +146,10 @@ function tryLogError(body, error) {
 }
 
 function getStats() {
-  const sheet = getSheet(AD26.SHEETS.CHECKINS);
-  const rows = readObjects(sheet).filter(row => clean(row.event_id) === AD26.EVENT_ID);
+  const rows = readObjects(getSheet(AD26.SHEETS.CHECKINS))
+    .filter(row => clean(row.event_id) === AD26.EVENT_ID);
+  const manualRows = readObjects(getSheet(AD26.SHEETS.INCIDENTS))
+    .filter(row => clean(row.event_id) === AD26.EVENT_ID);
   const unique = new Set();
   let lastTimestamp = null;
 
@@ -225,9 +159,15 @@ function getStats() {
     const date = row.timestamp instanceof Date ? row.timestamp : new Date(row.timestamp);
     if (!isNaN(date.getTime()) && (!lastTimestamp || date > lastTimestamp)) lastTimestamp = date;
   });
+  manualRows.forEach(row => {
+    const matricula = normalizeMatricula(row.matricula);
+    if (matricula) unique.add(matricula);
+  });
 
   return jsonResponse({
     checkins: unique.size,
+    digitalCheckins: new Set(rows.map(row => normalizeMatricula(row.matricula)).filter(Boolean)).size,
+    manualCheckins: new Set(manualRows.map(row => normalizeMatricula(row.matricula)).filter(Boolean)).size,
     lastCheckinTime: lastTimestamp ? Utilities.formatDate(lastTimestamp, AD26.TIMEZONE, 'HH:mm') : '—'
   }, 200);
 }
@@ -289,17 +229,6 @@ function checkinExists(sheet, checkinId) {
     .matchEntireCell(true)
     .findNext();
   return !!match;
-}
-
-function objectExists(sheet, header, value) {
-  const headers = getHeaderMap(sheet);
-  const column = headers[header];
-  if (!column || sheet.getLastRow() < 2) return false;
-  return !!sheet
-    .getRange(2, column, sheet.getLastRow() - 1, 1)
-    .createTextFinder(String(value))
-    .matchEntireCell(true)
-    .findNext();
 }
 
 function findObjectByValue(sheet, header, value) {

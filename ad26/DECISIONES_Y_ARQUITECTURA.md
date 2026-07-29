@@ -8,7 +8,7 @@
 4. El dashboard no usara un trigger de actualizacion cada minuto.
 5. El frontend tendra una sola ruta de escritura: Vercel API -> Apps Script -> Sheets.
 6. La ruta directa adicional desde el navegador hacia Apps Script se eliminara.
-7. Las personas fuera del padron seran atendidas por un flujo rapido de staff y siempre se autorizara su acceso.
+7. Las personas fuera del padron se registraran manualmente en `Incidencias_AD26`; no existe un flujo digital de autorizacion de acceso.
 8. Escuela de Salud se mostrara como `Comunidades Academicas / Escuela de Salud`, sin mentor asignado.
 9. Los datos de preregistro y check-in permaneceran en workbooks separados.
 
@@ -84,20 +84,20 @@ La hoja es append-only. Las correcciones se registran como eventos auditables; n
 
 ### Incidencias_AD26
 
-Captura minima para no detener la fila:
+Espacio de captura manual en Google Sheets para no detener la fila:
 
 - `incident_id`
+- `event_id`
 - `timestamp`
-- `matricula_capturada`
+- `matricula`
 - `nombre`
 - `campus_origen`
 - `motivo`: `TRANSFERENCIA_TARDIA` u `OTRO`
-- `detalle_otro` opcional
-- `staff_id`
-- `acceso_autorizado`: siempre `SI` bajo la politica actual
-- `checkin_id_generado`
+- `detalle` opcional
+- `registrado_por`
+- `observaciones`
 
-Si la persona no aparece en el padron, el staff registra la incidencia y el sistema crea tambien su check-in con `en_padron_original=NO`, `preregistrado=NO` y `ruta_registro=STAFF_INCIDENCIA`.
+No se solicita ni registra una decision de acceso. Estas filas cuentan como asistencia manual y el total final deduplica por matricula contra `Checkins_AD26`.
 
 ## Flujo de autoservicio
 
@@ -127,18 +127,18 @@ Salida visual:
 
 ## Dashboard sin timer
 
-`Dashboard_AD26` usara formulas, `COUNTIFS`, `COUNTUNIQUE`, `QUERY` y tablas dinamicas sobre rangos acotados. No escribira en `Checkins_AD26` ni adquirira locks.
+`Dashboard_AD26` sera un resumen minimo con formulas sobre rangos acotados. No escribira en `Checkins_AD26`, no adquirira locks y no tendra un apartado especializado de gestion de incidencias.
 
 Metricas:
 
-- check-ins unicos;
-- ultimo check-in;
+- check-ins digitales unicos;
+- registros manuales unicos;
+- total de asistentes unicos entre ambas fuentes;
+- ultimo check-in digital;
 - preregistrados que acudieron;
 - preregistrados que no acudieron;
 - asistentes sin preregistro;
-- asistentes fuera del padron;
 - desglose por mentor, comunidad, escuela y campus;
-- incidencias por motivo;
 - intentos duplicados rechazados;
 - errores operativos recientes.
 

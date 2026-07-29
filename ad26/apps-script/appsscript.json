@@ -5,5 +5,9 @@
   "runtimeVersion": "V8",
   "executionApi": {
     "access": "MYSELF"
+  },
+  "webapp": {
+    "executeAs": "USER_DEPLOYING",
+    "access": "ANYONE_ANONYMOUS"
   }
 }

@@ -57,20 +57,7 @@
     .wizard-progress-bar { height:100%; width:0%; background:#0b1f3a; transition:width .2s ease; }
     .wizard-progress-text { margin-top:8px; font-size:12px; color:#667085; text-align:right; }
 
-    @media (max-width: 640px) {
-        .wizard-nav {
-            position: sticky;
-            bottom: 0;
-            background: #ffffff;
-            padding: 12px 0 8px 0;
-            margin-top: 18px;
-            box-shadow: 0 -6px 16px rgba(0,0,0,0.08);
-            z-index: 10;
-        }
-    }
-
-    .submit-section.sticky-submit { position: sticky; bottom: 0; background: #ffffff; padding: 14px 0 8px 0; margin-top: 18px; box-shadow: 0 -6px 16px rgba(0,0,0,0.08); z-index: 11; }
-    @media (min-width: 641px) { .submit-section.sticky-submit { position: static; box-shadow: none; } }
+    /* Sticky buttons removed to avoid premature submit */
 </style>
 </head>
 <body>
@@ -116,7 +103,7 @@
                         </div>
                     </div>
                     <div class="question-group">
-                        <div class="question-title"><span class="question-number">3.</span> (Opcional) ¿Qué te ayudaría a poder asistir en una próxima edición del evento?</div>
+                        <div class="question-title"><span class="question-number">4.</span> (Opcional) ¿Qué te ayudaría a poder asistir en una próxima edición del evento?</div>
                         <input type="text" name="q3_sugerencia_no" class="input-field" placeholder="Respuesta corta..." style="margin-top: 8px;">
                     </div>
                 </div>
@@ -152,7 +139,7 @@
                     </div>
 
                     <div class="question-group">
-                        <div class="question-title"><span class="question-number">9.</span> La dinámica de integración me ayudó a:</div>
+                        <div class="question-title"><span class="question-number">4.</span> La dinámica de integración me ayudó a:</div>
                         <div class="checkbox-group">
                             <label class="option-row"><input type="checkbox" name="q9_integracion" value="conocerme"><span>Conocerme mejor ante situaciones reales del campus</span></label>
                             <label class="option-row"><input type="checkbox" name="q9_integracion" value="conversacion"><span>Iniciar conversación con otras personas</span></label>
@@ -164,7 +151,7 @@
                     </div>
 
                     <div class="question-group">
-                        <div class="question-title"><span class="question-number">6.</span> ¿Cómo calificarías el recorrido por el campus?</div>
+                        <div class="question-title"><span class="question-number">5.</span> ¿Cómo calificarías el recorrido por el campus?</div>
                         <div class="options">
                            <label class="option-row"><input type="radio" name="q6_recorrido" value="super_util"><span>Súper útil</span></label>
                            <label class="option-row"><input type="radio" name="q6_recorrido" value="util"><span>Útil</span></label>
@@ -175,7 +162,7 @@
                     </div>
 
                     <div class="question-group">
-                        <div class="question-title"><span class="question-number">7.</span> ¿En qué te gustaría que tu mentor/a te apoye más este semestre? (Selección múltiple)</div>
+                        <div class="question-title"><span class="question-number">6.</span> ¿En qué te gustaría que tu mentor/a te apoye más este semestre? (Selección múltiple)</div>
                         <div class="checkbox-group">
                             <label class="option-row"><input type="checkbox" name="q7_apoyo" value="adaptacion"><span>Adaptación académica (forma de trabajo, ritmo, expectativas)</span></label>
                             <label class="option-row"><input type="checkbox" name="q7_apoyo" value="trayectoria"><span>Decisiones o trayectoria académica (prácticas, intercambio, Semestre Tec, opciones a futuro)</span></label>
@@ -190,7 +177,7 @@
                     </div>
 
                     <div class="question-group">
-                        <div class="question-title"><span class="question-number">8.</span> ¿Qué fue lo que más te gustó de la experiencia de bienvenida? (Selección múltiple)</div>
+                        <div class="question-title"><span class="question-number">7.</span> ¿Qué fue lo que más te gustó de la experiencia de bienvenida? (Selección múltiple)</div>
                         <div class="checkbox-group">
                             <label class="option-row"><input type="checkbox" name="q8_gusto" value="ambiente"><span>El ambiente y la convivencia</span></label>
                             <label class="option-row"><input type="checkbox" name="q8_gusto" value="integracion"><span>La dinámica de integración</span></label>
@@ -208,12 +195,12 @@
                     </div>
 
                     <div class="question-group">
-                        <div class="question-title"><span class="question-number">9.</span> ¿Hay algo que te gustaría compartirnos sobre tu experiencia o alguna sugerencia para acompañarte mejor durante este semestre?</div>
+                        <div class="question-title"><span class="question-number">8.</span> ¿Hay algo que te gustaría compartirnos sobre tu experiencia o alguna sugerencia para acompañarte mejor durante este semestre?</div>
                         <textarea class="textarea-field" name="q9_comentario" placeholder="Respuesta opcional..."></textarea>
                     </div>
 
                     <div class="question-group">
-                        <div class="question-title"><span class="question-number">10.</span> En general, ¿cómo calificarías tu experiencia en la Bienvenida de Transferencias?</div>
+                        <div class="question-title"><span class="question-number">9.</span> En general, ¿cómo calificarías tu experiencia en la Bienvenida de Transferencias?</div>
                         <div class="options">
                            <label class="option-row"><input type="radio" name="q10_experiencia" value="excelente"><span>Excelente</span></label>
                            <label class="option-row"><input type="radio" name="q10_experiencia" value="muy_buena"><span>Muy buena</span></label>
@@ -470,4 +457,3 @@ document.addEventListener('DOMContentLoaded', () => {
     </script>
 </body>
 </html>
-

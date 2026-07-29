@@ -12,7 +12,7 @@ Documentacion de rediseño, robustecimiento y operacion del registro presencial 
 
 ## Documentos
 
-- `DECISIONES_Y_ARQUITECTURA.md`: decisiones aprobadas, separacion de datos y flujo de incidencias.
+- `DECISIONES_Y_ARQUITECTURA.md`: decisiones aprobadas, separacion de datos y captura manual de incidencias.
 - `CHECKLIST_ROBUSTECIMIENTO.md`: checklist tecnico, funcional y operativo.
 - `AUDITORIA_REFRESH_AD25.md`: causa probable del borrado/refresco observado en AD25 y controles preventivos.
 - `INVENTARIO_ASSETS_Y_DESPLIEGUES.md`: catalogo de mentores, imagenes y estrategia de archivado en Vercel.
@@ -20,8 +20,10 @@ Documentacion de rediseño, robustecimiento y operacion del registro presencial 
 - `INPUTS_PENDIENTES.md`: insumos externos necesarios antes del ensayo y despliegue.
 - `mentor-assets.expected.txt`: referencias esperadas del catalogo AD26.
 - `scripts/validate-mentor-assets.mjs`: validacion exacta de imagenes con `npm run validate:mentor-assets`.
-- `apps-script/Code.js`: Web App de lookup, check-in e incidencias.
-- `apps-script/Setup.js`: preparacion no destructiva de hojas y dashboard.
+- `REGISTRO_MANUAL_INCIDENCIAS.md`: instrucciones de captura y conteo final.
+- `apps-script/Code.js`: Web App de lookup y check-in idempotente.
+- `apps-script/Setup.js`: preparacion no destructiva de hojas y resumen operativo.
+- `apps-script/Snapshot.js`: previsualizacion e importacion controlada desde el preregistro.
 
 ## Fuentes privadas
 

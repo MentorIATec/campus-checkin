@@ -2,7 +2,7 @@
 
 ## Repositorio y aislamiento
 
-- [ ] Resguardar o confirmar los cambios locales de `automation/encuesta_salida` antes de cambiar de rama.
+- [x] Archivar `automation/encuesta_salida` como referencia FJ26 fuera del despliegue AD26.
 - [x] Crear rama `ad26` desde la base funcional vigente.
 - [x] No copiar bases con telefonos, correos o datos personales al repositorio publico.
 - [x] Mover `checkin2` y el debug FJ26 fuera de `public` al archivo historico.
@@ -49,7 +49,6 @@
 - [x] Registrar errores tecnicos en `Errores_AD26` sin guardar secretos.
 - [x] Evitar mensajes `debug` con detalles internos en produccion.
 - [x] Aplicar limite defensivo por cliente a lookup y check-in.
-- [x] Bloquear temporalmente intentos fallidos de PIN de staff.
 - [x] Exigir `activo=TRUE` y `periodo=AD26` en la poblacion operativa.
 - [ ] Configurar rate limiting distribuido en Vercel Firewall antes de produccion.
 
@@ -73,16 +72,15 @@
 - [x] Diferenciar `Registro confirmado` de `Ya contabas con check-in`.
 - [ ] Mostrar ruta clara de apoyo cuando no existe la matricula.
 
-## Incidencias staff
+## Registros manuales
 
-- [x] Crear ruta separada y protegida para staff.
-- [x] Capturar solo nombre, matricula, campus de procedencia y motivo.
+- [x] Retirar la ruta `/staff`, el endpoint `/api/incidencia` y el PIN asociado.
+- [x] Preparar `Incidencias_AD26` para captura manual estructurada.
+- [x] Capturar nombre, matricula, campus de procedencia y motivo.
 - [x] Ofrecer motivos `Transferencia tardia` y `Otro`.
-- [x] Autorizar acceso en todos los casos identificados, conforme a la politica indicada.
-- [x] Crear check-in automaticamente al guardar la incidencia.
-- [x] Evitar incidencias duplicadas si un append parcial requiere reintento.
-- [x] Evitar que la captura de incidencia bloquee la fila principal.
-- [ ] Probar operacion en telefono y computadora del staff.
+- [x] Omitir cualquier campo o flujo de autorizacion de acceso.
+- [x] Sumar los registros manuales al total final sin duplicar matriculas.
+- [ ] Probar la captura manual con dos responsables operativos.
 
 ## Mentores e imagenes
 
@@ -95,13 +93,13 @@
 - [x] Agregar validador de mayusculas, espacios y acentos para sistemas case-sensitive.
 - [ ] Mantener `/mentores/Salud.jpg` como fallback de Salud.
 
-## Dashboard
+## Resumen operativo
 
 - [x] Implementar formulas y tablas dinamicas sin trigger cada minuto.
 - [x] Acotar rangos, por ejemplo hasta 2,000 filas.
 - [x] Mostrar unicos, no solo filas totales.
-- [x] Separar preregistro, asistencia y fuera de padron.
-- [x] Mostrar incidencias staff e intentos duplicados.
+- [x] Separar check-ins digitales y registros manuales.
+- [x] Mostrar el total unico combinado e intentos duplicados.
 - [x] Conservar funcion manual de regeneracion como respaldo.
 - [x] Mantener el dashboard sin escrituras sobre `Checkins_AD26`.
 
@@ -110,8 +108,8 @@
 - [ ] Matricula valida pendiente de check-in.
 - [ ] Matricula valida ya registrada.
 - [ ] Error de dedo que coincide con otro estudiante: verificar identidad y corregir.
-- [ ] Matricula inexistente y flujo staff.
-- [ ] Transferencia tardia.
+- [ ] Matricula inexistente y captura manual en `Incidencias_AD26`.
+- [ ] Transferencia tardia contabilizada en el total final.
 - [ ] Escuela de Salud sin mentor.
 - [ ] Doble clic.
 - [ ] Enter en el input.
@@ -129,7 +127,7 @@
 - [ ] Configurar dominio AD26 sin reutilizar el alias FJ26.
 - [ ] Configurar variables de entorno Production y Preview.
 - [ ] Desplegar primero con datos de prueba.
-- [ ] Ejecutar ensayo con staff.
+- [ ] Ejecutar ensayo de captura manual con el staff.
 - [ ] Congelar version operativa 24 horas antes del evento.
 - [ ] Preparar QR y URL de contingencia.
 - [ ] Preparar procedimiento manual si Vercel, Apps Script o red fallan.

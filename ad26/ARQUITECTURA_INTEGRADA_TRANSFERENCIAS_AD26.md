@@ -22,7 +22,7 @@ El preregistro contiene la poblacion invitada, las asignaciones de mentor/comuni
 
 | Componente | Valor |
 | --- | --- |
-| Proposito | Registrar la llegada fisica al evento y atender incidencias |
+| Proposito | Registrar la llegada fisica al evento y consolidar capturas manuales |
 | Repositorio | `MentorIATec/campus-checkin` |
 | Ruta local | `/Users/karenguzman/campus-checkin` |
 | Rama | `ad26` |
@@ -32,7 +32,7 @@ El preregistro contiene la poblacion invitada, las asignaciones de mentor/comuni
 | Apps Script | `ad26/apps-script/Code.js` y `ad26/apps-script/Setup.js` |
 | Regla de acceso | No se bloquea el ingreso onsite por alcanzar 400 preregistros |
 
-El check-in resuelve los datos del estudiante desde `Poblacion_AD26`, registra una sola entrada por `matricula|event_id` y ofrece `/staff` para transferencias tardias o matriculas fuera del padron.
+El check-in resuelve los datos del estudiante desde `Poblacion_AD26` y registra una sola entrada digital por `matricula|event_id`. Las transferencias tardias o matriculas fuera del padron se capturan directamente en `Incidencias_AD26`.
 
 ## 3. Integracion entre ambos sistemas
 
@@ -47,8 +47,8 @@ flowchart LR
   U --> V2["Vercel: campus-checkin-ad26"]
   V2 --> G["Apps Script Check-in AD26"]
   G --> B
-  S["Staff de acceso"] --> R["/staff"]
-  R --> G
+  S["Staff de acceso"] --> I["Captura manual: Incidencias_AD26"]
+  I --> B
 ```
 
 La integracion es por fotografia de datos, no por escritura cruzada en tiempo real:
@@ -81,8 +81,9 @@ No deben compartirse API keys, deployments de Apps Script ni hojas de respuestas
 ## 6. Fronteras operativas
 
 - El preregistro controla invitacion, respuesta y cupo.
-- El check-in controla presencia fisica, duplicados e incidencias.
-- El Dashboard AD26 vive en el Spreadsheet B y se consulta manualmente; el frontend no hace polling.
+- El check-in controla presencia fisica digital y duplicados.
+- `Incidencias_AD26` conserva los registros manuales; no existe API ni dashboard independiente para autorizaciones.
+- El resumen AD26 vive en el Spreadsheet B y se consulta manualmente; el frontend no hace polling.
 - Los cambios FJ26 permanecen como referencia historica y no deben desplegarse sobre los dominios AD26.
 - Al terminar el evento se cierran las escrituras, se conserva la evidencia y se archivan ambos deployments AD26 por separado.
 
@@ -91,7 +92,7 @@ No deben compartirse API keys, deployments de Apps Script ni hojas de respuestas
 1. Validar la sabana y las asignaciones en preregistro.
 2. Congelar y transferir la fotografia a `Poblacion_AD26`.
 3. Validar imagenes y poblacion Salud.
-4. Probar lookup, check-in, duplicado e incidencia.
+4. Probar lookup, check-in, duplicado y captura manual en Sheets.
 5. Ejecutar prueba concurrente con 20 a 30 dispositivos.
 6. Publicar los dos proyectos Vercel con dominios distintos.
 7. Mantener QR separados: preregistro antes del evento y check-in exclusivamente durante el acceso.

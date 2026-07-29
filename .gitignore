@@ -15,3 +15,4 @@ node_modules/
 *.log
 public/config.local.js
 .DS_Store
+.vercel

@@ -17,13 +17,13 @@
 
 - Crear y configurar `CHECKIN_API_KEY` y `CHECKIN_SPREADSHEET_ID` en Script Properties.
 - Desplegar Apps Script como Web App y registrar su URL `/exec` en Vercel.
-- Configurar en Vercel `GOOGLE_SCRIPT_URL`, `GOOGLE_SCRIPT_KEY`, `ALLOWED_ORIGINS` y `STAFF_PIN`.
-- Configurar reglas distribuidas de rate limiting o Firewall para los tres endpoints operativos.
+- Configurar en Vercel `GOOGLE_SCRIPT_URL`, `GOOGLE_SCRIPT_KEY` y `ALLOWED_ORIGINS`.
+- Configurar reglas distribuidas de rate limiting o Firewall para lookup y check-in.
 - Rotar la llave historica FJ26 que estuvo versionada.
 
 ## Operacion
 
-- Definir dispositivos y responsables del flujo staff.
-- Ensayar concurrencia, red lenta, doble clic, refresh e incidencia tardia.
+- Definir responsables de captura manual en `Incidencias_AD26`.
+- Ensayar concurrencia, red lenta, doble clic, refresh y captura manual de transferencia tardia.
 - Crear el proyecto y dominio `campus-checkin-ad26` sin reutilizar FJ26.
 - Definir respaldo manual y QR de contingencia.

@@ -6,15 +6,15 @@ const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(scriptDir, '../..');
 const read = relativePath => readFile(path.join(root, relativePath), 'utf8');
 
-const [frontend, config, html, appsScript, vercel, lookupApi, checkinApi, incidentApi] = await Promise.all([
+const [frontend, config, html, appsScript, setup, vercel, lookupApi, checkinApi] = await Promise.all([
   read('public/app.js'),
   read('public/config.js'),
   read('public/index.html'),
   read('ad26/apps-script/Code.js'),
+  read('ad26/apps-script/Setup.js'),
   read('vercel.json'),
   read('api/estudiante.js'),
-  read('api/checkin.js'),
-  read('api/incidencia.js')
+  read('api/checkin.js')
 ]);
 
 const checks = [
@@ -25,10 +25,12 @@ const checks = [
   ['registro envia solamente matricula', !/mentorFullname|fullnameEstudiante|comunidad/.test(extractFetchBody(frontend, '/api/checkin'))],
   ['CTA de check-in es explicito', html.includes('Registrar mi check-in')],
   ['todos los botones declaran tipo', !/<button(?![^>]*\btype=)/i.test(html)],
-  ['ruta staff configurada', JSON.parse(vercel).rewrites.some(item => item.source === '/staff')],
+  ['ruta staff automatizada retirada', !JSON.parse(vercel).rewrites.some(item => item.source === '/staff')],
   ['lookup tiene limite defensivo', lookupApi.includes("namespace: 'student-lookup'")],
   ['check-in tiene limite defensivo', checkinApi.includes("namespace: 'checkin-write'")],
-  ['staff limita PIN incorrecto', incidentApi.includes("namespace: 'staff-auth-failure'")],
+  ['Apps Script no expone accion incident', !appsScript.includes("action === 'incident'")],
+  ['incidencias se capturan manualmente', setup.includes("'registrado_por', 'observaciones'")],
+  ['total combina digitales y manuales', setup.includes('=B4+B5-IFERROR(COUNTUNIQUE')],
   ['poblacion exige activo y periodo AD26', appsScript.includes('populationRow.activo') && appsScript.includes('populationRow.periodo')],
   ['frontend no consulta stats al iniciar', !frontend.includes('void actualizarStatsBar()')],
   ['frontend reintenta errores transitorios', frontend.includes('enviarCheckinConReintento')]

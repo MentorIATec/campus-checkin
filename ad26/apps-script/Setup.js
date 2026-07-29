@@ -20,8 +20,8 @@ const AD26_HEADERS = {
     'en_padron_original', 'ruta_registro', 'staff_id', 'source'
   ],
   Incidencias_AD26: [
-    'incident_id', 'event_id', 'timestamp', 'matricula_capturada', 'nombre', 'campus_origen',
-    'motivo', 'detalle_otro', 'staff_id', 'acceso_autorizado', 'checkin_id_generado'
+    'incident_id', 'event_id', 'timestamp', 'matricula', 'nombre', 'campus_origen',
+    'motivo', 'detalle', 'registrado_por', 'observaciones'
   ],
   Intentos_AD26: [
     'attempt_id', 'event_id', 'timestamp', 'matricula', 'resultado', 'ruta_registro', 'staff_id', 'source'
@@ -34,6 +34,8 @@ function onOpen() {
   SpreadsheetApp.getUi()
     .createMenu('Campus Check-in AD26')
     .addItem('Preparar estructura AD26', 'setupAD26')
+    .addItem('Previsualizar fotografia de preregistro', 'previewPreregistrationSnapshotAD26')
+    .addItem('Importar fotografia de preregistro', 'importPreregistrationSnapshotAD26')
     .addItem('Regenerar dashboard', 'buildDashboardAD26')
     .addToUi();
 }
@@ -42,6 +44,7 @@ function setupAD26() {
   const ss = getSpreadsheet();
   ss.setSpreadsheetTimeZone(AD26.TIMEZONE);
   reuseBlankDefaultSheet(ss);
+  migrateEmptyLegacyIncidentSheet(ss);
   Object.keys(AD26_HEADERS).forEach(name => ensureSheetAndHeaders(ss, name, AD26_HEADERS[name]));
   ensureSheetAndHeaders(ss, 'Dashboard_AD26', ['Dashboard Campus Check-in AD26']);
   seedConfig(ss.getSheetByName('Config_AD26'));
@@ -49,6 +52,20 @@ function setupAD26() {
   buildDashboardAD26();
   protectWarningOnly(ss.getSheetByName('Config_AD26').getDataRange(), 'AD26_CONFIG');
   protectWarningOnly(ss.getSheetByName('Catalogos_AD26').getDataRange(), 'AD26_CATALOGOS');
+}
+
+function migrateEmptyLegacyIncidentSheet(ss) {
+  const sheet = ss.getSheetByName('Incidencias_AD26');
+  if (!sheet || sheet.getLastRow() > 1) return;
+
+  const headers = getHeadersFromSheet(sheet);
+  if (!headers.includes('acceso_autorizado') && !headers.includes('checkin_id_generado')) return;
+  sheet.clear();
+}
+
+function getHeadersFromSheet(sheet) {
+  if (sheet.getLastColumn() < 1) return [];
+  return sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].map(clean).filter(Boolean);
 }
 
 function reuseBlankDefaultSheet(ss) {
@@ -122,12 +139,12 @@ function buildDashboardAD26() {
 
   const labels = [
     ['Metrica', 'Valor'],
-    ['Check-ins unicos', ''],
-    ['Ultimo check-in', ''],
+    ['Check-ins digitales unicos', ''],
+    ['Registros manuales unicos', ''],
+    ['Total asistentes unicos', ''],
+    ['Ultimo check-in digital', ''],
     ['Preregistrados que acudieron', ''],
     ['Asistentes sin preregistro', ''],
-    ['Asistentes fuera del padron', ''],
-    ['Incidencias staff', ''],
     ['Intentos duplicados', ''],
     ['Errores tecnicos', '']
   ];
@@ -135,17 +152,19 @@ function buildDashboardAD26() {
   sheet.getRange('A3:B3').setFontWeight('bold').setBackground('#d9ecff');
 
   const event = AD26.EVENT_ID;
-  sheet.getRange('B4').setFormula(`=IFERROR(COUNTUNIQUE(FILTER(Checkins_AD26!D2:D2000,Checkins_AD26!B2:B2000="${event}")),0)`);
-  sheet.getRange('B5').setFormula(`=IFERROR(MAX(FILTER(Checkins_AD26!C2:C2000,Checkins_AD26!B2:B2000="${event}")),"")`).setNumberFormat('yyyy-mm-dd hh:mm:ss');
-  sheet.getRange('B6').setFormula(`=COUNTIFS(Checkins_AD26!B2:B2000,"${event}",Checkins_AD26!K2:K2000,TRUE)`);
-  sheet.getRange('B7').setFormula(`=COUNTIFS(Checkins_AD26!B2:B2000,"${event}",Checkins_AD26!K2:K2000,FALSE)`);
-  sheet.getRange('B8').setFormula(`=COUNTIFS(Checkins_AD26!B2:B2000,"${event}",Checkins_AD26!M2:M2000,FALSE)`);
-  sheet.getRange('B9').setFormula(`=COUNTIF(Incidencias_AD26!B2:B2000,"${event}")`);
+  sheet.getRange('B4').setFormula(`=IFERROR(COUNTUNIQUE(FILTER(Checkins_AD26!D2:D2000,Checkins_AD26!D2:D2000<>"",Checkins_AD26!B2:B2000="${event}")),0)`);
+  sheet.getRange('B5').setFormula(`=IFERROR(COUNTUNIQUE(FILTER(Incidencias_AD26!D2:D2000,Incidencias_AD26!D2:D2000<>"",Incidencias_AD26!B2:B2000="${event}")),0)`);
+  sheet.getRange('B6').setFormula(`=B4+B5-IFERROR(COUNTUNIQUE(FILTER(Checkins_AD26!D2:D2000,Checkins_AD26!D2:D2000<>"",Checkins_AD26!B2:B2000="${event}",COUNTIF(Incidencias_AD26!D2:D2000,Checkins_AD26!D2:D2000)>0)),0)`);
+  sheet.getRange('B7').setFormula(`=IFERROR(MAX(FILTER(Checkins_AD26!C2:C2000,Checkins_AD26!B2:B2000="${event}")),"")`).setNumberFormat('yyyy-mm-dd hh:mm:ss');
+  sheet.getRange('B8').setFormula(`=COUNTIFS(Checkins_AD26!B2:B2000,"${event}",Checkins_AD26!K2:K2000,TRUE)`);
+  sheet.getRange('B9').setFormula(`=COUNTIFS(Checkins_AD26!B2:B2000,"${event}",Checkins_AD26!K2:K2000,FALSE)`);
   sheet.getRange('B10').setFormula(`=COUNTIFS(Intentos_AD26!B2:B2000,"${event}",Intentos_AD26!E2:E2000,"DUPLICADO")`);
   sheet.getRange('B11').setFormula(`=COUNTIF(Errores_AD26!B2:B2000,"${event}")`);
 
   sheet.getRange('A13').setFormula(`=QUERY(Checkins_AD26!B2:J2000,"select J,count(D) where B = '${event}' group by J label J 'Comunidad', count(D) 'Check-ins'",0)`);
   sheet.getRange('D13').setFormula(`=QUERY(Checkins_AD26!B2:I2000,"select I,count(D) where B = '${event}' group by I label I 'Mentor', count(D) 'Check-ins'",0)`);
+
+  sheet.getRange('A30').setValue('Los registros manuales se capturan en Incidencias_AD26 y se suman al total sin duplicar matriculas.');
 
   sheet.setFrozenRows(1);
   sheet.autoResizeColumns(1, 6);
