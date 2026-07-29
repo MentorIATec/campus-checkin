@@ -5,6 +5,7 @@
 
 const AD26_SNAPSHOT = {
   SOURCE_PROPERTY: 'PREREG_SPREADSHEET_ID',
+  DEFAULT_SOURCE_ID: '1jHE0OAX7EXTyo5Try8Jh5J_xwP0g_PEztxxiQBuGwZU',
   ASSIGNMENTS_SHEET: 'Asignaciones',
   RESPONSES_SHEET: 'Respuestas',
   MENTORS_SHEET: 'Datos mentor',
@@ -12,7 +13,7 @@ const AD26_SNAPSHOT = {
 };
 
 function configurePreregistrationSourceAD26(spreadsheetId) {
-  const id = clean(spreadsheetId);
+  const id = clean(spreadsheetId || AD26_SNAPSHOT.DEFAULT_SOURCE_ID);
   if (!/^[A-Za-z0-9_-]{20,}$/.test(id)) throw new Error('Spreadsheet ID de preregistro invalido');
   PropertiesService.getScriptProperties().setProperty(AD26_SNAPSHOT.SOURCE_PROPERTY, id);
   return { ok: true, prereg_spreadsheet_id: id };
