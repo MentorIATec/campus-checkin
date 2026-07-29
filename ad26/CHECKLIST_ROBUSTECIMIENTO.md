@@ -26,13 +26,13 @@
 
 - [ ] Recibir encabezados definitivos de la sabana AD26.
 - [ ] Normalizar matriculas a `A########`.
-- [ ] Detectar duplicados en la fuente antes de importar.
-- [ ] Consolidar preregistro desde el workbook A.
-- [ ] Crear indicadores `preregistrado` y `respuesta_preregistro`.
-- [ ] Conservar fecha y lote de importacion.
+- [x] Detectar duplicados en la fuente antes de importar.
+- [x] Consolidar preregistro desde el workbook A.
+- [x] Crear indicadores `preregistrado` y `respuesta_preregistro`.
+- [x] Conservar fecha y lote de importacion.
 - [ ] Validar mentor, comunidad y Escuela de Salud.
 - [ ] Generar reporte de filas incompletas antes del evento.
-- [ ] Congelar una fotografia operativa de la poblacion antes de abrir el check-in.
+- [x] Implementar la fotografia operativa controlada; queda pendiente ejecutar la fotografia final antes de abrir el check-in.
 
 ## Seguridad y backend
 
@@ -117,7 +117,7 @@
 - [ ] Perdida de respuesta despues de guardar y reintento idempotente.
 - [ ] Conexion lenta y timeout.
 - [ ] 20 a 30 solicitudes concurrentes.
-- [ ] Recuperacion manual del dashboard.
+- [x] Recuperacion manual del dashboard sin timer, con formulas de actualizacion automatica.
 - [x] Validacion automatica de existencia exacta para las 47 fotos de mentores.
 - [ ] Validacion visual de encuadre e identidad de todas las fotos de mentores.
 

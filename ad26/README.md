@@ -25,6 +25,24 @@ Documentacion de rediseño, robustecimiento y operacion del registro presencial 
 - `apps-script/Setup.js`: preparacion no destructiva de hojas y resumen operativo.
 - `apps-script/Snapshot.js`: previsualizacion e importacion controlada desde el preregistro.
 
+## Secuencia de fotografia operativa
+
+El dia del evento se usa la misma secuencia que en los ensayos:
+
+1. Ejecutar `configurePreregistrationSourceAD26` solo si cambio el spreadsheet fuente.
+2. Ejecutar `previewPreregistrationSnapshotAD26` y verificar totales, duplicados y mentores sin foto.
+3. Ejecutar `importPreregistrationSnapshotAD26` para reemplazar unicamente `Poblacion_AD26` y `Mentores_AD26`.
+4. Hacer consultas de prueba en el frontend antes de publicar el QR.
+
+La importacion no borra `Checkins_AD26`, `Incidencias_AD26`, intentos ni errores. `setupAD26` no forma parte de cada importacion; se reserva para preparar o migrar el esquema.
+
+## Dashboard
+
+- Los indicadores y desgloses se recalculan automaticamente mediante formulas cuando llegan nuevos check-ins; no existe un timer ni un trigger por minuto.
+- La opcion `Regenerar dashboard` reconstruye formulas, formato y secciones de forma manual cuando se desea reparar o actualizar el tablero.
+- Incluye total y unicidad digital, registros manuales, total combinado sin duplicar, pendientes, ultimo check-in, preregistro, duplicados, Salud/sin mentor, errores, top 5 y desgloses por comunidad, mentor, campus, carrera, hora y ultimos registros.
+- Los registros manuales cuentan en el total general. Los desgloses enriquecidos se alimentan de `Checkins_AD26` porque `Incidencias_AD26` prioriza una captura minima y agil.
+
 ## Fuentes privadas
 
 - Check-in AD26: `B | Campus Check-in AD26`

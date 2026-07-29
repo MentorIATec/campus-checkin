@@ -12,6 +12,58 @@ const AD26_SNAPSHOT = {
   TEST_MATRICULAS: ['A00000001', 'A00000002', 'A00000003']
 };
 
+// Los nombres de archivo son parte del despliegue y no dependen de columnas editables del Sheet.
+const AD26_MENTOR_PHOTOS = {
+  'AD26-LPAEZ': 'LeoEkvilibro.jpg',
+  'AD26-ABRIL-DE-LEON': 'AbrilEkvilibro.jpg',
+  'AD26-MGFLORES': 'MarthaEkvilibro.jpg',
+  'AD26-CARMENMORA': 'MariCaEkvilibro.jpg',
+  'AD26-JULIANAGT': 'JulyEkvilibro.jpg',
+  'AD26-MCRISTERNA': 'VinnyEnergio.jpg',
+  'AD26-PAME-MTZ': 'PameEnergio.jpg',
+  'AD26-RICARDO-KLEIN': 'RicardoEnergio.jpg',
+  'AD26-ANTONIO-RIVERA': 'TonyEnergio.jpg',
+  'AD26-ISABELDELAGARZA': 'IsaEnergio.jpg',
+  'AD26-ZOE-MONTOYA': 'ZoéForta.jpg',
+  'AD26-DAMARIS-MORALES': 'DámarisForta.jpg',
+  'AD26-ROWLAND': 'RowlandForta.jpg',
+  'AD26-ATEMOLTZI': 'ArturoForta.jpg',
+  'AD26-EGARZAC': 'KikeForta.jpg',
+  'AD26-JR-FLORES': 'JR Krei.jpg',
+  'AD26-KARENG': 'KarenKrei.jpg',
+  'AD26-KVILLARREAL': 'KarlaKrei.jpg',
+  'AD26-AZUNIGA': 'AngieKrei.jpg',
+  'AD26-JJFRANKLIN': 'FranklinKrei.jpg',
+  'AD26-DACIA-GZZ': 'DaciaKresko.jpg',
+  'AD26-ANDREA-HERRERA': 'AndreaKresko.jpg',
+  'AD26-PACELIDELUCA': 'PaceliKresko.jpg',
+  'AD26-ALEYDA-FERNANDEZ': 'AleydaKresko.jpg',
+  'AD26-ROGER-ROSADO': 'Roger Pasio.jpg',
+  'AD26-MARIANAORTEGA': 'MarianaPasio.jpg',
+  'AD26-ALMA-MERCADO': 'AlmaPasio.jpg',
+  'AD26-MONSERRAT-TIJERINA': 'MonsePasio.jpg',
+  'AD26-ROCIOF': 'RocíoPasio.jpg',
+  'AD26-CHANTAL-MAGALLANES': 'ChantalReflekto.jpg',
+  'AD26-ACORREA': 'AlinnaReflekto.jpg',
+  'AD26-LAURAMTZ': 'LauraReflekto.jpg',
+  'AD26-ANA-PINILLA': 'AnnieReflekto.jpg',
+  'AD26-ABIGAILCEPEDA': 'AbbyReflekto.jpg',
+  'AD26-ERNESTO-RMZ': 'ErnestoRevo.jpg',
+  'AD26-ROGELIO-RIVAS': 'Roger Revo.jpg',
+  'AD26-FABBY': 'FabiRevo.jpg',
+  'AD26-MMENDIOL': 'MaríaRevo.jpg',
+  'AD26-MOGARCIA': 'MontseRevo.jpg',
+  'AD26-DLCRUZ-JACOB': 'JacobSpirita.jpg',
+  'AD26-FABIOLACAMPOSS': 'FabySpirita.jpg',
+  'AD26-FERNANDAMB': 'FerSpirita.jpg',
+  'AD26-CHRISTOPHER-MICHAUX': 'ChrisSpirita.jpg',
+  'AD26-MAURICIONORIEGA': 'MauricioTalenta.jpg',
+  'AD26-BETYCLUB': 'BetyTalenta.jpg',
+  'AD26-BRENDA-R': 'BrendaTalenta.jpg',
+  'AD26-LGRC': 'LauraTalenta.jpg',
+  'AD26-ANAVARELA': 'AnaTalenta.jpg'
+};
+
 function configurePreregistrationSourceAD26(spreadsheetId) {
   const id = clean(spreadsheetId || AD26_SNAPSHOT.DEFAULT_SOURCE_ID);
   if (!/^[A-Za-z0-9_-]{20,}$/.test(id)) throw new Error('Spreadsheet ID de preregistro invalido');
@@ -30,12 +82,14 @@ function previewPreregistrationSnapshotAD26() {
     preregistro_no: snapshot.noCount,
     sin_respuesta: snapshot.pendingCount,
     salud: snapshot.healthCount,
+    fotos_configuradas: snapshot.photoCount,
+    mentores_sin_foto: snapshot.mentorsWithoutPhoto,
     duplicados: snapshot.duplicates
   };
   console.log(JSON.stringify(result));
   SpreadsheetApp.getUi().alert(
     'Previsualizacion AD26',
-    `Estudiantes: ${result.estudiantes}\nMentores: ${result.mentores}\nRespuestas: ${result.respuestas}\nSI: ${result.preregistro_si}\nNO: ${result.preregistro_no}\nSin respuesta: ${result.sin_respuesta}\nSalud: ${result.salud}\nDuplicados: ${result.duplicados.length}`,
+    `Estudiantes: ${result.estudiantes}\nMentores: ${result.mentores}\nRespuestas: ${result.respuestas}\nSI: ${result.preregistro_si}\nNO: ${result.preregistro_no}\nSin respuesta: ${result.sin_respuesta}\nSalud: ${result.salud}\nFotos configuradas: ${result.fotos_configuradas}\nMentores sin foto: ${result.mentores_sin_foto.length}\nDuplicados: ${result.duplicados.length}`,
     SpreadsheetApp.getUi().ButtonSet.OK
   );
   return result;
@@ -110,7 +164,7 @@ function buildPreregistrationSnapshotAD26() {
         mentor_id: health ? '' : mentorId,
         mentor_nombre: health ? 'Escuela de Salud' : clean(row.mentor_nombre),
         comunidad: health ? 'Comunidades Academicas' : clean(row.comunidad),
-        foto_mentor: health ? 'Salud.jpg' : clean(currentMentor.foto_mentor),
+        foto_mentor: health ? 'Salud.jpg' : mentorPhotoAD26(mentorId, currentMentor.foto_mentor),
         preregistrado: !!response,
         respuesta_preregistro: answer,
         fecha_preregistro: response ? response.timestamp : '',
@@ -131,7 +185,7 @@ function buildPreregistrationSnapshotAD26() {
         nombre: clean(row.nombre),
         nombre_mostrar: clean(row.nombre_mostrar || row.nombre),
         nickname: clean(row.nickname),
-        foto_mentor: clean(current.foto_mentor),
+        foto_mentor: mentorPhotoAD26(mentorId, current.foto_mentor),
         email: clean(row.email),
         celular: clean(row.celular),
         comunidad: clean(row.comunidad),
@@ -148,8 +202,14 @@ function buildPreregistrationSnapshotAD26() {
     yesCount: population.filter(row => normalizeText(row.respuesta_preregistro) === 'si').length,
     noCount: population.filter(row => normalizeText(row.respuesta_preregistro) === 'no').length,
     pendingCount: population.filter(row => !row.preregistrado).length,
-    healthCount: population.filter(row => row.tipo_poblacion === 'SALUD').length
+    healthCount: population.filter(row => row.tipo_poblacion === 'SALUD').length,
+    photoCount: mentors.filter(row => row.foto_mentor).length,
+    mentorsWithoutPhoto: mentors.filter(row => !row.foto_mentor).map(row => row.mentor_id)
   };
+}
+
+function mentorPhotoAD26(mentorId, currentPhoto) {
+  return clean(AD26_MENTOR_PHOTOS[clean(mentorId)] || currentPhoto);
 }
 
 function readSnapshotObjectsAD26(spreadsheet, sheetName) {

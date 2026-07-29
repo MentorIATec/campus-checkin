@@ -93,6 +93,7 @@ function registerCheckin(body) {
       nombre: student.fullnameEstudiante,
       campus_origen: student.campusOrigen,
       escuela: student.escuela,
+      carrera: student.carrera,
       mentor_id: student.mentorId,
       mentor_nombre: student.mentorFullname,
       comunidad: student.comunidad,

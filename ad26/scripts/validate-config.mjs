@@ -30,7 +30,9 @@ const checks = [
   ['check-in tiene limite defensivo', checkinApi.includes("namespace: 'checkin-write'")],
   ['Apps Script no expone accion incident', !appsScript.includes("action === 'incident'")],
   ['incidencias se capturan manualmente', setup.includes("'registrado_por', 'observaciones'")],
-  ['total combina digitales y manuales', setup.includes('=B4+B5-IFERROR(COUNTUNIQUE')],
+  ['total combina digitales y manuales', setup.includes('=B5+B6-IF(B6=0,0,SUM(ARRAYFORMULA')],
+  ['dashboard conserva metricas operativas FJ26', setup.includes('Pendientes del padron') && setup.includes('Top comunidades') && setup.includes('Top mentores') && setup.includes('Top campus')],
+  ['snapshot asigna fotos por mentor_id', (await read('ad26/apps-script/Snapshot.js')).includes('AD26_MENTOR_PHOTOS')],
   ['poblacion exige activo y periodo AD26', appsScript.includes('populationRow.activo') && appsScript.includes('populationRow.periodo')],
   ['frontend no consulta stats al iniciar', !frontend.includes('void actualizarStatsBar()')],
   ['frontend reintenta errores transitorios', frontend.includes('enviarCheckinConReintento')]
