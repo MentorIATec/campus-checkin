@@ -47,18 +47,10 @@ async function buscarEstudiante() {
   try {
     console.log('🔍 Buscando estudiante via API:', input);
     
-    const response = await fetch('/api/estudiante', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Checkin-Client': clientId
-      },
-      body: JSON.stringify({
-        matricula: input
-      })
+    const response = await consultarEstudianteConReintento(input, () => {
+      if (btnBuscar) btnBuscar.textContent = '🔄 Reintentando...';
     });
-
-    const result = await response.json();
+    const result = await leerJsonSeguro(response);
 
     if (!response.ok) {
       throw new Error(result.error || 'Error en la búsqueda');
@@ -180,13 +172,13 @@ async function registrarAsistencia() {
 
   try {
     // Enviar a API propia
-    const response = await enviarCheckinConReintento(estudianteActual.matricula);
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      throw new Error(result.error || 'Error registrando asistencia');
+    const outcome = await enviarCheckinConReintento(estudianteActual.matricula);
+    if (!outcome.ok) {
+      const error = new Error(outcome.error || 'Error registrando asistencia');
+      error.uncertain = !!outcome.uncertain;
+      throw error;
     }
+    const result = outcome.result;
 
     console.log("✅ Registro procesado via API");
     
@@ -222,13 +214,19 @@ async function registrarAsistencia() {
   } catch (error) {
     console.error("❌ Error en registrarAsistencia:", error);
     
-    // Remover de cache si hubo error
-    registrosCache.delete(estudianteActual.matricula);
-    limpiarInFlight();
-    
-    mostrarError(`❌ ${error.message}. Por favor intenta de nuevo.`);
-    btn.disabled = false;
-    btn.textContent = 'Registrar mi check-in';
+    if (error.uncertain) {
+      // No sabemos si Sheets alcanzó a guardar. Conservamos inFlight y evitamos otro POST.
+      mostrarError('⚠️ El registro sigue en verificación. Vuelve a buscar tu matrícula antes de intentar nuevamente.');
+      btn.disabled = true;
+      btn.textContent = 'Verificando registro...';
+      setResetButtonLabel('🔄 Verificar matrícula');
+    } else {
+      registrosCache.delete(estudianteActual.matricula);
+      limpiarInFlight();
+      mostrarError(`❌ ${error.message}. Por favor intenta de nuevo.`);
+      btn.disabled = false;
+      btn.textContent = 'Registrar mi check-in';
+    }
     setCardBusy(false);
     isSubmitting = false;
   }
@@ -498,7 +496,6 @@ async function restaurarInFlight() {
     if (!raw) return;
     const data = JSON.parse(raw);
     if (!data || !data.matricula) return;
-    limpiarInFlight();
     const input = document.getElementById('matriculaInput');
     if (input) input.value = data.matricula;
     const response = await fetch('/api/estudiante', {
@@ -511,6 +508,7 @@ async function restaurarInFlight() {
     });
     const result = await response.json();
     if (response.ok && result.data && result.data.yaRegistrado) {
+      limpiarInFlight();
       registrosCache.add(String(data.matricula).trim().toUpperCase());
       persistirCache();
       mostrarError('✅ Registro previo detectado. Puedes continuar con otra matrícula.');
@@ -519,6 +517,9 @@ async function restaurarInFlight() {
         errorElement.classList.add('status-info');
         errorElement.style.color = '#0062cc';
       }
+    } else if (response.ok && result.data) {
+      // La consulta autoritativa confirmó que no existe escritura pendiente.
+      limpiarInFlight();
     }
   } catch (error) {
     console.warn('⚠️ No se pudo restaurar inFlight:', error);
@@ -526,11 +527,9 @@ async function restaurarInFlight() {
 }
 
 async function enviarCheckinConReintento(matricula) {
-  const maxAttempts = 3;
-  let lastResponse = null;
-
-  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-    lastResponse = await fetch('/api/checkin', {
+  let response;
+  try {
+    response = await fetch('/api/checkin', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -538,12 +537,100 @@ async function enviarCheckinConReintento(matricula) {
       },
       body: JSON.stringify({ matricula })
     });
-
-    if (![502, 503].includes(lastResponse.status) || attempt === maxAttempts) return lastResponse;
-    await sleep(450 + Math.floor(Math.random() * 700) + (attempt * 350));
+  } catch (error) {
+    const registered = await verificarRegistroTrasFallo(matricula);
+    if (registered === true) return resultadoReconciliado();
+    return { ok: false, uncertain: registered === null, error: 'No fue posible confirmar la respuesta del servidor' };
   }
 
+  const result = await leerJsonSeguro(response);
+  if (response.ok) return { ok: true, result };
+  if (!esEstadoTransitorio(response.status)) {
+    return { ok: false, uncertain: false, error: result.error || 'Error registrando asistencia' };
+  }
+
+  // Ante un timeout no repetimos la escritura a ciegas: primero consultamos Sheets.
+  const registered = await verificarRegistroTrasFallo(matricula);
+  if (registered === true) return resultadoReconciliado();
+  return {
+    ok: false,
+    uncertain: registered === null,
+    error: registered === false
+      ? (result.error || 'El registro no se completó')
+      : 'No fue posible confirmar la respuesta del servidor'
+  };
+}
+
+async function consultarEstudianteConReintento(matricula, onRetry) {
+  let lastResponse = null;
+  let lastError = null;
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    try {
+      lastResponse = await fetch('/api/estudiante', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Checkin-Client': clientId
+        },
+        body: JSON.stringify({ matricula })
+      });
+      if (!esEstadoTransitorio(lastResponse.status) || attempt === 2) return lastResponse;
+    } catch (error) {
+      lastError = error;
+      if (attempt === 2) throw error;
+    }
+    if (onRetry) onRetry();
+    await sleep(650 + Math.floor(Math.random() * 350));
+  }
+  if (lastError) throw lastError;
   return lastResponse;
+}
+
+async function verificarRegistroTrasFallo(matricula) {
+  let confirmedNotRegistered = false;
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    await sleep(attempt === 1 ? 700 : 1400);
+    try {
+      const response = await fetch('/api/estudiante', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Checkin-Client': clientId
+        },
+        body: JSON.stringify({ matricula })
+      });
+      const result = await leerJsonSeguro(response);
+      if (response.ok && result.data) {
+        if (result.data.yaRegistrado) return true;
+        confirmedNotRegistered = true;
+      }
+    } catch (error) {
+      console.warn('⚠️ No fue posible reconciliar el check-in:', error);
+    }
+  }
+  return confirmedNotRegistered ? false : null;
+}
+
+function resultadoReconciliado() {
+  return {
+    ok: true,
+    result: {
+      success: true,
+      data: { alreadyRegistered: true, reconciled: true }
+    }
+  };
+}
+
+async function leerJsonSeguro(response) {
+  try {
+    return await response.json();
+  } catch (error) {
+    return { error: `Respuesta no válida del servidor (${response.status})` };
+  }
+}
+
+function esEstadoTransitorio(status) {
+  return [502, 503, 504].includes(Number(status));
 }
 
 function ocultarStatsPublicas() {

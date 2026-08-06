@@ -177,6 +177,7 @@ function importPreregistrationSnapshotAD26() {
   try {
     replaceSheetRowsAD26(getSheet(AD26.SHEETS.POPULATION), snapshot.population);
     replaceSheetRowsAD26(getSheet(AD26.SHEETS.MENTORS), snapshot.mentors);
+    PropertiesService.getScriptProperties().setProperty('POPULATION_CACHE_VERSION', String(Date.now()));
     return {
       ok: true,
       estudiantes: snapshot.population.length,

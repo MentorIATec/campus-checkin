@@ -6,15 +6,15 @@
   "regions": ["iad1"],
   "functions": {
     "api/estudiante.js": {
-      "maxDuration": 10,
+      "maxDuration": 20,
       "memory": 128
     },
     "api/checkin.js": {
-      "maxDuration": 10,
+      "maxDuration": 20,
       "memory": 128
     },
     "api/stats.js": {
-      "maxDuration": 10,
+      "maxDuration": 20,
       "memory": 128
     }
   },

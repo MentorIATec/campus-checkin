@@ -21,9 +21,16 @@ const AD26 = {
   }
 };
 
+const AD26_RUNTIME = {
+  spreadsheet: null,
+  headers: {},
+  headerMaps: {}
+};
+
 function doPost(e) {
   let body = null;
   try {
+    resetRuntimeCaches();
     body = parseJsonBody(e);
     if (!body || !secureEquals(String(body.api_key || ''), getRequiredProperty('CHECKIN_API_KEY'))) {
       return jsonResponse({ error: 'Acceso no autorizado' }, 401);
@@ -43,6 +50,7 @@ function doPost(e) {
 
 function doGet(e) {
   try {
+    resetRuntimeCaches();
     const key = e && e.parameter ? String(e.parameter.key || '') : '';
     if (!secureEquals(key, getRequiredProperty('CHECKIN_API_KEY'))) {
       return jsonResponse({ error: 'Acceso no autorizado' }, 401);
@@ -76,44 +84,52 @@ function registerCheckin(body) {
   const sheet = getSheet(AD26.SHEETS.CHECKINS);
   const checkinId = buildCheckinId(matricula);
   const lock = LockService.getScriptLock();
-  if (!lock.tryLock(7000)) return jsonResponse({ error: 'Registro ocupado' }, 503);
+  if (!lock.tryLock(2500)) return jsonResponse({ error: 'Registro ocupado' }, 503);
 
+  let alreadyRegistered = false;
+  let timestamp = null;
   try {
     if (checkinExists(sheet, checkinId)) {
-      appendAttempt(matricula, 'DUPLICADO', 'AUTOSERVICIO', '', String(body.source || 'AUTOSERVICIO'));
-      return jsonResponse({ success: true, alreadyRegistered: true, data: student }, 200);
+      alreadyRegistered = true;
+    } else {
+      timestamp = new Date();
+      appendObject(sheet, {
+        checkin_id: checkinId,
+        event_id: AD26.EVENT_ID,
+        timestamp,
+        matricula,
+        nombre: student.fullnameEstudiante,
+        campus_origen: student.campusOrigen,
+        escuela: student.escuela,
+        carrera: student.carrera,
+        mentor_id: student.mentorId,
+        mentor_nombre: student.mentorFullname,
+        comunidad: student.comunidad,
+        preregistrado: student.preregistrado,
+        respuesta_preregistro: student.respuestaPreregistro,
+        en_padron_original: true,
+        ruta_registro: 'AUTOSERVICIO',
+        staff_id: '',
+        source: String(body.source || 'AUTOSERVICIO')
+      });
+      markCheckinExists(checkinId);
     }
-
-    const timestamp = new Date();
-    appendObject(sheet, {
-      checkin_id: checkinId,
-      event_id: AD26.EVENT_ID,
-      timestamp,
-      matricula,
-      nombre: student.fullnameEstudiante,
-      campus_origen: student.campusOrigen,
-      escuela: student.escuela,
-      carrera: student.carrera,
-      mentor_id: student.mentorId,
-      mentor_nombre: student.mentorFullname,
-      comunidad: student.comunidad,
-      preregistrado: student.preregistrado,
-      respuesta_preregistro: student.respuestaPreregistro,
-      en_padron_original: true,
-      ruta_registro: 'AUTOSERVICIO',
-      staff_id: '',
-      source: String(body.source || 'AUTOSERVICIO')
-    });
-
-    return jsonResponse({
-      success: true,
-      alreadyRegistered: false,
-      timestamp: formatTimestamp(timestamp),
-      data: student
-    }, 200);
   } finally {
     lock.releaseLock();
   }
+
+  if (alreadyRegistered) {
+    // Duplicate telemetry must not extend the critical section for new check-ins.
+    appendAttempt(matricula, 'DUPLICADO', 'AUTOSERVICIO', '', String(body.source || 'AUTOSERVICIO'));
+    return jsonResponse({ success: true, alreadyRegistered: true, data: student }, 200);
+  }
+
+  return jsonResponse({
+    success: true,
+    alreadyRegistered: false,
+    timestamp: formatTimestamp(timestamp),
+    data: student
+  }, 200);
 }
 
 function appendAttempt(matricula, result, route, staffId, source) {
@@ -174,6 +190,17 @@ function getStats() {
 }
 
 function resolveStudent(matricula) {
+  const studentCache = CacheService.getScriptCache();
+  const studentCacheKey = `student:${AD26.EVENT_ID}:${getPopulationCacheVersion()}:${matricula}`;
+  const cachedStudent = studentCache.get(studentCacheKey);
+  if (cachedStudent) {
+    try {
+      return JSON.parse(cachedStudent);
+    } catch (error) {
+      console.warn('Cache de estudiante invalido', error);
+    }
+  }
+
   const populationSheet = getSheet(AD26.SHEETS.POPULATION);
   const populationRow = findObjectByValue(populationSheet, 'matricula', matricula);
   if (!populationRow) return null;
@@ -197,7 +224,7 @@ function resolveStudent(matricula) {
     : clean(populationRow.comunidad || (mentorRow && mentorRow.comunidad));
   const photo = isHealth ? 'Salud.jpg' : clean(populationRow.foto_mentor || (mentorRow && mentorRow.foto_mentor));
 
-  return {
+  const student = {
     matricula,
     nameEstudiante: names,
     fullnameEstudiante: [names, lastnames].filter(Boolean).join(' ').trim() || clean(populationRow.nombre),
@@ -214,6 +241,8 @@ function resolveStudent(matricula) {
     preregistrado: toBoolean(populationRow.preregistrado),
     respuestaPreregistro: clean(populationRow.respuesta_preregistro || 'SIN RESPUESTA')
   };
+  studentCache.put(studentCacheKey, JSON.stringify(student), 3600);
+  return student;
 }
 
 function buildCheckinId(matricula) {
@@ -221,15 +250,25 @@ function buildCheckinId(matricula) {
 }
 
 function checkinExists(sheet, checkinId) {
+  const cache = CacheService.getScriptCache();
+  const cacheKey = `checkin:${checkinId}`;
+  if (cache.get(cacheKey) === '1') return true;
+
   const headers = getHeaderMap(sheet);
   const column = headers.checkin_id;
-  if (!column || sheet.getLastRow() < 2) return false;
+  const lastRow = sheet.getLastRow();
+  if (!column || lastRow < 2) return false;
   const match = sheet
-    .getRange(2, column, sheet.getLastRow() - 1, 1)
+    .getRange(2, column, lastRow - 1, 1)
     .createTextFinder(checkinId)
     .matchEntireCell(true)
     .findNext();
+  if (match) cache.put(cacheKey, '1', 21600);
   return !!match;
+}
+
+function markCheckinExists(checkinId) {
+  CacheService.getScriptCache().put(`checkin:${checkinId}`, '1', 21600);
 }
 
 function findObjectByValue(sheet, header, value) {
@@ -267,19 +306,38 @@ function rowToObject(row, headers) {
 }
 
 function getHeaders(sheet) {
-  if (sheet.getLastColumn() < 1) return [];
-  return sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].map(value => clean(value));
+  const cacheKey = String(sheet.getSheetId());
+  if (AD26_RUNTIME.headers[cacheKey]) return AD26_RUNTIME.headers[cacheKey];
+  const lastColumn = sheet.getLastColumn();
+  const headers = lastColumn < 1
+    ? []
+    : sheet.getRange(1, 1, 1, lastColumn).getValues()[0].map(value => clean(value));
+  AD26_RUNTIME.headers[cacheKey] = headers;
+  return headers;
 }
 
 function getHeaderMap(sheet) {
-  return getHeaders(sheet).reduce((result, header, index) => {
+  const cacheKey = String(sheet.getSheetId());
+  if (AD26_RUNTIME.headerMaps[cacheKey]) return AD26_RUNTIME.headerMaps[cacheKey];
+  const headerMap = getHeaders(sheet).reduce((result, header, index) => {
     if (header) result[header] = index + 1;
     return result;
   }, {});
+  AD26_RUNTIME.headerMaps[cacheKey] = headerMap;
+  return headerMap;
 }
 
 function getSpreadsheet() {
-  return SpreadsheetApp.openById(getRequiredProperty('CHECKIN_SPREADSHEET_ID'));
+  if (!AD26_RUNTIME.spreadsheet) {
+    AD26_RUNTIME.spreadsheet = SpreadsheetApp.openById(getRequiredProperty('CHECKIN_SPREADSHEET_ID'));
+  }
+  return AD26_RUNTIME.spreadsheet;
+}
+
+function resetRuntimeCaches() {
+  AD26_RUNTIME.spreadsheet = null;
+  AD26_RUNTIME.headers = {};
+  AD26_RUNTIME.headerMaps = {};
 }
 
 function getSheet(name) {
@@ -292,6 +350,10 @@ function getRequiredProperty(name) {
   const value = PropertiesService.getScriptProperties().getProperty(name);
   if (!value) throw new Error(`Falta Script Property ${name}`);
   return value;
+}
+
+function getPopulationCacheVersion() {
+  return PropertiesService.getScriptProperties().getProperty('POPULATION_CACHE_VERSION') || 'initial';
 }
 
 function parseJsonBody(e) {

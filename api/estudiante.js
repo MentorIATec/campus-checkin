@@ -59,7 +59,8 @@ async function callAppsScript(payload) {
   if (!scriptUrl || !scriptKey) throw new Error('Apps Script no configurado');
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 8000);
+  // Leave enough margin for Apps Script cold starts without reaching Vercel's limit.
+  const timeout = setTimeout(() => controller.abort(), 12000);
   try {
     const response = await fetch(scriptUrl, {
       method: 'POST',

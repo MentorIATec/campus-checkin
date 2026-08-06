@@ -74,7 +74,8 @@ async function callAppsScript(payload) {
   if (!scriptUrl || !scriptKey) throw new Error('Apps Script no configurado');
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 9000);
+  // The write may finish in Sheets before its response arrives; keep a safe Vercel margin.
+  const timeout = setTimeout(() => controller.abort(), 15000);
   try {
     const response = await fetch(scriptUrl, {
       method: 'POST',
