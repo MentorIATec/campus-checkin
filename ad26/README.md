@@ -33,9 +33,18 @@ El dia del evento se usa la misma secuencia que en los ensayos:
 1. Ejecutar `configurePreregistrationSourceAD26` solo si cambio el spreadsheet fuente.
 2. Ejecutar `previewPreregistrationSnapshotAD26` y verificar totales, duplicados, mentores sin foto, cruces academicos y escuelas por clasificar.
 3. Ejecutar `importPreregistrationSnapshotAD26` para reemplazar unicamente `Poblacion_AD26` y `Mentores_AD26`.
-4. Hacer consultas de prueba en el frontend antes de publicar el QR.
+4. Confirmar que la importacion reconstruyo el indice privado de poblacion. Como verificacion adicional, ejecutar `Preparar cache de estudiantes (6 h)` desde el menu.
+5. Hacer consultas de prueba en el frontend antes de publicar el QR.
 
 La importacion no borra `Checkins_AD26`, `Incidencias_AD26`, intentos ni errores. `setupAD26` no forma parte de cada importacion; se reserva para preparar o migrar el esquema.
+
+## Cache operativo
+
+- El lookup usa un indice privado de `Poblacion_AD26` en `CacheService`, dividido en 16 shards; los datos no se publican en el frontend ni en el repositorio.
+- La vigencia maxima sugerida es de 6 horas. Prepararlo cerca de la apertura cubre el evento completo.
+- Si Google elimina un shard antes de tiempo, el backend vuelve de forma segura al lookup en Sheets; no se bloquea el check-in.
+- Cada importacion del snapshot cambia la version del indice y lo reconstruye automaticamente.
+- El 7 de agosto se validaron 766 estudiantes, 16 shards y un shard mayor de 28,581 bytes.
 
 ## Dashboard
 

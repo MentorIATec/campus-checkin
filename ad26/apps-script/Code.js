@@ -27,6 +27,13 @@ const AD26_RUNTIME = {
   headerMaps: {}
 };
 
+const AD26_POPULATION_CACHE = {
+  SHARDS: 16,
+  TTL_SECONDS: 21600,
+  MAX_SHARD_BYTES: 90000,
+  PREFIX: 'population-index'
+};
+
 function doPost(e) {
   let body = null;
   try {
@@ -40,6 +47,7 @@ function doPost(e) {
     if (action === 'lookup') return lookupStudent(body);
     if (action === 'checkin') return registerCheckin(body);
     if (action === 'stats') return getStats();
+    if (action === 'warmcache') return jsonResponse({ success: true, data: rebuildPopulationCacheAD26() }, 200);
     return jsonResponse({ error: 'Accion no soportada' }, 400);
   } catch (error) {
     console.error(error);
@@ -190,6 +198,10 @@ function getStats() {
 }
 
 function resolveStudent(matricula) {
+  const indexed = readStudentFromPopulationIndex(matricula);
+  if (indexed.available) return indexed.student;
+
+  // Fallback seguro si Google expulsa un shard antes de su TTL sugerido.
   const studentCache = CacheService.getScriptCache();
   const studentCacheKey = `student:${AD26.EVENT_ID}:${getPopulationCacheVersion()}:${matricula}`;
   const cachedStudent = studentCache.get(studentCacheKey);
@@ -211,6 +223,15 @@ function resolveStudent(matricula) {
     ? findObjectByValue(getSheet(AD26.SHEETS.MENTORS), 'mentor_id', mentorId)
     : null;
 
+  const student = buildStudentAD26(matricula, populationRow, mentorRow);
+  studentCache.put(studentCacheKey, JSON.stringify(student), 3600);
+  return student;
+}
+
+function buildStudentAD26(matricula, populationRow, mentorRow) {
+  mentorRow = mentorRow || null;
+
+  const mentorId = clean(populationRow.mentor_id);
   const school = clean(populationRow.escuela);
   const populationType = clean(populationRow.tipo_poblacion).toUpperCase();
   const rawMentorName = clean(populationRow.mentor_nombre || (mentorRow && mentorRow.nombre));
@@ -241,8 +262,100 @@ function resolveStudent(matricula) {
     preregistrado: toBoolean(populationRow.preregistrado),
     respuestaPreregistro: clean(populationRow.respuesta_preregistro || 'SIN RESPUESTA')
   };
-  studentCache.put(studentCacheKey, JSON.stringify(student), 3600);
   return student;
+}
+
+function readStudentFromPopulationIndex(matricula) {
+  const cache = CacheService.getScriptCache();
+  const key = populationShardKeyAD26(getPopulationCacheVersion(), populationShardAD26(matricula));
+  const raw = cache.get(key);
+  if (!raw) return { available: false, student: null };
+
+  try {
+    const shard = JSON.parse(raw);
+    return {
+      available: true,
+      student: Object.prototype.hasOwnProperty.call(shard, matricula) ? shard[matricula] : null
+    };
+  } catch (error) {
+    console.warn('Shard de poblacion invalido', error);
+    cache.remove(key);
+    return { available: false, student: null };
+  }
+}
+
+function prewarmPopulationCacheAD26() {
+  const result = rebuildPopulationCacheAD26();
+  try {
+    SpreadsheetApp.getUi().alert(
+      'Cache AD26 preparado',
+      `Estudiantes: ${result.students}\nShards: ${result.shards}\nShard mayor: ${result.largest_shard_bytes} bytes\nVigencia maxima sugerida: 6 horas`,
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+  } catch (error) {
+    console.log('Cache AD26 preparado', JSON.stringify(result));
+  }
+  return result;
+}
+
+function rebuildPopulationCacheAD26() {
+  resetRuntimeCaches();
+  const populationRows = readObjects(getSheet(AD26.SHEETS.POPULATION));
+  const mentorRows = readObjects(getSheet(AD26.SHEETS.MENTORS));
+  const mentorsById = mentorRows.reduce((result, row) => {
+    const mentorId = clean(row.mentor_id);
+    if (mentorId) result[mentorId] = row;
+    return result;
+  }, {});
+  const shards = Array.from({ length: AD26_POPULATION_CACHE.SHARDS }, () => ({}));
+  let students = 0;
+
+  populationRows.forEach(row => {
+    const matricula = normalizeMatricula(row.matricula);
+    if (!isValidMatricula(matricula)) return;
+    if (!toBoolean(row.activo) || clean(row.periodo).toUpperCase() !== AD26.PERIOD) return;
+    const mentorId = clean(row.mentor_id);
+    shards[populationShardAD26(matricula)][matricula] = buildStudentAD26(
+      matricula,
+      row,
+      mentorId ? mentorsById[mentorId] : null
+    );
+    students += 1;
+  });
+
+  const version = getPopulationCacheVersion();
+  const values = {};
+  let largestShardBytes = 0;
+  shards.forEach((shard, index) => {
+    const serialized = JSON.stringify(shard);
+    const bytes = Utilities.newBlob(serialized).getBytes().length;
+    if (bytes > AD26_POPULATION_CACHE.MAX_SHARD_BYTES) {
+      throw new Error(`Shard ${index} excede el limite seguro (${bytes} bytes)`);
+    }
+    largestShardBytes = Math.max(largestShardBytes, bytes);
+    values[populationShardKeyAD26(version, index)] = serialized;
+  });
+
+  CacheService.getScriptCache().putAll(values, AD26_POPULATION_CACHE.TTL_SECONDS);
+  return {
+    ok: true,
+    students,
+    shards: AD26_POPULATION_CACHE.SHARDS,
+    largest_shard_bytes: largestShardBytes,
+    cache_version: version
+  };
+}
+
+function populationShardAD26(matricula) {
+  let hash = 0;
+  for (let index = 0; index < matricula.length; index += 1) {
+    hash = ((hash * 31) + matricula.charCodeAt(index)) >>> 0;
+  }
+  return hash % AD26_POPULATION_CACHE.SHARDS;
+}
+
+function populationShardKeyAD26(version, shard) {
+  return `${AD26_POPULATION_CACHE.PREFIX}:${AD26.EVENT_ID}:${version}:${shard}`;
 }
 
 function buildCheckinId(matricula) {

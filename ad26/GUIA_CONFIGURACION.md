@@ -43,8 +43,11 @@ El codigo aplica un limite defensivo por cliente. Como las funciones serverless 
 2. Ejecutar `npm run validate:mentor-assets` y resolver todas las coincidencias faltantes.
 3. Ejecutar `previewPreregistrationSnapshotAD26` y resolver duplicados o filas inválidas.
 4. Ejecutar `importPreregistrationSnapshotAD26` para reemplazar solo `Poblacion_AD26` y `Mentores_AD26`.
-5. El pipeline no modifica `Checkins_AD26` ni `Incidencias_AD26`.
-6. Validar campos obligatorios, Salud y preregistro antes de congelar la fotografia operativa.
+5. Confirmar el resultado del indice privado: estudiantes, 16 shards y tamano del shard mayor. Si se requiere renovar su vigencia, ejecutar `Preparar cache de estudiantes (6 h)` desde el menu.
+6. El pipeline no modifica `Checkins_AD26` ni `Incidencias_AD26`.
+7. Validar campos obligatorios, Salud y preregistro antes de congelar la fotografia operativa.
+
+El indice usa `CacheService` como acelerador, no como fuente de verdad. Si un shard no esta disponible, el Web App consulta las hojas privadas y mantiene el comportamiento funcional.
 
 ## 5. Ensayo
 

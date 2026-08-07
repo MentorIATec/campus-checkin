@@ -178,10 +178,13 @@ function importPreregistrationSnapshotAD26() {
     replaceSheetRowsAD26(getSheet(AD26.SHEETS.POPULATION), snapshot.population);
     replaceSheetRowsAD26(getSheet(AD26.SHEETS.MENTORS), snapshot.mentors);
     PropertiesService.getScriptProperties().setProperty('POPULATION_CACHE_VERSION', String(Date.now()));
+    const cache = rebuildPopulationCacheAD26();
     return {
       ok: true,
       estudiantes: snapshot.population.length,
       mentores: snapshot.mentors.length,
+      cache_estudiantes: cache.students,
+      cache_shards: cache.shards,
       fecha_importacion: formatTimestamp(new Date())
     };
   } finally {

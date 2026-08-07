@@ -36,6 +36,7 @@ function onOpen() {
     .addItem('Preparar estructura AD26', 'setupAD26')
     .addItem('Previsualizar fotografia de preregistro', 'previewPreregistrationSnapshotAD26')
     .addItem('Importar fotografia de preregistro', 'importPreregistrationSnapshotAD26')
+    .addItem('Preparar cache de estudiantes (6 h)', 'prewarmPopulationCacheAD26')
     .addItem('Actualizar dashboard (manual)', 'buildDashboardAD26')
     .addToUi();
 }

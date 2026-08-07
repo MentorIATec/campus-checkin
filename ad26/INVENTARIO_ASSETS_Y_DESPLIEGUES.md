@@ -84,7 +84,7 @@ Recomendacion:
 |---|---|---|---|---|
 | AD25 | historica | por identificar | historicos | localizar, retirar escritura y archivar |
 | FJ26 | `fj26` | `campus-checkin-fj26.vercel.app` | FJ26 | conservar lectura, desactivar escritura y archivar |
-| AD26 | `ad26` | `campus-checkin-ad26.vercel.app` | workbook B AD26 | operativo; Apps Script v7 |
+| AD26 | `ad26` | `campus-checkin-ad26.vercel.app` | workbook B AD26 | operativo; Apps Script v9 |
 
 ## Deployment operativo AD26
 
@@ -94,10 +94,11 @@ Estado documentado el 6 de agosto de 2026:
 - Deployment Vercel: `dpl_3htzEJXhtGhJb4eG74a9tCG2gYSi`.
 - URL de produccion: `https://campus-checkin-ad26-44m6yatvz-mentoria-tecs-projects.vercel.app`.
 - Commit de robustecimiento: `ba68fb9`.
-- Apps Script: version inmutable 7.
-- Web apps activas en version 7:
+- Apps Script: version inmutable 9.
+- Web apps activas en version 9:
   - `AKfycbzRxjHIBy4BqQzMPeRqemf5OrdNqWIordPme_Os5GSpS35nUZC9TDMCHV7D1BHNlkWL9w`.
   - `AKfycbx7R4g6imfnYplE5aJiphANJDAGUmlEnCeDoueXWZ-AkncfT3dfQwGaJS3yXt4iAI5ORw`.
+- Rollback disponible: version 7, previa al indice privado de poblacion.
 
 Los archivos `AnaTalenta.jpg`, `DaciaKresko.jpg`, `FerSpirita.jpg` y
 `MarianaPasio.jpg` permanecen respaldados en el commit actual y en

@@ -139,8 +139,8 @@
 
 - Rama operativa: `ad26`.
 - Commit de robustecimiento: `ba68fb9` (`Harden AD26 check-in against timeout ambiguity`).
-- Apps Script: version inmutable 7.
-- Deployments de Apps Script actualizados a version 7:
+- Apps Script: version inmutable 9.
+- Deployments de Apps Script actualizados a version 9:
   - `AKfycbzRxjHIBy4BqQzMPeRqemf5OrdNqWIordPme_Os5GSpS35nUZC9TDMCHV7D1BHNlkWL9w`.
   - `AKfycbx7R4g6imfnYplE5aJiphANJDAGUmlEnCeDoueXWZ-AkncfT3dfQwGaJS3yXt4iAI5ORw`.
 - Deployment de Vercel: `dpl_3htzEJXhtGhJb4eG74a9tCG2gYSi`.
@@ -155,14 +155,17 @@
 - Reintento controlado del lookup ante fallas transitorias.
 - Reconciliacion mediante lookup autoritativo cuando el resultado del POST es ambiguo.
 - Bloqueo del CTA mientras existe una solicitud en curso; no se repite el POST a ciegas.
-- Cache por solicitud para spreadsheet y encabezados, cache de estudiantes y cache positiva de check-in.
+- Cache por solicitud para spreadsheet y encabezados, indice privado de poblacion dividido en 16 shards, cache de estudiantes y cache positiva de check-in.
 - Lock de escritura acotado a 2.5 s y telemetria de duplicados fuera de la seccion critica.
-- Cada importacion del snapshot invalida la version de cache de la poblacion.
+- Cada importacion del snapshot invalida y reconstruye el indice privado de poblacion.
+- El indice privado tiene vigencia maxima sugerida de 6 horas y conserva fallback seguro a Sheets si Google expulsa un shard.
+- Validacion del 7 de agosto: 766 estudiantes, 16 shards y shard mayor de 28,581 bytes.
+- Cinco consultas simultaneas de produccion respondieron HTTP 200 entre 3.94 y 7.32 s; tres consultas secuenciales posteriores respondieron entre 2.22 y 2.89 s, sin errores ni reintentos.
 
 ### Verificacion y rollback
 
 1. Confirmar que el dominio operativo resuelve y permite consultar una matricula conocida.
 2. Confirmar en `Checkins_AD26` que una prueba genera una sola fila y eliminarla antes de abrir puertas.
 3. Si aparece una regresion, reasignar el dominio al deployment estable anterior en Vercel.
-4. Si la regresion esta en Apps Script, volver a apuntar el deployment al numero de version anterior; no editar una version inmutable.
+4. Si la regresion esta en Apps Script, volver a apuntar el deployment a la version 7; no editar una version inmutable.
 5. No borrar versiones o deployments anteriores hasta terminar el evento y validar el respaldo final.
