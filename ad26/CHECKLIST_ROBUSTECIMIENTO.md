@@ -105,8 +105,8 @@
 
 ## Pruebas
 
-- [ ] Matricula valida pendiente de check-in.
-- [ ] Matricula valida ya registrada.
+- [x] Matricula valida pendiente de check-in.
+- [x] Matricula valida ya registrada.
 - [ ] Error de dedo que coincide con otro estudiante: verificar identidad y corregir.
 - [ ] Matricula inexistente y captura manual en `Incidencias_AD26`.
 - [ ] Transferencia tardia contabilizada en el total final.
@@ -114,8 +114,8 @@
 - [ ] Doble clic.
 - [ ] Enter en el input.
 - [ ] Refresh antes, durante y despues del registro.
-- [ ] Perdida de respuesta despues de guardar y reintento idempotente.
-- [ ] Conexion lenta y timeout.
+- [x] Perdida de respuesta despues de guardar y reintento idempotente.
+- [x] Conexion lenta y timeout.
 - [ ] 20 a 30 solicitudes concurrentes.
 - [x] Recuperacion y actualizacion manual del dashboard sin timer.
 - [x] Cruzar carrera y escuela desde las fuentes originales por matricula.
@@ -125,12 +125,44 @@
 
 ## Produccion y operacion
 
-- [ ] Crear proyecto Vercel `campus-checkin-ad26`.
-- [ ] Configurar dominio AD26 sin reutilizar el alias FJ26.
-- [ ] Configurar variables de entorno Production y Preview.
-- [ ] Desplegar primero con datos de prueba.
+- [x] Crear proyecto Vercel `campus-checkin-ad26`.
+- [x] Configurar dominio AD26 sin reutilizar el alias FJ26.
+- [x] Configurar variables de entorno Production y Preview.
+- [x] Desplegar primero con datos de prueba.
 - [ ] Ejecutar ensayo de captura manual con el staff.
 - [ ] Congelar version operativa 24 horas antes del evento.
 - [ ] Preparar QR y URL de contingencia.
 - [ ] Preparar procedimiento manual si Vercel, Apps Script o red fallan.
 - [ ] Al finalizar, cerrar escrituras y archivar el deployment.
+
+## Cierre tecnico previo al evento - 2026-08-06
+
+- Rama operativa: `ad26`.
+- Commit de robustecimiento: `ba68fb9` (`Harden AD26 check-in against timeout ambiguity`).
+- Apps Script: version inmutable 7.
+- Deployments de Apps Script actualizados a version 7:
+  - `AKfycbzRxjHIBy4BqQzMPeRqemf5OrdNqWIordPme_Os5GSpS35nUZC9TDMCHV7D1BHNlkWL9w`.
+  - `AKfycbx7R4g6imfnYplE5aJiphANJDAGUmlEnCeDoueXWZ-AkncfT3dfQwGaJS3yXt4iAI5ORw`.
+- Deployment de Vercel: `dpl_3htzEJXhtGhJb4eG74a9tCG2gYSi`.
+- Dominio operativo: `https://campus-checkin-ad26.vercel.app`.
+- Prueba controlada con una matricula real autorizada: lookup inicial, check-in y consulta posterior exitosos.
+- Resultado comprobado: el segundo lookup devuelve `yaRegistrado: true`, conserva mentor y foto, y evita repetir el alta.
+- Tiempos observados en la prueba: lookup inicial 4.57 s, check-in 4.93 s y reconciliacion 2.21 s.
+
+### Protecciones aplicadas
+
+- Timeout de 12 s para lookup y 15 s para check-in en la capa Vercel.
+- Reintento controlado del lookup ante fallas transitorias.
+- Reconciliacion mediante lookup autoritativo cuando el resultado del POST es ambiguo.
+- Bloqueo del CTA mientras existe una solicitud en curso; no se repite el POST a ciegas.
+- Cache por solicitud para spreadsheet y encabezados, cache de estudiantes y cache positiva de check-in.
+- Lock de escritura acotado a 2.5 s y telemetria de duplicados fuera de la seccion critica.
+- Cada importacion del snapshot invalida la version de cache de la poblacion.
+
+### Verificacion y rollback
+
+1. Confirmar que el dominio operativo resuelve y permite consultar una matricula conocida.
+2. Confirmar en `Checkins_AD26` que una prueba genera una sola fila y eliminarla antes de abrir puertas.
+3. Si aparece una regresion, reasignar el dominio al deployment estable anterior en Vercel.
+4. Si la regresion esta en Apps Script, volver a apuntar el deployment al numero de version anterior; no editar una version inmutable.
+5. No borrar versiones o deployments anteriores hasta terminar el evento y validar el respaldo final.
